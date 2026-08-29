@@ -84,11 +84,60 @@ button { font: inherit; }
 .league-strip div { width: max-content; min-width: 100%; display: flex; align-items: center; justify-content: center; gap: 34px; padding: 14px 20px; color: #8fa5ae; font: 700 .8rem/1 "Barlow Condensed", "Noto Sans TC", sans-serif; letter-spacing: .15em; }
 .league-strip i { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); }
 
-.intro, .gameplay, .screenshots, .guide { padding-block: 112px; }
+.league-world, .intro, .gameplay, .screenshots, .guide { padding-block: 112px; }
 .section-heading h2, .download h2, .freedom-banner h2, .final-cta h2 { margin: 0; font-size: clamp(2.2rem, 4.4vw, 4rem); line-height: 1.15; letter-spacing: -.055em; }
 .section-heading > p:last-child { margin: 14px 0 0; color: var(--muted); }
 .section-heading.center { max-width: 760px; margin: 0 auto 50px; text-align: center; }
 .section-lead { max-width: 550px; margin: 25px 0 48px auto; color: var(--muted); font-size: 1.05rem; }
+
+.league-world { border-bottom: 1px solid #193644; }
+.league-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.league-card { position: relative; min-height: 410px; padding: 30px 27px; overflow: hidden; border: 1px solid #2a4b5c; border-radius: 18px; background: linear-gradient(155deg, #102b39, #081721); }
+.league-card::after { content: ""; position: absolute; right: -65px; bottom: -85px; width: 220px; aspect-ratio: 1; border: 1px solid #ffffff12; border-radius: 50%; box-shadow: 0 0 0 30px #ffffff05, 0 0 0 60px #ffffff04; }
+.league-card.sbl { --league-accent: #54d7cf; }
+.league-card.plg { --league-accent: #f0b94d; }
+.league-card.tpbl { --league-accent: #ee655b; }
+.league-card { box-shadow: inset 0 3px 0 var(--league-accent); }
+.league-code { width: 72px; height: 72px; display: grid; place-items: center; margin-bottom: 32px; border: 1px solid color-mix(in srgb, var(--league-accent) 55%, transparent); border-radius: 50%; color: var(--league-accent); font: 800 1.35rem/1 "Barlow Condensed", sans-serif; }
+.league-card > span { color: var(--league-accent); font-size: .72rem; font-weight: 700; letter-spacing: .1em; }
+.league-card h3 { margin: 10px 0 12px; font-size: 1.35rem; }
+.league-card p { margin: 0; color: var(--muted); font-size: .86rem; }
+.league-card ul { position: absolute; z-index: 1; bottom: 26px; display: grid; gap: 5px; margin: 0; padding: 0; color: #b9c9cf; font-size: .75rem; list-style: none; }
+.league-card li::before { content: "•"; margin-right: 8px; color: var(--league-accent); }
+
+.collection { padding-block: 95px; border-block: 1px solid #473b2255; background: radial-gradient(circle at 80% 50%, #63471f36, transparent 34%), linear-gradient(115deg, #0c1e29, #090f14); }
+.collection-inner { display: grid; grid-template-columns: .8fr 1.2fr; align-items: center; gap: 62px; }
+.collection-copy h2, .international h2, .legend-title h2 { margin: 0; font-size: clamp(2.2rem, 4.4vw, 4rem); line-height: 1.13; letter-spacing: -.055em; }
+.collection-copy > p:not(.eyebrow), .international-copy > p:not(.eyebrow), .legend-title > p:not(.eyebrow) { color: var(--muted); }
+.collection-copy > small { display: block; margin-top: 18px; color: #748c97; font-size: .7rem; }
+.collection-image { position: relative; padding: 7px; border: 1px solid #efbb5060; border-radius: 16px; background: #101b21; box-shadow: 0 24px 80px #0009; }
+.collection-image img { display: block; border-radius: 10px; }
+.collection-image span { position: absolute; right: 16px; bottom: 16px; padding: 5px 11px; border: 1px solid #efbb5050; border-radius: 999px; background: #09131de8; color: var(--gold); font-size: .68rem; }
+.rarity-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 27px; }
+.rarity-list span { display: inline-flex; gap: 6px; align-items: center; padding: 7px 10px; border: 1px solid currentColor; border-radius: 999px; font: 700 .7rem/1 "Barlow Condensed", "Noto Sans TC", sans-serif; }
+.rarity-list b { font-size: .78rem; }
+.rarity-list .cyan { color: #65d8dc; }.rarity-list .green { color: #70d68b; }.rarity-list .blue { color: #6ba9ff; }.rarity-list .red { color: #f06b68; }.rarity-list .purple { color: #bd78f1; }.rarity-list .gold { color: #f2c65d; }
+
+.legends { padding-block: 90px; }
+.legend-panel { position: relative; display: grid; grid-template-columns: 1fr 1.25fr auto; align-items: center; gap: 45px; padding: 52px 55px; overflow: hidden; border: 1px solid #b58b3d70; border-radius: 22px; background: radial-gradient(circle at 85% 30%, #aa72293d, transparent 30%), linear-gradient(130deg, #251d12, #0b1922 58%); box-shadow: inset 0 1px 0 #ffe8a529; }
+.legend-panel::after { content: "GOLD"; position: absolute; right: 4%; bottom: -42px; color: #efbb5008; font: 800 10rem/1 "Barlow Condensed", sans-serif; }
+.legend-title { position: relative; z-index: 1; }
+.legend-title h2 { font-size: clamp(2rem, 3.4vw, 3.2rem); }
+.legend-title p:last-child { margin-bottom: 0; font-size: .84rem; }
+.legend-names { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.legend-names span { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #b58b3d35; border-radius: 9px; background: #0a1821a8; font-size: .8rem; }
+.legend-names b { color: var(--gold); font: 800 1rem/1 "Barlow Condensed", sans-serif; }
+.legend-seal { position: relative; z-index: 1; width: 120px; aspect-ratio: 1; display: grid; place-content: center; border: 1px solid #efbb5070; border-radius: 50%; text-align: center; box-shadow: 0 0 0 7px #efbb5009; }
+.legend-seal strong { color: var(--gold); font: 800 2.6rem/.9 "Barlow Condensed", sans-serif; }
+.legend-seal span { margin-top: 7px; color: #b8a786; font-size: .62rem; }
+
+.international { display: grid; grid-template-columns: 1.12fr .88fr; align-items: center; gap: 65px; padding-block: 115px; }
+.international-image { padding: 7px; border: 1px solid #784b5360; border-radius: 16px; background: #111923; box-shadow: 0 24px 80px #0009; }
+.international-image img { display: block; border-radius: 10px; }
+.tournament-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin-top: 28px; }
+.tournament-grid span { padding: 13px; border: 1px solid #294c5d; border-radius: 10px; background: #0b1d28; color: #91a8b2; font-size: .72rem; }
+.tournament-grid b { display: block; margin-bottom: 3px; color: #f1f5f6; font-size: .82rem; }
+
 .feature-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .feature-card { position: relative; min-height: 290px; padding: 26px 23px; overflow: hidden; border: 1px solid #284959; border-radius: 14px; background: linear-gradient(160deg, #102b39, #081721); }
 .feature-card::after { content: ""; position: absolute; right: -45px; bottom: -65px; width: 150px; height: 150px; border: 1px solid #55d8cf18; border-radius: 50%; }
@@ -178,6 +227,12 @@ footer p:nth-child(2) { margin-right: auto; }
   .hero-stage { order: -1; }
   .hero-art { transform: none; }
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
+  .league-grid { grid-template-columns: 1fr; }
+  .league-card { min-height: 360px; }
+  .collection-inner, .international { grid-template-columns: 1fr; }
+  .collection-image { order: -1; }
+  .legend-panel { grid-template-columns: 1fr 1fr; }
+  .legend-title { grid-column: span 2; }
   .play-row, .play-row.reverse { grid-template-columns: 1fr; gap: 30px; }
   .play-row.reverse .play-image { order: 0; }
   .download { grid-template-columns: 1fr; gap: 42px; padding: 50px 40px; }
@@ -197,8 +252,16 @@ footer p:nth-child(2) { margin-right: auto; }
   .hero-proof span, .hero-proof strong { display: block; }
   .league-strip div { justify-content: flex-start; animation: marquee 18s linear infinite; }
   @keyframes marquee { to { transform: translateX(-35%); } }
-  .intro, .gameplay, .screenshots, .guide { padding-block: 75px; }
+  .league-world, .intro, .gameplay, .screenshots, .guide { padding-block: 75px; }
   .feature-grid, .guide-grid { grid-template-columns: 1fr; }
+  .collection { padding-block: 70px; }
+  .collection-inner { gap: 38px; }
+  .legends { padding-block: 65px; }
+  .legend-panel { grid-template-columns: 1fr; gap: 28px; padding: 38px 26px; }
+  .legend-title { grid-column: auto; }
+  .legend-seal { width: 95px; }
+  .international { padding-block: 75px; gap: 38px; }
+  .tournament-grid { grid-template-columns: 1fr; }
   .feature-card { min-height: 245px; }
   .play-flow { gap: 65px; }
   .section-heading.center { text-align: left; }
