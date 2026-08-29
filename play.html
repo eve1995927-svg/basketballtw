@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07131d">
+  <meta name="description" content="台籃模擬器遊玩入口：加入 Android 封閉測試或 iOS TestFlight。">
+  <title>遊玩入口｜台籃模擬器</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="site-config.js"></script>
+  <style>
+    .play-page { min-height: 100svh; display: grid; place-items: center; padding: 48px 20px; }
+    .play-shell { width: min(760px, 100%); }
+    .play-back { display: inline-flex; margin-bottom: 28px; color: var(--muted); font-weight: 700; }
+    .play-card { padding: clamp(26px, 6vw, 58px); border: 1px solid #efbb5070; border-radius: 24px; background: linear-gradient(145deg, #102b39ee, #07131df2); box-shadow: 0 24px 80px #0009, inset 0 1px #fff1; }
+    .play-card h1 { margin: 0 0 14px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.06em; }
+    .play-card h1 em { color: var(--cyan); font-style: normal; }
+    .play-card > p { color: var(--muted); font-size: 1.05rem; }
+    .play-status { display: flex; gap: 12px; align-items: flex-start; margin: 28px 0; padding: 16px 18px; border: 1px solid #55d8cf50; border-radius: 14px; background: #55d8cf0d; }
+    .play-status strong { color: var(--cyan); white-space: nowrap; }
+    .play-status span { color: #b7c9ce; font-size: .9rem; }
+    .play-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 26px; }
+    .play-action { display: flex; flex-direction: column; gap: 7px; min-height: 118px; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: #0c2230; transition: transform .2s, border-color .2s; }
+    .play-action:hover { transform: translateY(-3px); border-color: var(--gold); }
+    .play-action small { color: var(--gold); font: 800 .72rem/1 "Barlow Condensed", sans-serif; letter-spacing: .12em; }
+    .play-action strong { font-size: 1.1rem; }
+    .play-action span { margin-top: auto; color: var(--muted); font-size: .82rem; }
+    .play-note { margin: 24px 0 0; color: #78909b; font-size: .82rem; }
+    @media (max-width: 560px) { .play-actions { grid-template-columns: 1fr; } .play-card { padding: 28px 22px; } }
+  </style>
+</head>
+<body>
+  <main class="play-page">
+    <div class="play-shell">
+      <a class="play-back" href="index.html">← 回到官方網站</a>
+      <section class="play-card" aria-labelledby="play-title">
+        <p class="eyebrow">TAIWAN BASKETBALL · PLAY HUB</p>
+        <h1 id="play-title">現在就上場。<br><em>你行你來。</em></h1>
+        <p>這裡是台籃模擬器的獨立遊玩入口。選擇你的裝置，加入測試後就能開始組隊、球探、交易與挑戰聯賽。</p>
+        <div class="play-status"><strong>瀏覽器版準備中</strong><span>完整 Godot Web build 與瀏覽器登入同步正在製作；目前先提供官方 TestFlight 與 Google Play 測試版，確保遊戲體驗穩定。</span></div>
+        <div class="play-actions">
+          <a class="play-action" data-link="ios" href="https://testflight.apple.com/join/vdDt2uwZ"><small>IPHONE / IPAD</small><strong>用 TestFlight 遊玩 →</strong><span>安裝 TestFlight 後接受邀請</span></a>
+          <a class="play-action" data-link="android" href="https://play.google.com/apps/testing/com.yongye.taiwanbasketballgm"><small>ANDROID</small><strong>加入 Google Play 測試 →</strong><span>先加入封閉測試群組</span></a>
+        </div>
+        <p class="play-note">同一個 Supabase 帳號將同步俱樂部、陣容與雲端存檔；瀏覽器版上線後會沿用同一套資料。</p>
+      </section>
+    </div>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
