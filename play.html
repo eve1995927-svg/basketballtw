@@ -26,6 +26,9 @@
     .play-action strong { font-size: 1.1rem; }
     .play-action span { margin-top: auto; color: var(--muted); font-size: .82rem; }
     .play-note { margin: 24px 0 0; color: #78909b; font-size: .82rem; }
+    .game-frame { margin-top: 24px; overflow: hidden; border: 1px solid #55d8cf70; border-radius: 16px; background: #02070b; box-shadow: 0 14px 44px #0008; }
+    .game-frame iframe { display: block; width: 100%; aspect-ratio: 16 / 9; min-height: 360px; border: 0; background: #02070b; }
+    .game-frame figcaption { padding: 9px 14px; color: #8fa5ae; font-size: .78rem; text-align: center; }
     @media (max-width: 560px) { .play-actions { grid-template-columns: 1fr; } .play-card { padding: 28px 22px; } }
   </style>
 </head>
@@ -37,7 +40,8 @@
         <p class="eyebrow">TAIWAN BASKETBALL · PLAY HUB</p>
         <h1 id="play-title">現在就上場。<br><em>你行你來。</em></h1>
         <p>這裡是台籃模擬器的獨立遊玩入口。選擇你的裝置，加入測試後就能開始組隊、球探、交易與挑戰聯賽。</p>
-        <div class="play-status"><strong>瀏覽器版準備中</strong><span>完整 Godot Web build 與瀏覽器登入同步正在製作；目前先提供官方 TestFlight 與 Google Play 測試版，確保遊戲體驗穩定。</span></div>
+        <div class="play-status"><strong>Web 試玩版</strong><span>可直接在瀏覽器體驗遊戲主流程。建議使用橫向全螢幕；雲端登入與跨裝置同步正在接續整合。</span></div>
+        <figure class="game-frame"><iframe src="game/index.html" title="台籃模擬器 Web 試玩版" allow="fullscreen" loading="eager"></iframe><figcaption>載入需要幾秒鐘；手機請旋轉為橫向並點擊遊戲內畫面取得焦點。</figcaption></figure>
         <div class="play-actions">
           <a class="play-action" data-link="ios" href="https://testflight.apple.com/join/vdDt2uwZ"><small>IPHONE / IPAD</small><strong>用 TestFlight 遊玩 →</strong><span>安裝 TestFlight 後接受邀請</span></a>
           <a class="play-action" data-link="android" href="https://play.google.com/apps/testing/com.yongye.taiwanbasketballgm"><small>ANDROID</small><strong>加入 Google Play 測試 →</strong><span>先加入封閉測試群組</span></a>
