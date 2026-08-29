@@ -1,26 +1,103 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#071521" />
-  <meta name="description" content="台籃模擬器｜打造你的台灣籃球王朝，組隊、交易、球探與賽季挑戰。" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07131d">
+  <meta name="description" content="台籃模擬器｜球探、交易、編隊與戰術，打造你的台灣籃球王朝。Android 封閉測試與 iOS TestFlight 即將開放。">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_TW">
+  <meta property="og:title" content="台籃模擬器｜你的球隊，你的台籃王朝">
+  <meta property="og:description" content="從球探、交易、先發輪替到臨場戰術，親手打造跨聯盟冠軍隊伍。">
+  <meta property="og:image" content="https://eve1995927-svg.github.io/basketballtw/assets/01.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://eve1995927-svg.github.io/basketballtw/">
   <title>台籃模擬器｜台灣籃球經營遊戲</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
   <script src="site-config.js"></script>
 </head>
 <body>
-  <header class="topbar"><a class="brand" href="#top"><span class="brand-mark">🏀</span><span>台籃模擬器</span></a><a class="header-cta" data-link="android">Android 測試</a></header>
-  <main id="top">
-    <section class="hero">
-      <div class="hero-copy"><p class="eyebrow">TAIWAN BASKETBALL MANAGER</p><h1>把你心中的<br><em>台灣籃球王朝</em>帶上場</h1><p class="lead">組建先發、調整戰術、探索球員市場，從一場比賽開始打造你的冠軍隊伍。</p><div class="actions"><a class="button primary" data-link="android">加入 Android 封閉測試 <span>↗</span></a><a class="button secondary" data-link="ios">加入 iOS TestFlight <span>↗</span></a></div><p class="note">測試版免費參加｜橫式手機與平板優化</p></div>
-      <div class="hero-art"><img src="assets/01.jpg" alt="台籃模擬器遊戲畫面" /></div>
+  <a class="skip-link" href="#main">跳到主要內容</a>
+
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="台籃模擬器首頁"><span class="brand-mark">TW</span><span>台籃模擬器<small>BASKETBALL MANAGER</small></span></a>
+    <nav aria-label="主要導覽"><a href="#features">遊戲特色</a><a href="#gameplay">核心玩法</a><a href="#screens">遊戲畫面</a><a href="#guide">安裝教學</a></nav>
+    <a class="header-cta" href="#download">搶先試玩</a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">TAIWAN BASKETBALL MANAGER</p>
+        <h1 id="hero-title">你的球隊。<br><em>你的台籃王朝。</em></h1>
+        <p class="lead">從球探、交易、先發輪替到臨場戰術，親手打造一支能跨聯盟稱霸的台灣籃球隊。</p>
+        <div class="actions"><a class="button primary" href="#download">免費加入測試 <span aria-hidden="true">→</span></a><a class="button secondary" href="#gameplay">看看怎麼玩</a></div>
+        <div class="hero-proof" aria-label="遊戲重點"><span><strong>3</strong> 台灣聯盟</span><span><strong>200+</strong> 球員卡</span><span><strong>0</strong> 體力限制</span></div>
+      </div>
+      <div class="hero-stage reveal"><span class="stage-label">實際遊戲畫面</span><div class="hero-art"><img src="assets/01.jpg" alt="台籃模擬器球隊陣容與球員卡畫面"></div><div class="hero-glow" aria-hidden="true"></div></div>
     </section>
-    <section class="features"><div><span>01</span><h2>經營你的球隊</h2><p>從球員卡、先發與替補，到薪資帽與球隊加成，每個決定都會影響賽季。</p></div><div><span>02</span><h2>讀懂比賽</h2><p>在賽前看雙方陣容與戰術，選擇合適策略，讓每一場比賽都有清楚的邏輯。</p></div><div><span>03</span><h2>探索台灣籃球</h2><p>SBL、PLG、TPBL 與額外賽事，收集球員、挑戰聯盟，建立你的籃球版圖。</p></div></section>
-    <section class="gallery"><div class="section-heading"><p class="eyebrow">GAME PREVIEW</p><h2>每一場，都由你決定</h2></div><div class="gallery-grid"><img src="assets/02.jpg" alt="球隊陣容畫面" /><img src="assets/03.jpg" alt="比賽畫面" /><img src="assets/04.jpg" alt="球員卡畫面" /><img src="assets/05.jpg" alt="球探畫面" /><img src="assets/06.jpg" alt="賽季畫面" /></div></section>
-    <section class="download"><div><p class="eyebrow">JOIN THE TEST</p><h2>現在加入測試，<br>一起把台籃做得更好</h2><p>你可以回報畫面裁切、觸控、滑動、戰術與任何遊玩體驗問題。</p></div><div class="download-cards"><a class="download-card" data-link="android"><strong>Android</strong><span>Google Play 封閉測試</span><b>加入測試　↗</b></a><a class="download-card" data-link="ios"><strong>iPhone / iPad</strong><span>Apple TestFlight 測試</span><b>取得邀請　↗</b></a></div></section>
-    <section class="howto"><div class="section-heading"><p class="eyebrow">HOW TO PLAY</p><h2>三步驟開始遊玩</h2></div><div class="steps"><div><b>1</b><h3>加入測試</h3><p>選擇你的手機平台，使用相同的 Google 或 Apple 帳號加入。</p></div><div><b>2</b><h3>安裝遊戲</h3><p>Android 由 Google Play 安裝；iPhone 與 iPad 先安裝 TestFlight。</p></div><div><b>3</b><h3>回報感受</h3><p>遇到問題請提供機型、系統版本與截圖，幫助我們快速修正。</p></div></div></section>
+
+    <div class="league-strip" aria-label="支援聯盟與玩法"><div><span>SBL</span><i></i><span>PLG</span><i></i><span>TPBL</span><i></i><span>盃賽</span><i></i><span>跨聯盟挑戰</span></div></div>
+
+    <section class="section intro" id="features">
+      <div class="section-heading reveal"><p class="eyebrow">BUILD YOUR DYNASTY</p><h2>不是看比賽，<br>是決定比賽。</h2></div>
+      <p class="section-lead reveal">每一張卡、每一次輪替、每一套戰術都會改變結果。你不是旁觀者，而是球隊真正的決策者。</p>
+      <div class="feature-grid">
+        <article class="feature-card reveal"><span class="feature-number">01</span><div class="feature-icon">◈</div><h3>建立十二人名單</h3><p>安排完整先發與替補，依位置、能力與薪資帽打造最合理的陣容。</p><small>ROSTER BUILDING</small></article>
+        <article class="feature-card reveal"><span class="feature-number">02</span><div class="feature-icon">⌖</div><h3>球探與自由市場</h3><p>用球探點鎖定新戰力，在市場和交易中找到最適合球隊的拼圖。</p><small>SCOUT & MARKET</small></article>
+        <article class="feature-card reveal"><span class="feature-number">03</span><div class="feature-icon">▦</div><h3>全場戰術對決</h3><p>先看雙方站位與戰術情報，再決定攻防策略、輪替與臨場選擇。</p><small>TACTICAL MATCHUP</small></article>
+        <article class="feature-card reveal"><span class="feature-number">04</span><div class="feature-icon">♛</div><h3>跨聯盟奪冠</h3><p>挑戰 SBL、PLG、TPBL、盃賽與額外賽事，把俱樂部帶上最高舞台。</p><small>CHAMPIONSHIP ROAD</small></article>
+      </div>
+    </section>
+
+    <section class="section gameplay" id="gameplay">
+      <div class="section-heading center reveal"><p class="eyebrow">HOW YOU PLAY</p><h2>一支冠軍隊伍，從四個決定開始</h2><p>簡單上手，但每一步都有值得思考的選擇。</p></div>
+      <div class="play-flow">
+        <article class="play-row reveal"><div class="play-image"><img src="assets/02.jpg" alt="球探市場與六張隨機球員卡"></div><div class="play-copy"><span>STEP 01</span><h3>找到你的下一位核心</h3><p>每批球探名單都有不同稀有度與價格。要立刻出手，還是花黃金刷新等待更好的球員？</p><ul><li>球探購買只消耗球探點</li><li>隨機稀有度帶來收集驚喜</li><li>重複卡自動轉換成黃金</li></ul></div></article>
+        <article class="play-row reverse reveal"><div class="play-image"><img src="assets/01.jpg" alt="先發與替補球員陣容"></div><div class="play-copy"><span>STEP 02</span><h3>排出最適合的十二人</h3><p>球星很多不等於能贏。位置是否平衡、薪資是否超帽、同隊球員能否啟動加成，都要一起考慮。</p><ul><li>一鍵最佳與批次編輯</li><li>先發、替補快速調整</li><li>同隊人數啟動組合加成</li></ul></div></article>
+        <article class="play-row reveal"><div class="play-image"><img src="assets/03.jpg" alt="全場籃球場雙方先發站位與替補"></div><div class="play-copy"><span>STEP 03</span><h3>賽前讀懂對手</h3><p>雙方先發站上完整球場，對位、OVR、隊徽、戰術與替補一次看清楚，再決定要怎麼打。</p><ul><li>完整全場先發站位</li><li>敵我戰術情報比較</li><li>針對對手選擇攻防策略</li></ul></div></article>
+        <article class="play-row reverse reveal"><div class="play-image"><img src="assets/04.jpg" alt="跨聯盟賽事與盃賽列表"></div><div class="play-copy"><span>STEP 04</span><h3>寫下自己的賽季故事</h3><p>從例行賽一路打到跨聯盟盃賽。每一場戰績都會累積，系列賽結束後還有選秀和球隊建設。</p><ul><li>聯盟、盃賽與額外賽事</li><li>真實系列賽節奏</li><li>依戰績參加年度選秀</li></ul></div></article>
+      </div>
+    </section>
+
+    <section class="freedom-banner section reveal"><div><p class="eyebrow">PLAY YOUR WAY</p><h2>沒有體力。<br>想打幾場，就打幾場。</h2><p>不讓倒數計時打斷你的賽季。想調陣容、研究市場或繼續挑戰，都由你決定。</p></div><div class="freedom-stat"><strong>∞</strong><span>不限場次<br>自由遊玩</span></div></section>
+
+    <section class="section screenshots" id="screens">
+      <div class="section-heading reveal"><p class="eyebrow">IN-GAME FOOTAGE</p><h2>這就是你的球隊辦公室</h2><p>所有圖片皆為實際遊戲介面。點擊可以放大查看。</p></div>
+      <div class="shot-grid">
+        <button class="shot shot-wide reveal" data-image="assets/05.jpg" aria-label="放大查看比賽結算畫面"><img src="assets/05.jpg" alt="比賽結算與勝利畫面"><span>比賽結算</span></button>
+        <button class="shot reveal" data-image="assets/02.jpg" aria-label="放大查看球探畫面"><img src="assets/02.jpg" alt="球探市場"><span>球探市場</span></button>
+        <button class="shot reveal" data-image="assets/03.jpg" aria-label="放大查看賽前戰術畫面"><img src="assets/03.jpg" alt="賽前全場戰術"><span>賽前戰術</span></button>
+        <button class="shot reveal" data-image="assets/04.jpg" aria-label="放大查看跨聯盟賽事畫面"><img src="assets/04.jpg" alt="跨聯盟賽事"><span>跨聯盟賽事</span></button>
+        <button class="shot reveal" data-image="assets/01.jpg" aria-label="放大查看球隊陣容畫面"><img src="assets/01.jpg" alt="球隊先發替補"><span>球隊陣容</span></button>
+      </div>
+    </section>
+
+    <section class="section download" id="download">
+      <div class="download-copy reveal"><p class="eyebrow">EARLY ACCESS</p><h2>第一批玩家，<br>一起把遊戲變得更好。</h2><p>測試版免費參加。你的觸控、版面、平衡與玩法回饋，都會直接影響下一版。</p><div class="test-badges"><span>手機與平板</span><span>橫式介面</span><span>免費測試</span></div></div>
+      <div class="download-cards reveal">
+        <a class="download-card" data-link="android"><span class="platform-icon">A</span><span><small>GOOGLE PLAY</small><strong>Android 封閉測試</strong><em data-status="android">加入測試名單後即可下載</em></span><b>加入測試 →</b></a>
+        <a class="download-card" data-link="ios"><span class="platform-icon apple">●</span><span><small>APPLE TESTFLIGHT</small><strong>iPhone / iPad 測試</strong><em data-status="ios">透過 TestFlight 安全安裝</em></span><b>取得邀請 →</b></a>
+        <p class="download-note">商店測試連結啟用後，本頁按鈕會直接帶你前往官方安裝頁面。</p>
+      </div>
+    </section>
+
+    <section class="section guide" id="guide">
+      <div class="section-heading center reveal"><p class="eyebrow">INSTALL GUIDE</p><h2>第一次測試？三步就能上場</h2></div>
+      <div class="guide-grid">
+        <article class="guide-card reveal"><span class="guide-platform">ANDROID</span><h3>Google Play 封閉測試</h3><ol><li><b>加入測試群組</b><small>使用你手機上的 Google 帳號加入。</small></li><li><b>開啟測試連結</b><small>按下「成為測試人員」，等待商店啟用。</small></li><li><b>從 Play 商店安裝</b><small>如果暫時看不到，請稍候幾分鐘再重新整理。</small></li></ol><a data-link="android">前往 Android 測試 →</a></article>
+        <article class="guide-card reveal"><span class="guide-platform">IPHONE / IPAD</span><h3>Apple TestFlight</h3><ol><li><b>安裝 TestFlight</b><small>先從 App Store 免費下載 TestFlight。</small></li><li><b>點擊公開邀請</b><small>回到本頁開啟 iOS 測試連結。</small></li><li><b>接受並安裝</b><small>在 TestFlight 按「接受」和「安裝」即可。</small></li></ol><a data-link="ios">前往 iOS 測試 →</a></article>
+      </div>
+    </section>
+
+    <section class="section final-cta reveal"><p class="eyebrow">THE NEXT SEASON STARTS WITH YOU</p><h2>下一座冠軍，等你來拿。</h2><p>現在加入測試，建立你的第一支台灣籃球隊。</p><a class="button primary" href="#download">選擇測試平台 <span aria-hidden="true">↑</span></a></section>
   </main>
-  <footer><span>© 2026 台籃模擬器</span><span>測試版｜非官方聯盟授權遊戲</span></footer>
-  <script>document.querySelectorAll('[data-link]').forEach(a=>{const k=a.dataset.link; a.href=(window.GAME_LINKS&&window.GAME_LINKS[k])||'#'; if(a.href==='#')a.setAttribute('aria-disabled','true');});</script>
-</body></html>
+
+  <footer><a class="brand footer-brand" href="#top"><span class="brand-mark">TW</span><span>台籃模擬器</span></a><p>手機與平板橫式籃球經營遊戲</p><p>© 2026 台籃模擬器 · 測試版本 · 遊戲內容與數值不代表官方資料</p></footer>
+  <dialog class="lightbox" aria-label="遊戲截圖預覽"><button class="lightbox-close" aria-label="關閉圖片">×</button><img alt="放大的遊戲畫面"></dialog>
+  <script src="script.js"></script>
+</body>
+</html>
