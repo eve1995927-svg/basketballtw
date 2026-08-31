@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
@@ -70,6 +70,28 @@ body {
 	display: none;
 }
 
+#loading-legal {
+	position: absolute;
+	top: max(12px, env(safe-area-inset-top));
+	left: max(12px, env(safe-area-inset-left));
+	right: max(12px, env(safe-area-inset-right));
+	z-index: 2;
+	margin: 0;
+	padding: 8px 12px;
+	border-radius: 8px;
+	background: #07131deb;
+	color: #e5edf1;
+	font: 14px/1.6 system-ui, sans-serif;
+	text-align: center;
+}
+#loading-legal a {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	color: #efbb50;
+	text-underline-offset: 3px;
+}
+
 #status-progress {
 	bottom: 10%;
 	width: 50%;
@@ -107,6 +129,7 @@ body {
 			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
 			<progress id="status-progress"></progress>
 			<div id="status-notice"></div>
+			<p id="loading-legal">非官方體育模擬器，無聯盟或球隊官方授權。能力、薪資與賽果為遊戲設定。<br><a href="../legal.html" target="_blank" rel="noopener noreferrer">遊戲聲明與權利說明 ↗</a></p>
 		</div>
 
 		<script src="index.js"></script>
