@@ -238,6 +238,15 @@ const GOLD := Color("f5c451")
 const PANEL_LINE := Color("2b5268")
 const PURPLE := Color("c45cff")
 const DIAMOND := Color("d6f4ff")
+# Skill balance guardrails. These are efficiency units used by the simulator,
+# not direct score or win guarantees: one normal card is kept below roughly
+# six win-rate percentage points, while a full lineup is capped at about 12.
+const SKILL_INDIVIDUAL_OFFENSE_CAP := 0.60
+const SKILL_INDIVIDUAL_DEFENSE_CAP := 0.60
+const SKILL_INDIVIDUAL_Q4_CAP := 0.75
+const SKILL_TEAM_OFFENSE_CAP := 0.72
+const SKILL_TEAM_DEFENSE_CAP := 0.72
+const SKILL_TEAM_Q4_CAP := 0.90
 const WEB_NEWS_PATH := "user://taiwan_basketball_webnews.json"
 const WEB_NEWS_RSS := "https://news.google.com/rss/search?q=SBL+OR+PLG+OR+TPBL+OR+%E5%8F%B0%E7%81%A3%E7%B1%83%E7%90%83&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
 const LINE_QR_PATH := "res://assets/ui/line_community_qr.jpg"
@@ -8543,7 +8552,7 @@ func guide_topic_body(topic: String) -> String:
 		"build":
 			return "幫俱樂部取名後，從 SBL 公開名單選一位頭號球星當招牌。其餘先發會自動補位。隊名用官方名稱，球員能力是公開賽事數據原型，不是真實合約。"
 		"cards":
-			return "卡框顏色跟 OVR 走：青 65–70、綠 71–75、藍 76–80、紅 81–85、紫 86–90。特訓漲 OVR 會換卡色，年薪也會重抓。金卡不看 OVR，只給黃金世代老將，一隊限 1 人。鑽卡是額外比賽冠軍或推薦滿人拿到的特殊卡，不能交易、不能刪除。同一人只能有一張（名單或保管箱）。任何管道取得已擁有的人都算重複卡，不進第二張，依卡色換成黃金：青 10、綠 15、藍 25、紅 40、紫 70、金 100、鑽石 120；跳出小視窗通知，原卡與訓練保留。沒有三張隨便合成養超模這條路。"
+			return "卡框顏色跟 OVR 走：青 65–70、綠 71–75、藍 76–80、紅 81–85、紫 86–90。特訓漲 OVR 會換卡色，年薪也會重抓。一般卡技能必須特訓 +5 才會在比賽生效，未解鎖仍會顯示技能說明。金卡不看 OVR，只給黃金世代老將，一隊限 1 人。鑽卡是額外比賽冠軍或推薦滿人拿到的特殊卡，不能交易、不能刪除。同一人只能有一張（名單或保管箱）。任何管道取得已擁有的人都算重複卡，不進第二張，依卡色換成黃金：青 10、綠 15、藍 25、紅 40、紫 70、金 100、鑽石 120；跳出小視窗通知，原卡與訓練保留。沒有三張隨便合成養超模這條路。"
 		"lineup":
 			return "先發五人：後場三人（PG／SG／SF）、前場兩人（PF／C）。同區換位置不算錯。放錯前後場時，先發五人各 -10 OVR，卡片上會立刻變成扣完的數字。SF 可以頂前場，但該位只 -5。點編隊裡兩張卡即可互換。名單不會從保管箱自動補回；登錄 7–12 人都能開打，名單越接近 12 人，輪替劣勢越小；12 人不扣輪替優勢。這不是直接扣除固定勝率。球員可以連續出賽，不需要等待恢復。"
 		"season":
@@ -8565,7 +8574,7 @@ func guide_topic_body(topic: String) -> String:
 		"league":
 			return "SBL：外援 1 人、薪資帽 3000 萬。PLG：外援 3 人、帽 8000 萬。TPBL：外援註冊 4、場上 2，帽 8000 萬。外籍生三聯盟都最多 2、不佔洋將。職業前二才能買額外比賽通行證。"
 		"match":
-			return "雙方使用相同的回合模擬規則，投籃、失誤與進攻籃板共同形成比分，沒有固定分數區間。四節平手會進入延長賽，直到分出勝負。技能只由當節上場球員觸發；半場落後時可調整一次攻防戰術。系列賽對手輸球後可能調整防守，可在賽前查看。勝負看陣容、輪替、戰術對位與技能，也保留比賽的不確定性。"
+			return "雙方使用相同的回合模擬規則，投籃、失誤與進攻籃板共同形成比分，沒有固定分數區間。四節平手會進入延長賽，直到分出勝負。技能只由當節上場且已解鎖的球員觸發；一般卡須特訓 +5，紫卡、黃金卡與鑽石卡維持原規則。單張技能效果約控制在最多 6 個勝率百分點，全隊技能合計約最多 12 個百分點，不會取代 OVR。半場落後時可調整一次攻防戰術。系列賽對手輸球後可能調整防守，可在賽前查看。勝負看陣容、輪替、戰術對位與技能，也保留比賽的不確定性。"
 		"gold":
 			return "資金用於簽約費、交易費與養成特訓（每次 20 萬＋1 特訓點，不使用黃金）。黃金用於商店卡包（80 黃金）與球探更換下一批（20 黃金）。球探點只用於購買球探卡片。薪資是名單已用年薪／上限，不是資金；簽約同時檢查資金和薪資帽。點上方資源即可查看明細或前往對應功能。"
 		"share":
@@ -12519,9 +12528,9 @@ func skill_event_for(player: Dictionary, quarter: int, matchup_bonus: float, att
 		return {}
 	var profile: Dictionary = skill_profile(skill_id)
 	var effect := {
-		"offense": float(profile.get("offense", 0.0)) * 0.72,
-		"defense": float(profile.get("defense", 0.0)) * 0.72,
-		"q4": float(profile.get("q4", 0.0)) * (1.15 if quarter == 4 else 0.35),
+		"offense": clampf(float(profile.get("offense", 0.0)) * 0.72, -SKILL_INDIVIDUAL_OFFENSE_CAP, SKILL_INDIVIDUAL_OFFENSE_CAP),
+		"defense": clampf(float(profile.get("defense", 0.0)) * 0.72, -SKILL_INDIVIDUAL_DEFENSE_CAP, SKILL_INDIVIDUAL_DEFENSE_CAP),
+		"q4": clampf(float(profile.get("q4", 0.0)) * (1.15 if quarter == 4 else 0.35), -SKILL_INDIVIDUAL_Q4_CAP, SKILL_INDIVIDUAL_Q4_CAP),
 		"chemistry": float(profile.get("chemistry", 0.0)) * 0.25,
 		"name": str(profile.get("name", "即戰力")),
 		"player": str(player.get("name", "球員")),
@@ -14948,6 +14957,10 @@ func lineup_skill_profile(players: Array, attack_tactic: String, defense_tactic:
 			result.offense += 0.08
 		if defense_tactic == "全場壓迫" and skill in ["lockdown", "hustle", "transition"]:
 			result.defense += 0.08
+	# Prevent stacking five strong skills from overwhelming OVR and tactics.
+	result.offense = clampf(result.offense, -SKILL_TEAM_OFFENSE_CAP, SKILL_TEAM_OFFENSE_CAP)
+	result.defense = clampf(result.defense, -SKILL_TEAM_DEFENSE_CAP, SKILL_TEAM_DEFENSE_CAP)
+	result.q4 = clampf(result.q4, -SKILL_TEAM_Q4_CAP, SKILL_TEAM_Q4_CAP)
 	return result
 
 func opponent_match_profile(opponent: Dictionary, q: int) -> Dictionary:
