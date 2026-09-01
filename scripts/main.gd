@@ -1373,7 +1373,13 @@ func listed_position_from_data(player: Dictionary) -> String:
 
 func position_data_missing(player: Dictionary) -> bool:
 	var profile := golden_generation_profile(player)
-	return not profile.is_empty() and listed_position_from_data(player).is_empty() and not NATURAL_DUAL.has(str(player.get("name", ""))) and str(profile.get("position", profile.get("pos", ""))).is_empty()
+	if profile.is_empty():
+		return false
+	# Validate the source card before any veteran-profile migration fills the
+	# curated position.  This keeps incomplete imports visible to the audit/UI
+	# while cards created through to_game_player still use the corrected profile.
+	var source_position := str(player.get("position", player.get("pos", ""))).strip_edges()
+	return source_position.is_empty()
 
 func player_pos_list(player: Dictionary) -> PackedStringArray:
 	var who := str(player.get("name", ""))
