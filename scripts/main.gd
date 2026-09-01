@@ -12956,7 +12956,7 @@ func show_post_match() -> void:
 	_settling_match = settling
 	if settling:
 		resolve_prediction(won)
-	if not extra_just:
+	if settling and not extra_just:
 		record_match_appearances()
 	if match_rewards_pending and extra_just:
 		finish_extra_match(won)
