@@ -1358,6 +1358,14 @@ func listed_position_from_data(player: Dictionary) -> String:
 	var who := str(player.get("name", ""))
 	if who.is_empty():
 		return ""
+	# Curated golden-generation profiles are authoritative.  Public roster
+	# imports can contain an outdated single-position label and must not
+	# overwrite a corrected veteran position later in the conversion pipeline.
+	var veteran_profile := golden_generation_profile(player)
+	if not veteran_profile.is_empty():
+		var curated := normalize_pos_code(str(veteran_profile.get("position", veteran_profile.get("pos", ""))))
+		if not curated.is_empty():
+			return curated
 	for raw in public_players:
 		if str(raw.get("name", "")) == who:
 			var listed := normalize_pos_code(str(raw.get("position", raw.get("pos", ""))))

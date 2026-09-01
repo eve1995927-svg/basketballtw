@@ -66,6 +66,8 @@ func test_veteran_and_training_rules() -> void:
 	check(guard.get("pos", "") == "PG", "李學林 uses curated PG position")
 	var retired: Dictionary = game.to_game_player({"name":"呂政儒", "ovr":74, "origin_team_id":"sbl_yulon"})
 	check(retired.get("pos", "") == "SF" and retired.get("golden_generation", false), "呂政儒 is a retired SF golden veteran")
+	var imported_retired: Dictionary = game.to_game_player({"name":"呂政儒", "position":"SG/SF", "ovr":74, "origin_team_id":"kings"})
+	check(imported_retired.get("pos", "") == "SF", "curated veteran position overrides stale public roster position")
 	var p: Dictionary = game.team_players[0]
 	p["match_appearances"] = 2
 	game.team_players[0] = p
