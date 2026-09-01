@@ -54,6 +54,8 @@ declare
   next_training integer;
   result jsonb;
 begin
+  -- Client calls may only spend balances. Grants are issued by a future
+  -- owner-scoped Edge Function after validating a match, mission or receipt.
   if uid is null then raise exception 'LOGIN_REQUIRED' using errcode = '28000'; end if;
   if p_request_id is null or p_action is null or p_action !~ '^[a-z0-9_]{2,40}$' then
     raise exception 'INVALID_ECONOMY_REQUEST';
@@ -61,6 +63,12 @@ begin
   if abs(coalesce(p_delta_budget,0)) > 1000000 or abs(coalesce(p_delta_gold,0)) > 1000000
      or abs(coalesce(p_delta_scout,0)) > 1000000 or abs(coalesce(p_delta_training,0)) > 100000 then
     raise exception 'ECONOMY_DELTA_TOO_LARGE';
+  end if;
+  if auth.role() <> 'service_role' and (
+      p_action not in ('sign_player','trade_fee','scout_purchase','scout_refresh','training')
+      or p_delta_budget > 0 or p_delta_gold > 0 or p_delta_scout > 0 or p_delta_training > 0
+    ) then
+    raise exception 'CLIENT_REWARD_FORBIDDEN';
   end if;
   perform pg_advisory_xact_lock(hashtextextended(uid::text || ':economy', 0));
   select * into prior from tb_economy_private.ledger where owner_id = uid and request_id = p_request_id;

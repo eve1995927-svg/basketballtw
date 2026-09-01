@@ -2,7 +2,7 @@
 
 ## 已落地
 
-1. **伺服器經濟帳本**：`supabase/security_economy.sql` 建立 `godot_economy_accounts` 與私有 ledger。新 RPC `public.godot_economy_apply` 使用登入者身分、資料庫鎖與 `request_id` 冪等處理，資金、黃金、球探點、特訓點不會因重送請求重複扣除或發放。
+1. **伺服器經濟帳本**：`supabase/security_economy.sql` 建立 `godot_economy_accounts` 與私有 ledger。新 RPC `public.godot_economy_apply` 使用登入者身分、資料庫鎖與 `request_id` 冪等處理；客戶端目前只能提出簽約、交易、球探、訓練等扣款，不能自行發放資源。
 2. **RLS 與權限邊界**：資源帳戶只能由本人讀取，寫入只能透過 RPC；ledger 與未來收據表對客戶端完全關閉。不要把 service role key 放入 Godot、APK、iOS 或網站。
 3. **付費驗證資料層**：建立私有 `verified_purchases`，只接受伺服器驗證後的 Apple／Google 交易；正式商城仍需 Edge Function 串 Apple／Google 收據驗證後才發貨。
 4. **遠端版本開關**：`godot_release_config` 可設定各平台最低版本、維護狀態與公告。客戶端下一版應在進入主畫面前讀取此表。
