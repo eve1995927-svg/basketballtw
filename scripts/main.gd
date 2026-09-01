@@ -365,6 +365,7 @@ var match_rewards_pending := false
 var match_play_id := 0
 var notice_node: Control
 var training_modal: Control
+var training_server_pending := {}
 var guide_modal: Control
 var _tex_cache: Dictionary = {}
 var _tex_miss: Dictionary = {}
@@ -11808,13 +11809,13 @@ func training_row(index: int, player: Dictionary) -> PanelContainer:
 	line.add_child(train)
 	return row
 
-func apply_player_training(index: int, reopen_modal := true) -> void:
+func apply_player_training(index: int, reopen_modal := true, force_local := false) -> void:
 	if index < 0 or index >= team_players.size():
 		return
-	if training_points < 1:
+	if not force_local and training_points < 1:
 		flash_notice("特訓點不足：贏一場才會拿到 1 點")
 		return
-	if budget_million < 20:
+	if not force_local and budget_million < 20:
 		flash_notice("資金不足：本次養成需 $20 萬，目前 $%d 萬。" % budget_million)
 		return
 	var player: Dictionary = team_players[index]
@@ -11828,8 +11829,22 @@ func apply_player_training(index: int, reopen_modal := true) -> void:
 	if roster_salary() - int(player.get("salary_million", 0)) + new_salary > salary_cap:
 		flash_notice("養成後年薪 $%d 萬會超過薪資帽，請先調整名單；尚未扣點或資金。" % new_salary)
 		return
-	training_points -= 1
-	budget_million -= 20
+	if not force_local and not auth_access.is_empty() and not auth_user_id.is_empty():
+		if not training_server_pending.is_empty():
+			flash_notice("上一筆特訓正在確認，請稍候。")
+			return
+		var request_id: String = RankedRules.request_id()
+		training_server_pending = {"request_id":request_id,"index":index,"reopen":reopen_modal}
+		var body := JSON.stringify({"p_action":"training","p_request_id":request_id,"p_delta_budget":-20,"p_delta_training":-1})
+		cloud_send("economy_training", "%s/rest/v1/rpc/godot_economy_apply" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, body)
+		flash_notice("正在確認特訓資源…")
+		return
+	if force_local:
+		# Server response already supplied authoritative balances.
+		pass
+	else:
+		training_points -= 1
+		budget_million -= 20
 	player["ovr"] = mini(90, int(player.get("ovr", 70)) + 1)
 	player["training_sessions"] = int(player.get("training_sessions", 0)) + 1
 	player["salary_million"] = published_salary(player)
@@ -14027,6 +14042,19 @@ func auth_error_message(code: int, payload: String, sending := false) -> String:
 	return "驗證信未寄出，請確認信箱或稍後再試。" if sending else "驗證碼無效或已過期，請確認信件中的完整驗證碼。"
 
 func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
+	if kind == "economy_training":
+		var pending := training_server_pending.duplicate(true)
+		training_server_pending.clear()
+		var parsed = JSON.parse_string(payload)
+		if code < 200 or code >= 300 or not (parsed is Dictionary) or not bool(parsed.get("ok",false)):
+			flash_notice("特訓未完成：伺服器未確認資源，本機未扣除。")
+			return
+		var balance = parsed.get("balance",{})
+		if balance is Dictionary:
+			budget_million = int(balance.get("budget_million", budget_million))
+			training_points = int(balance.get("training_points", training_points))
+		apply_player_training(int(pending.get("index",-1)), bool(pending.get("reopen",true)), true)
+		return
 	if kind.begins_with("sync_save_"):
 		CloudSync.complete(self,kind,code,payload)
 		return
