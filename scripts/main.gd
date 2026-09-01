@@ -3543,6 +3543,13 @@ func player_tier_key(player: Dictionary) -> String:
 func player_frame_color(player: Dictionary) -> Color:
 	return tier_color(player_tier_key(player))
 
+func player_skill_unlocked(player: Dictionary) -> bool:
+	# 紫卡、黃金卡與鑽石卡保留原有技能規則；一般卡必須完成特訓 +5。
+	var tier := player_tier_key(player)
+	if tier in ["purple", "gold", "diamond"]:
+		return true
+	return int(player.get("training_sessions", 0)) >= TRAINING_MAX_SESSIONS
+
 func ovr_frame_color(ovr: int) -> Color:
 	return tier_color(ovr_tier_key(ovr))
 
@@ -12455,7 +12462,8 @@ func team_skill_summary() -> String:
 		var skill_id := str(player.get("skill_id", ""))
 		if not skill_id.is_empty():
 			var profile: Dictionary = skill_profile(skill_id)
-			names.append("%s · %s" % [player.get("name", "球員"), profile.get("name", "即戰力")])
+			var suffix := "" if player_skill_unlocked(player) else "（特訓 +5 解鎖）"
+			names.append("%s · %s%s" % [player.get("name", "球員"), profile.get("name", "即戰力"), suffix])
 	if names.is_empty():
 		return "目前陣容尚未解鎖特殊技能"
 	return "\n".join(names.slice(0, 5))
@@ -12503,6 +12511,8 @@ func trigger_skill_event(player: Dictionary, quarter: int, matchup_bonus: float)
 	return skill_event_for(player, quarter, matchup_bonus, selected_tactic, selected_defense)
 
 func skill_event_for(player: Dictionary, quarter: int, matchup_bonus: float, attack: String, defense: String) -> Dictionary:
+	if not player_skill_unlocked(player):
+		return {}
 	var skill_id := str(player.get("skill_id", ""))
 	var probability := skill_probability_for(player, quarter, matchup_bonus, attack, defense)
 	if randf() > probability:
@@ -14926,6 +14936,8 @@ func active_match_players(q: int) -> Array:
 func lineup_skill_profile(players: Array, attack_tactic: String, defense_tactic: String) -> Dictionary:
 	var result := {"offense":0.0, "defense":0.0, "q4":0.0, "chemistry":0.0, "names":[]}
 	for player in players:
+		if not player_skill_unlocked(player):
+			continue
 		var skill := str(player.get("skill_id", ""))
 		var profile := skill_profile(skill)
 		for key in ["offense", "defense", "q4", "chemistry"]:
