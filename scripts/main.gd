@@ -2003,6 +2003,21 @@ func last5_text(row: Dictionary) -> String:
 func gameday_n() -> int:
 	return mini(team_players.size(), gameday_limit())
 
+func can_field_five() -> bool:
+	var local_count := 0
+	var foreign_count := 0
+	for i in gameday_n():
+		if is_foreigner(team_players[i]):
+			foreign_count += 1
+		else:
+			local_count += 1
+	return local_count + mini(foreign_count, foreigner_oncourt_limit()) >= 5
+
+func gameday_roster_warning() -> String:
+	if can_field_five():
+		return ""
+	return "%s 場上外援限制下，可用球員不足 5 人；請至少保留更多本土球員。" % current_league
+
 func gameday_unit(preferred: Array, fill: Array) -> Array:
 	var unit: Array = []
 	var foreign_count := 0
@@ -9184,6 +9199,10 @@ func start_extra_match() -> void:
 		flash_notice("至少保留 7 人才能開打，目前只有 %d 人。" % team_players.size())
 		show_roster()
 		return
+	if not can_field_five():
+		flash_notice(gameday_roster_warning())
+		show_roster()
+		return
 	if over_salary_cap():
 		flash_notice("已超薪資帽，先去編隊才能開打。")
 		show_roster()
@@ -12302,6 +12321,8 @@ func show_match_prep() -> void:
 	board_box.add_child(plain_label(home_court_line(), 12, GREEN if is_home_game else MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
 	if team_players.size() < minimum_roster_to_play():
 		board_box.add_child(callout("人數不足", "%s；保管箱不會自動補回球員。" % roster_availability_line(), RED))
+	elif not can_field_five():
+		board_box.add_child(callout("外援限制", gameday_roster_warning(), RED))
 	elif over_salary_cap():
 		board_box.add_child(callout("超帽", "已超薪資帽，先去編隊調整名單才能開打。", RED))
 	else:
@@ -12313,7 +12334,7 @@ func show_match_prep() -> void:
 		board_box.add_child(tonight_matchup_panel(opponent))
 	var play := play_start_button(func(): try_start_match(), Vector2(0, 48))
 	play.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	play.disabled = team_players.size() < minimum_roster_to_play() or over_salary_cap()
+	play.disabled = team_players.size() < minimum_roster_to_play() or not can_field_five() or over_salary_cap()
 	board_box.add_child(play)
 	board_box.add_child(hub_tile("今晚打法", "對方攻%s　守%s" % [opp_off, opp_def], "點進去改戰術相剋", ORANGE, func(): open_sub(show_match_prep, show_tactics), {}, true))
 	board_box.add_child(hub_tile("換人", "先發、替補在編隊互換", "點兩張卡對調", CYAN, func(): open_sub(show_match_prep, show_roster), {}, true))
@@ -12343,9 +12364,12 @@ func show_phone_match_prep(opponent: Dictionary, extra := false) -> void:
 	var mine: Array = team_players.slice(0, mini(5, team_players.size()))
 	var theirs := opponent_starting_five(opponent)
 	content.add_child(phone_match_court(opponent, mine, theirs, style))
-	var blocked := team_players.size() < minimum_roster_to_play() or over_salary_cap()
+	var blocked := team_players.size() < minimum_roster_to_play() or not can_field_five() or over_salary_cap()
 	if blocked:
-		content.add_child(wrap_label("至少需要 7 名球員，且登錄薪資不得超帽。請先調整陣容。", 14, ORANGE))
+		var reason := "至少需要 7 名球員，且登錄薪資不得超帽。請先調整陣容。"
+		if not can_field_five():
+			reason = gameday_roster_warning()
+		content.add_child(wrap_label(reason, 14, ORANGE))
 	var actions := HBoxContainer.new()
 	actions.add_theme_constant_override("separation", 10)
 	if not extra and not playoff_state.is_empty():
@@ -12512,6 +12536,10 @@ func _try_start_match_now() -> void:
 		return
 	if team_players.size() < minimum_roster_to_play():
 		flash_notice("至少保留 7 人才能開打，目前只有 %d 人。" % team_players.size())
+		show_roster()
+		return
+	if not can_field_five():
+		flash_notice(gameday_roster_warning())
 		show_roster()
 		return
 	if over_salary_cap():
