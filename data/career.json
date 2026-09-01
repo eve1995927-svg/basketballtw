@@ -1,0 +1,104 @@
+{
+  "disclaimer": "非官方體育模擬器，無聯盟或球隊官方授權；能力與薪資為遊戲設定。",
+  "regular_games": 20,
+  "playoff_wins_needed": 5,
+  "iap_twd": 100,
+  "free_save_slots": 2,
+  "salary_cap": 3000,
+  "starter_gold": 100,
+  "starter_scout_points": 20,
+  "starter_budget_million": 300,
+  "match_budget_win_million": 100,
+  "match_budget_loss_million": 50,
+  "golden_generation": [
+    {"name": "陳信安", "ovr": 82, "salary_million": 800, "blurb": "台灣飛人 · 旅外先驅 · 甲組時代招牌"},
+    {"name": "田壘", "position": "PF", "ovr": 81, "salary_million": 750, "blurb": "少俠 · SBL 指標長人 · 2013 亞錦賽擊敗中國"},
+    {"name": "林志傑", "ovr": 80, "salary_million": 1000, "blurb": "野獸 · CBA 最成功台將 · 2025-26 公開行情約 1000 萬"},
+    {"name": "戴維斯", "ovr": 79, "salary_million": 600, "blurb": "Q · 中華隊首位歸化 · 2013 亞錦賽四強禁區支柱"},
+    {"name": "曾文鼎", "ovr": 78, "salary_million": 520, "blurb": "大房東 · 再興雙塔 · CBA 與國家隊禁區核心"},
+    {"name": "周儀翔", "ovr": 77, "salary_million": 850, "blurb": "CBA 返台世代 · 黃金世代傳承賽代表"},
+    {"name": "蔡文誠", "ovr": 76, "salary_million": 480, "blurb": "本土洋將 · 八座冠軍 · 兩度 FMVP · 富邦隊長"},
+    {"name": "楊敬敏", "ovr": 76, "salary_million": 450, "blurb": "阿美族戰士 · 與林志傑組成台啤得分雙劍"},
+    {"name": "李學林", "position": "PG", "ovr": 75, "salary_million": 420, "blurb": "CBA 後場 · 黃金世代組織核心"},
+    {"name": "吳岱豪", "ovr": 74, "salary_million": 380, "blurb": "再興雙塔 · 2001 大換血最年輕國手之一"},
+    {"name": "呂政儒", "position": "SF", "retired": true, "ovr": 74, "salary_million": 360, "blurb": "男模射手 · 黃金世代老將 · 國家隊外線火力"},
+    {"name": "陳世念", "ovr": 73, "salary_million": 350, "blurb": "黃金世代控衛 · 傳承賽常客"},
+    {"name": "簡浩", "ovr": 73, "salary_million": 340, "blurb": "混血射手 · 黃金世代側翼"},
+    {"name": "周士淵", "ovr": 72, "salary_million": 320, "blurb": "黃金世代側翼 · 裕隆資深戰力"},
+    {"name": "洪志善", "ovr": 71, "salary_million": 300, "blurb": "黃金世代後場 · 年薪地板 300 萬"},
+    {"name": "吳永仁", "ovr": 70, "salary_million": 300, "blurb": "黃金世代後衛 · 後轉教練"}
+  ],
+  "coaches": [
+    {"id": "sbl_rookie", "name": "基礎組織教練", "cost_salary": 0, "cost_gold": 0, "need": "SBL", "offense": 0.04, "defense": 0.02, "blurb": "半場傳導較穩，適合 SBL 開季練球。"},
+    {"id": "sbl_press", "name": "壓迫防守教練", "cost_salary": 90, "cost_gold": 50, "need": "SBL", "offense": 0.0, "defense": 0.12, "blurb": "抄截與轉換變多，適合喜歡上壓的球隊。"},
+    {"id": "plg_pace", "name": "轉換節奏教練", "cost_salary": 140, "cost_gold": 90, "need": "PLG", "offense": 0.14, "defense": -0.02, "blurb": "快攻回合增加，對區域聯防特別有感。"},
+    {"id": "tpbl_zone", "name": "區域聯防教練", "cost_salary": 140, "cost_gold": 90, "need": "TPBL", "offense": 0.02, "defense": 0.14, "blurb": "收縮禁區，對手內線會被罰，外線空檔要自己認。"}
+  ],
+  "tactics": {
+    "offense": [
+      {"id": "快節奏轉換", "unlock": "start", "how": "轉換進攻：守下球立刻推，在對手落位前打 2 打 1。快攻與早攻三分變多。", "vs": "剋區域／二三區域（回防慢）；怕全場壓迫（過半場被抄）。"},
+      {"id": "擋拆進攻", "unlock": "wins:2", "how": "高位擋拆：控衛持球、中鋒上提掩護，讀換防或不換，製造錯位。", "vs": "剋人盯人；怕區域與沉退（沒人可擋、中鋒被放空）。"},
+      {"id": "半場傳導", "unlock": "wins:4", "how": "球過半場後傳導找空檔，減少硬解。助攻球變多，節奏較慢。", "vs": "剋沉退／弱側協防（外線空檔）；怕全場壓迫與包夾。"},
+      {"id": "牛角進攻", "unlock": "wins:6", "how": "雙高位（Horns）落位，兩邊大個子提上，後衛走中路或底線反跑。", "vs": "剋人盯人空切；怕換防盯人把錯位收掉。"},
+      {"id": "三角進攻", "unlock": "wins:8", "how": "一側三角、另一側雙人，用傳切與低位讀防守。節奏慢、空檔準。", "vs": "剋弱側協防；怕換防與包夾切斷傳球。"},
+      {"id": "普林斯頓", "unlock": "games:10", "how": "高位傳遞、背切與假擋，用耐心換後門上籃。", "vs": "剋人盯人背切；怕沉退與二三區域堵禁區。"},
+      {"id": "西班牙擋拆", "unlock": "league:PLG", "how": "擋拆後再加一個背掩護（Spain PnR），防守容易對不上人。", "vs": "剋人盯人與換防混亂；怕沉退放掉中鋒後的外線選擇。"},
+      {"id": "手遞手空切", "unlock": "league:TPBL", "how": "側翼手遞手（DHO）後空切或投三分，適合側翼輪轉。", "vs": "剋過貼的人盯人；怕換防盯人與包夾持球。"},
+      {"id": "隔離單打", "unlock": "champion:SBL", "how": "清開一側讓持球者一打一。球星爆發力高，隊友參與低。", "vs": "剋沉退（一打一空間）；怕包夾、弱側協防與換防。"},
+      {"id": "電梯門戰術", "unlock": "top2:pro", "how": "兩人同時掩護夾出射手（Elevator doors），專門砸外線。", "vs": "剋區域與沉退；怕換防盯人直接跟上射手。"}
+    ],
+    "defense": [
+      {"id": "人盯人", "unlock": "start", "how": "一人看一人，輪轉補位。最基本的對位防守。", "vs": "剋半場傳導與普林斯頓的傳球線；怕擋拆與牛角錯位。"},
+      {"id": "區域聯防", "unlock": "wins:3", "how": "守區域不守人，收縮禁區。內線得分↓，底角三分空檔↑。", "vs": "剋擋拆（沒人可擋）；怕快節奏轉換與電梯門外線。"},
+      {"id": "全場壓迫", "unlock": "wins:5", "how": "過半場前上壓，逼失誤打轉換。", "vs": "剋半場傳導、三角、普林斯頓；怕快節奏轉換被打穿。"},
+      {"id": "沉退聯防", "unlock": "wins:7", "how": "內縮保護禁區（pack line），放外圍空檔。", "vs": "剋擋拆突破與普林斯頓上籃；怕半場傳導與電梯門三分。"},
+      {"id": "二三區域", "unlock": "games:8", "how": "2-3 區域：兩人在上、三人在底線，保護籃下與底角。", "vs": "剋擋拆與隔離單打打禁區；怕快攻與高位傳導。"},
+      {"id": "三二區域", "unlock": "league:PLG", "how": "3-2 區域：三人在上干擾外線，兩人護籃。", "vs": "剋外線手遞手；怕低位與牛角中路。"},
+      {"id": "一三一區域", "unlock": "league:TPBL", "how": "1-3-1 區域：抄傳球線、放底線。適合製造失誤。", "vs": "剋半場傳導；怕底線空切與電梯門。"},
+      {"id": "換防盯人", "unlock": "champion:SBL", "how": "擋拆全部換防（switch everything），不讓錯位出現。", "vs": "剋擋拆、西班牙擋拆、電梯門；怕隔離單打打大打小。"},
+      {"id": "包夾持球", "unlock": "wins:10", "how": "對持球者兩人包夾，逼出弱側傳球再抄。", "vs": "剋隔離單打與組織後衛；怕半場傳導多一次傳球。"},
+      {"id": "弱側協防", "unlock": "top2:pro", "how": "強側盯人、弱側幫忙（help and recover）。", "vs": "剋隔離單打；怕三角與半場傳導把協防罰成空檔。"}
+    ]
+  },
+  "combos": [
+    {"origin": "fubon", "need": 5, "label": "勇士", "edge": 0.18, "chem": 3},
+    {"origin": "pilots", "need": 5, "label": "領航猿", "edge": 0.16, "chem": 3},
+    {"origin": "ghosthawks", "need": 5, "label": "獵鷹", "edge": 0.16, "chem": 3},
+    {"origin": "yankey", "need": 5, "label": "洋基", "edge": 0.16, "chem": 3},
+    {"origin": "dreamers", "need": 5, "label": "夢想家", "edge": 0.16, "chem": 3},
+    {"origin": "lioneers", "need": 5, "label": "攻城獅", "edge": 0.16, "chem": 3},
+    {"origin": "kings", "need": 5, "label": "國王", "edge": 0.16, "chem": 3},
+    {"origin": "dea", "need": 5, "label": "特攻", "edge": 0.16, "chem": 3},
+    {"origin": "aquas", "need": 5, "label": "海神", "edge": 0.16, "chem": 3},
+    {"origin": "mars", "need": 5, "label": "戰神", "edge": 0.16, "chem": 3},
+    {"origin": "leopards", "need": 5, "label": "雲豹", "edge": 0.16, "chem": 3},
+    {"origin": "sbl_yulon", "need": 5, "label": "裕隆", "edge": 0.2, "chem": 4},
+    {"origin": "sbl_beer", "need": 5, "label": "台啤", "edge": 0.2, "chem": 4},
+    {"origin": "sbl_bank", "need": 5, "label": "台銀", "edge": 0.2, "chem": 4},
+    {"origin": "sbl_kites", "need": 5, "label": "黑鳶", "edge": 0.18, "chem": 3},
+    {"origin": "sbl_pure", "need": 5, "label": "柏力力", "edge": 0.18, "chem": 3}
+  ],
+  "national_events": [
+    {
+      "id": "jones_white",
+      "label": "2024 瓊斯盃中華白",
+      "unlock": "start",
+      "blurb": "教學屆：先從中華白練組合。擁有名單上幾人，就有幾人的隊伍加成。",
+      "names": ["陳又瑋", "游艾喆", "關達祐", "林彥廷", "張家禾", "王律翔", "藍少甫", "王晟霖", "江均", "宋昕澔", "陳力生", "吳志鍇"]
+    },
+    {
+      "id": "jones_blue",
+      "label": "2024 瓊斯盃中華藍",
+      "unlock": "win:jones_white",
+      "blurb": "贏中華白後解鎖。海外與歸化球星較難蒐集。",
+      "names": ["陳盈駿", "林庭謙", "劉錚", "馬建豪", "高錦瑋", "林秉聖", "林信寬", "曾祥鈞", "陳冠全", "賀丹", "賀博", "吉爾貝克"]
+    },
+    {
+      "id": "asia_cup",
+      "label": "2025 亞洲盃吉達",
+      "unlock": "win:jones_blue",
+      "blurb": "贏中華藍後解鎖。12 人完整名單，組合 1.5 倍。",
+      "names": ["陳盈駿", "林庭謙", "高錦瑋", "阿巴西", "賀博", "劉錚", "賀丹", "馬建豪", "胡瓏貿", "曾祥鈞", "吉爾貝克", "陳冠全"]
+    }
+  ]
+}

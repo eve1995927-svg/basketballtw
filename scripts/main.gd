@@ -100,7 +100,8 @@ const ECONOMY_COMPENSATION := 1000
 const STARTING_BUDGET_MILLION := 300
 const STARTING_GOLD := 100
 const STARTING_SCOUT_POINTS := 20
-const STARTING_TRAINING_POINTS := 2
+const STARTING_TRAINING_POINTS := 0
+const TRAINING_MAX_SESSIONS := 5
 const STARTING_SALARY_CAP := 3000
 const UI_TOP_BAR_HEIGHT_PHONE := 44
 const UI_TOP_BAR_HEIGHT_DESKTOP := 56
@@ -1985,6 +1986,21 @@ func roll_match_rotation() -> void:
 					break
 	last_match_oncourt.append(q4)
 
+func record_match_appearances() -> void:
+	# A player earns an appearance once per completed game, even if they rotate
+	# through multiple quarters. This is the gate for player development.
+	var played: Dictionary = {}
+	for unit in last_match_oncourt:
+		if unit is Array:
+			for raw_index in unit:
+				var player_index := int(raw_index)
+				if player_index >= 0 and player_index < team_players.size():
+					played[player_index] = true
+	for player_index in played.keys():
+		var player: Dictionary = team_players[int(player_index)]
+		player["match_appearances"] = int(player.get("match_appearances", 0)) + 1
+		team_players[int(player_index)] = player
+
 func match_minutes_from_rotation() -> PackedInt32Array:
 	var n := gameday_n()
 	var mins := PackedInt32Array()
@@ -2583,6 +2599,14 @@ func apply_veteran_card(player: Dictionary) -> Dictionary:
 	if profile.is_empty():
 		return player
 	player["golden_generation"] = true
+	# Veteran cards use the curated historical position, even when a public
+	# roster entry has an incomplete or outdated position.
+	var veteran_pos := str(profile.get("position", ""))
+	if not veteran_pos.is_empty():
+		player["position"] = veteran_pos
+		player["pos"] = veteran_pos
+	if bool(profile.get("retired", false)):
+		player["retired"] = true
 	player["skill_id"] = "veteran_leadership"
 	var trained := int(player.get("training_sessions", 0))
 	if trained <= 0:
@@ -7078,24 +7102,24 @@ func draft_player(raw: Dictionary) -> void:
 	draft_state["selection"] = str(rookie.name)
 	drafted_prospect_ids.append(str(rookie.id))
 	draft_state["picks"].append({"team":club_name, "player":rookie.name})
-	var duplicate := team_has_player(rookie)
 	var destination := "加入名單"
-	if duplicate:
-		destination = "重複卡轉成 %d 黃金" % apply_duplicate_convert(rookie)
-	elif can_sign_player(rookie).is_empty():
+	var duplicate := team_has_player(rookie)
+	if can_sign_player(rookie).is_empty() and not duplicate:
 		team_players.append(rookie)
 		apply_combo_label()
 	else:
 		card_inventory.append(rookie)
-		destination = "放入保管箱"
+		destination = "重複卡放入保管箱" if duplicate else "放入保管箱"
+	if duplicate:
+		duplicate_notices.append("%s → 重複卡已加入保管箱" % rookie.get("name", "球員"))
+		call_deferred("show_duplicate_notice")
 	for i in range(int(draft_state.get("user_pick", 1)), draft_state.order.size()):
 		draft_ai_pick(draft_state.order[i])
 	last_event = "選秀新人 %s：%s。" % [rookie.name, destination]
 	last_news = last_event
 	save_game()
 	show_draft_market()
-	if not duplicate:
-		flash_notice(last_event)
+	flash_notice(last_event)
 
 func show_gacha_market() -> void:
 	ensure_season_scout()
@@ -7193,9 +7217,6 @@ func inventory_index_of(player: Dictionary) -> int:
 
 func stash_to_vault(player: Dictionary) -> void:
 	if player.is_empty():
-		return
-	if inventory_has_player(player):
-		apply_duplicate_convert(player)
 		return
 	card_inventory.append(player.duplicate(true))
 
@@ -7398,36 +7419,9 @@ func cycle_team_profile() -> void:
 	show_dashboard()
 
 func compact_unique_owned() -> int:
-	var seen: Dictionary = {}
-	var kept: Array = []
-	var extra := 0
-	for player in team_players:
-		if not (player is Dictionary):
-			continue
-		var key := player_identity_key(player)
-		if key.is_empty() or seen.has(key):
-			apply_duplicate_convert(player)
-			extra += 1
-			continue
-		seen[key] = true
-		kept.append(player)
-	team_players.clear()
-	for kept_player in kept:
-		if kept_player is Dictionary:
-			team_players.append(kept_player)
-	var vault: Array = []
-	for player in card_inventory:
-		if not (player is Dictionary):
-			continue
-		var key := player_identity_key(player)
-		if key.is_empty() or seen.has(key):
-			apply_duplicate_convert(player)
-			extra += 1
-			continue
-		seen[key] = true
-		vault.append(player)
-	card_inventory = vault
-	return extra
+	# Duplicate cards are collectible now. Keep every card instance in the
+	# vault; roster eligibility still prevents two copies in one lineup.
+	return 0
 
 func duplicate_gold_for(player: Dictionary) -> int:
 	match player_tier_key(player):
@@ -7458,7 +7452,7 @@ func show_duplicate_notice() -> void:
 		return
 	var lines := "\n".join(duplicate_notices)
 	duplicate_notices.clear()
-	show_guide_sheet("重複卡已轉成黃金", lines + "\n已擁有同名球員，不會新增第二張；原卡與訓練進度保留。", GOLD)
+	show_guide_sheet("重複卡已收錄", lines + "\n同名卡片現在允許重複取得，會完整保留在保管箱；同一隊仍不能同時登錄兩張相同球員。", GOLD)
 	guide_modal.name = "DuplicateCardNotice"
 
 func scout_player_pool() -> Array[Dictionary]:
@@ -7564,7 +7558,7 @@ func scout_rarity(player: Dictionary) -> Dictionary:
 	return {"id": key, "name": "不在球探卡池", "color": MUTED, "percent": 0}
 
 func scout_rules_text() -> String:
-	return "點卡片查看資料，再按卡片下方的購買鍵；買球員只扣球探點。\n每張新上架卡片的出現機率：%s；合計 100%%，不含鑽石卡。\n先抽卡色，再從該色抽球員；每張獨立抽取，不是每批固定比例。已擁有球員也可能出現，購買重複卡後會依卡色轉成黃金並提示。\n超帽或名單已滿時放入保管箱。更換下一批固定花費 20 黃金，不扣球探點。" % scout_probability_text()
+	return "點卡片查看資料，再按卡片下方的購買鍵；買球員只扣球探點。\n每張新上架卡片的出現機率：%s；合計 100%%，不含鑽石卡。\n先抽卡色，再從該色抽球員；每張獨立抽取，不是每批固定比例。已擁有球員仍可能再次取得，重複卡會保留在保管箱並提示。\n超帽或名單已滿時放入保管箱。更換下一批固定花費 20 黃金，不扣球探點。" % scout_probability_text()
 
 func scout_probability_text(compact := false) -> String:
 	var parts := PackedStringArray()
@@ -7612,12 +7606,16 @@ func claim_scout_choice(index: int, expected_player := "", expected_offer := "")
 	var chosen: Dictionary = preview.duplicate(true)
 	scout_points -= cost
 	gacha_candidates.remove_at(index)
-	if team_has_player(chosen):
-		var gain := apply_duplicate_convert(chosen)
+	var duplicate := team_has_player(chosen)
+	if duplicate:
 		chosen["duplicate_pull"] = true
-		last_event = "重複卡：%s 已在名單或保管箱，轉換 %d 黃金。" % [chosen.get("name", "球員"), gain]
+		stash_to_vault(chosen)
+		duplicate_notices.append("%s → 重複卡已加入保管箱" % chosen.get("name", "球員"))
+		call_deferred("show_duplicate_notice")
+		last_event = "重複卡：%s 已加入保管箱，可留作收藏或日後替換。" % chosen.get("name", "球員")
 		last_news = last_event
 		save_game()
+		flash_notice(last_event)
 		show_gacha_market()
 		return
 	var block := can_sign_player(chosen)
@@ -9017,6 +9015,7 @@ func start_extra_match() -> void:
 func finish_extra_match(won: bool) -> void:
 	if not match_rewards_pending or not extra_match:
 		return
+	record_match_appearances()
 	generate_box_sheet(int(last_score[0]))
 	record_extra_result(won)
 	var prize_note := ""
@@ -9034,7 +9033,7 @@ func finish_extra_match(won: bool) -> void:
 				var duplicate_prize := team_has_player(stamp_prize_card({}, spec))
 				grant_prize_card(prize_id)
 				last_event += " 拿到冠軍！"
-				prize_note = "%s 重複，轉成 120 黃金" % str(spec.get("name", "球員")) if duplicate_prize else "獲得 %s 鑽石卡" % str(spec.get("name", "鑽石卡"))
+				prize_note = "%s 重複，已保留在保管箱" % str(spec.get("name", "球員")) if duplicate_prize else "獲得 %s 鑽石卡" % str(spec.get("name", "鑽石卡"))
 			else:
 				last_event += " 再挑戰完成。"
 				prize_note = "本場沒有獲得"
@@ -9064,7 +9063,10 @@ func grant_prize_card(prize_id: String, reveal := true) -> void:
 		return
 	var fresh := stamp_prize_card({}, spec)
 	if team_has_player(fresh):
-		apply_duplicate_convert(fresh)
+		fresh["duplicate_pull"] = true
+		card_inventory.append(fresh)
+		duplicate_notices.append("%s → 重複卡已加入保管箱" % fresh.get("name", "球員"))
+		call_deferred("show_duplicate_notice")
 		return
 	if can_sign_player(fresh).is_empty():
 		team_players.append(fresh)
@@ -10980,6 +10982,7 @@ func lobby_player_card(player: Dictionary, _starter: bool, index := -1, swap_mod
 		"identity": "外籍生" if is_foreign_student(player) else ("外援" if is_foreigner(player) else ""),
 		"player_name": str(player.get("name", "球員")),
 		"salary": "$%d萬" % int(float(player.get("salary_million", published_salary(player)))),
+		"training_sessions": int(player.get("training_sessions", 0)),
 	}, {"bold": FONT_BOLD, "kicker": FONT_KICKER_FILE, "number": FONT_NUMBER_FILE})
 	hit.add_child(visual)
 	var footers: Array[String] = []
@@ -11835,7 +11838,7 @@ func show_training_modal() -> void:
 	var words := VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	words.add_child(label("養成", 21, TEXT, true))
-	words.add_child(wrap_label("每次：特訓點 1＋$20 萬 → OVR +1；卡色與年薪可能提高", 18, MUTED))
+	words.add_child(wrap_label("上場滿 3 場後才能特訓；每次消耗 1 點＋$20 萬，成功率 100／90／80／70／50%，最多 5 次", 16, MUTED))
 	header.add_child(words)
 	var close := action_button("×", Color("27394a"), func(): close_training_modal(), Vector2(48, 48))
 	close.add_theme_font_size_override("font_size", 28)
@@ -11863,10 +11866,10 @@ func training_row(index: int, player: Dictionary) -> PanelContainer:
 	var info := VBoxContainer.new()
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info.add_child(label("%s  ·  %s" % [player.get("name", "球員"), player.get("pos", "SG")], 15, TEXT, true))
-	info.add_child(wrap_label("OVR %d  ·  遊戲年薪 $%d 萬  ·  已訓練 %d 次" % [int(player.get("ovr", 70)), int(float(player.get("salary_million", published_salary(player)))), int(player.get("training_sessions", 0))], 11, MUTED))
+	info.add_child(wrap_label("OVR %d  ·  遊戲年薪 $%d 萬  ·  已訓練 %d／%d 次  ·  上場 %d／3 場" % [int(player.get("ovr", 70)), int(float(player.get("salary_million", published_salary(player)))), int(player.get("training_sessions", 0)), TRAINING_MAX_SESSIONS, int(player.get("match_appearances", 0))], 11, MUTED))
 	line.add_child(info)
 	var train := action_button("訓練", GREEN, func(): apply_player_training(index), Vector2(88, 48))
-	train.disabled = training_points < 1 or budget_million < 20 or int(player.get("ovr", 70)) >= 90
+	train.disabled = training_points < 1 or budget_million < 20 or int(player.get("ovr", 70)) >= 90 or int(player.get("training_sessions", 0)) >= TRAINING_MAX_SESSIONS or int(player.get("match_appearances", 0)) < 3
 	line.add_child(train)
 	return row
 
@@ -11880,6 +11883,14 @@ func apply_player_training(index: int, reopen_modal := true) -> void:
 		flash_notice("資金不足：本次養成需 $20 萬，目前 $%d 萬。" % budget_million)
 		return
 	var player: Dictionary = team_players[index]
+	var sessions := int(player.get("training_sessions", 0))
+	if sessions >= TRAINING_MAX_SESSIONS:
+		flash_notice("%s 已完成 5 次特訓；達成突破條件，技能目前尚未開放。" % player.get("name", "球員"))
+		return
+	var appearances := int(player.get("match_appearances", 0))
+	if appearances < 3:
+		flash_notice("%s 還需要上場 %d 場才能特訓。" % [player.get("name", "球員"), 3 - appearances])
+		return
 	if int(player.get("ovr", 70)) >= 90:
 		flash_notice("%s 已達 OVR 90 養成上限" % player.get("name", "球員"))
 		return
@@ -11890,10 +11901,21 @@ func apply_player_training(index: int, reopen_modal := true) -> void:
 	if roster_salary() - int(player.get("salary_million", 0)) + new_salary > salary_cap:
 		flash_notice("養成後年薪 $%d 萬會超過薪資帽，請先調整名單；尚未扣點或資金。" % new_salary)
 		return
+	var success_rate: float = [1.0, 0.9, 0.8, 0.7, 0.5][sessions]
 	training_points -= 1
 	budget_million -= 20
+	if randf() > success_rate:
+		player["training_attempts"] = int(player.get("training_attempts", 0)) + 1
+		last_training_note = "%s 特訓未突破（成功率 %d%%）；特訓點與資金已使用。" % [player.get("name", "球員"), int(success_rate * 100.0)]
+		last_event = last_training_note
+		last_news = last_event
+		save_game()
+		flash_notice(last_training_note)
+		if reopen_modal:
+			call_deferred("show_training_modal")
+		return
 	player["ovr"] = mini(90, int(player.get("ovr", 70)) + 1)
-	player["training_sessions"] = int(player.get("training_sessions", 0)) + 1
+	player["training_sessions"] = sessions + 1
 	player["salary_million"] = published_salary(player)
 	player["color"] = player_tier_key(player)
 	team_players[index] = player
@@ -11907,7 +11929,8 @@ func apply_player_training(index: int, reopen_modal := true) -> void:
 		note = "組織更清楚"
 	elif skill == "veteran_leadership":
 		note = "領導更穩"
-	last_training_note = "%s 練完：%s（OVR %d · 年薪 $%d 萬）" % [player.get("name", "球員"), note, player.get("ovr", 70), int(float(player.get("salary_million", 0)))]
+	var next_text := " · 突破條件已達成，技能目前尚未開放" if int(player.get("training_sessions", 0)) >= TRAINING_MAX_SESSIONS else ""
+	last_training_note = "%s 練完：%s（OVR %d · 特訓 +%d · 年薪 $%d 萬）%s" % [player.get("name", "球員"), note, player.get("ovr", 70), int(player.get("training_sessions", 0)), int(float(player.get("salary_million", 0))), next_text]
 	last_event = last_training_note
 	last_news = last_event
 	save_game()
@@ -12933,6 +12956,8 @@ func show_post_match() -> void:
 	_settling_match = settling
 	if settling:
 		resolve_prediction(won)
+	if not extra_just:
+		record_match_appearances()
 	if match_rewards_pending and extra_just:
 		finish_extra_match(won)
 	elif match_rewards_pending:
@@ -13334,14 +13359,16 @@ func gold_scout_pull() -> void:
 	fresh.shuffle()
 	var pulled: Dictionary = fresh[0]
 	gacha_opened += 1
-	if team_has_player(pulled):
-		var gain := apply_duplicate_convert(pulled)
-		pulled["duplicate_pull"] = true
-		last_event = "黃金卡包開出重複卡 %s，轉換 %d 黃金。" % [pulled.get("name", "球員"), gain]
-		save_game()
-		show_pack_result(pulled, gain)
-		return
+	var duplicate := team_has_player(pulled)
+	pulled["duplicate_pull"] = duplicate
 	card_inventory.append(pulled)
+	if duplicate:
+		last_event = "黃金卡包開出重複卡 %s，已加入保管箱。" % pulled.get("name", "球員")
+		duplicate_notices.append("%s → 重複卡已加入保管箱" % pulled.get("name", "球員"))
+		call_deferred("show_duplicate_notice")
+		save_game()
+		show_pack_result(pulled, 0)
+		return
 	last_event = "黃金卡包開出 %s（OVR %d）。可放進先發或留在保管箱。" % [pulled.get("name", "球員"), pulled.get("ovr", 70)]
 	save_game()
 	show_pack_result(pulled)
@@ -13349,8 +13376,8 @@ func gold_scout_pull() -> void:
 
 func show_pack_result(pulled: Dictionary, duplicate_gold := 0) -> void:
 	var content := begin_screen("卡包", "花 80 黃金抽一張。卡包只在商店，跟球探點分開。", 4)
-	if duplicate_gold > 0:
-		content.add_child(callout("重複卡", "%s 已在名單或保管箱，不進第二張，轉換 %d 黃金。" % [str(pulled.get("name", "球員")), duplicate_gold], GOLD))
+	if bool(pulled.get("duplicate_pull", false)):
+		content.add_child(callout("重複卡已收錄", "%s 已在名單或保管箱，本張仍保留並加入保管箱，可作收藏或日後替換。" % str(pulled.get("name", "球員")), GOLD))
 	var card := player_show_card(pulled, "卡包", weekly_stat_line(pulled), ovr_frame_color(int(pulled.get("ovr", 70))), true, func():
 		if duplicate_gold > 0:
 			show_player_sheet(pulled, func(): show_pack_result(pulled, duplicate_gold))
@@ -15347,17 +15374,19 @@ func show_player_sheet(player: Dictionary, back: Callable, confirm := Callable()
 		info.add_child(owned_club_stats_block(team_players[owned_index] if owned_index < team_players.size() else card))
 	if owned_index >= 0:
 		var sessions := int(card.get("training_sessions", 0))
-		info.add_child(label("已特訓 %d 次 · 特訓點 %d" % [sessions, training_points], 12 if phone else 13, MUTED))
+		info.add_child(label("已特訓 %d／%d 次 · 上場 %d／3 場 · 特訓點 %d" % [sessions, TRAINING_MAX_SESSIONS, int(card.get("match_appearances", 0)), training_points], 12 if phone else 13, MUTED))
 		var train_txt := "養成特訓 +1 OVR"
 		# Training is paid with training points and club funds only.  Use the
 		# regular action style here so the gold themed button cannot be mistaken
 		# for a gold currency purchase.
-		content.add_child(action_button(train_txt + "（特訓點＋資金）", GREEN, func():
+		var train_button := action_button(train_txt + "（特訓點＋資金）", GREEN, func():
 			var before_pts := training_points
 			apply_player_training(owned_index, false)
 			if training_points != before_pts and owned_index < team_players.size():
 				show_owned_player(owned_index)
-		))
+		)
+		train_button.disabled = sessions >= TRAINING_MAX_SESSIONS or int(card.get("match_appearances", 0)) < 3 or training_points < 1 or budget_million < 20
+		content.add_child(train_button)
 	var sheet_bar := HBoxContainer.new()
 	sheet_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sheet_bar.add_theme_constant_override("separation", 4 if phone else 6)
