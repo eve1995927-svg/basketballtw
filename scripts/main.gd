@@ -1441,7 +1441,7 @@ func player_pos_list(player: Dictionary) -> PackedStringArray:
 			if not code.is_empty() and not dual.has(code):
 				dual.append(code)
 		if not dual.is_empty():
-			return dual
+			return dual if bool(player.get("secondary_position_unlocked", false)) else PackedStringArray([dual[0]])
 	var listed := listed_position_from_data(player)
 	var raw := listed if not listed.is_empty() else str(player.get("pos", player.get("position", "")))
 	raw = raw.to_upper().replace("／", "/").replace("-", "/").replace("、", "/")
@@ -1452,7 +1452,39 @@ func player_pos_list(player: Dictionary) -> PackedStringArray:
 			parts.append(t)
 	if parts.is_empty():
 		parts.append("SG")
+	if parts.size() > 1 and not bool(player.get("secondary_position_unlocked", false)):
+		return PackedStringArray([parts[0]])
 	return parts
+
+func player_all_positions(player: Dictionary) -> PackedStringArray:
+	var who := str(player.get("name", ""))
+	if NATURAL_DUAL.has(who):
+		return PackedStringArray(NATURAL_DUAL[who])
+	var listed := listed_position_from_data(player)
+	var raw := listed if not listed.is_empty() else str(player.get("pos", player.get("position", "")))
+	return canonical_position_text(raw).split("/") if not canonical_position_text(raw).is_empty() else PackedStringArray(["SG"])
+
+func has_secondary_position(player: Dictionary) -> bool:
+	return player_all_positions(player).size() >= 2
+
+func unlock_secondary_position(index: int) -> void:
+	if index < 0 or index >= team_players.size():
+		return
+	var player: Dictionary = team_players[index]
+	if not has_secondary_position(player):
+		flash_notice("這張卡沒有第二位置。")
+		return
+	if int(player.get("training_sessions", 0)) < TRAINING_MAX_SESSIONS:
+		flash_notice("必須先完成特訓 +5 才能解鎖副位置。")
+		return
+	if bool(player.get("secondary_position_unlocked", false)):
+		flash_notice("副位置已經解鎖。")
+		return
+	player["secondary_position_unlocked"] = true
+	team_players[index] = player
+	save_game()
+	flash_notice("%s 已解鎖副位置：%s。" % [player.get("name", "球員"), player_all_positions(player)[1]])
+	show_owned_player(index)
 
 func player_has_frontcourt(player: Dictionary) -> bool:
 	for pos in player_pos_list(player):
@@ -1492,21 +1524,12 @@ func starter_slot(index: int) -> String:
 	return ""
 
 func slot_fit_penalty(player: Dictionary, index: int) -> int:
-	var side := starter_court_side(index)
-	if side.is_empty():
+	var slot := starter_slot(index)
+	if slot.is_empty():
 		return 0
-	if side == "back":
-		return 0 if player_has_backcourt(player) else 10
-	if player_has_frontcourt(player):
-		return 0
-	if player_is_sf(player):
-		return 5
-	return 10
+	return 0 if player_pos_list(player).has(slot) else 5
 
 func lineup_wrong_side() -> bool:
-	for i in mini(team_players.size(), 5):
-		if slot_fit_penalty(team_players[i], i) >= 10:
-			return true
 	return false
 
 func lineup_sf_front() -> bool:
@@ -1520,8 +1543,6 @@ func lineup_sf_front() -> bool:
 func position_mismatch_penalty(player: Dictionary, index: int) -> int:
 	if index < 0 or index >= 5:
 		return 0
-	if lineup_wrong_side():
-		return 10
 	return slot_fit_penalty(player, index)
 
 func roster_aura_ovr() -> int:
@@ -1578,9 +1599,11 @@ func lineup_side_hint() -> Control:
 	return shell
 
 func position_mark(player: Dictionary) -> String:
-	var parts := player_pos_list(player)
-	if parts.size() >= 2:
+	var parts := player_all_positions(player)
+	if parts.size() >= 2 and bool(player.get("secondary_position_unlocked", false)):
 		return "雙能 %s／%s" % [parts[0], parts[1]]
+	if parts.size() >= 2:
+		return "%s／%s 🔒" % [parts[0], parts[1]]
 	return parts[0]
 
 func pos_chip(player: Dictionary, compact := false) -> Control:
@@ -1676,6 +1699,17 @@ func foreigner_limit() -> int:
 			return 4
 		"EASL", "BCL":
 			return 4
+		_:
+			return 2
+
+func foreigner_oncourt_limit() -> int:
+	match current_league:
+		"SBL":
+			return 1
+		"PLG", "TPBL":
+			return 2
+		"EASL", "BCL":
+			return 2
 		_:
 			return 2
 
@@ -1972,20 +2006,29 @@ func gameday_n() -> int:
 
 func gameday_unit(preferred: Array, fill: Array) -> Array:
 	var unit: Array = []
+	var foreign_count := 0
 	var first: Array = preferred.duplicate()
 	first.shuffle()
 	for idx in first:
 		if unit.size() >= 5:
 			break
 		if int(idx) >= 0 and int(idx) < gameday_n() and not unit.has(int(idx)):
+			if is_foreigner(team_players[int(idx)]) and foreign_count >= foreigner_oncourt_limit():
+				continue
 			unit.append(int(idx))
+			if is_foreigner(team_players[int(idx)]):
+				foreign_count += 1
 	var rest: Array = fill.duplicate()
 	rest.shuffle()
 	for idx in rest:
 		if unit.size() >= 5:
 			break
 		if int(idx) >= 0 and int(idx) < gameday_n() and not unit.has(int(idx)):
+			if is_foreigner(team_players[int(idx)]) and foreign_count >= foreigner_oncourt_limit():
+				continue
 			unit.append(int(idx))
+			if is_foreigner(team_players[int(idx)]):
+				foreign_count += 1
 	return unit
 
 func roll_match_rotation() -> void:
@@ -5984,11 +6027,14 @@ func opponent_starting_five(opponent: Dictionary) -> Array[Dictionary]:
 			pool.append(to_game_player(item))
 	var picked: Array[Dictionary] = []
 	var used: Dictionary = {}
+	var foreign_count := 0
 	for pos in ["PG", "SG", "SF", "PF", "C"]:
 		var best_i := -1
 		var best_ovr := -1
 		for i in pool.size():
 			if used.has(i):
+				continue
+			if is_foreigner(pool[i]) and foreign_count >= foreigner_oncourt_limit():
 				continue
 			if str(pool[i].get("pos", pool[i].get("position", ""))) != pos:
 				continue
@@ -5999,11 +6045,15 @@ func opponent_starting_five(opponent: Dictionary) -> Array[Dictionary]:
 		if best_i >= 0:
 			used[best_i] = true
 			picked.append(pool[best_i])
+			if is_foreigner(pool[best_i]):
+				foreign_count += 1
 	while picked.size() < 5:
 		var best_i := -1
 		var best_ovr := -1
 		for i in pool.size():
 			if used.has(i):
+				continue
+			if is_foreigner(pool[i]) and foreign_count >= foreigner_oncourt_limit():
 				continue
 			var ovr := int(pool[i].get("ovr", 0))
 			if ovr > best_ovr:
@@ -6013,6 +6063,8 @@ func opponent_starting_five(opponent: Dictionary) -> Array[Dictionary]:
 			break
 		used[best_i] = true
 		picked.append(pool[best_i])
+		if is_foreigner(pool[best_i]):
+			foreign_count += 1
 	return picked
 
 func fill_scroll_body(content: Control) -> void:
@@ -8582,7 +8634,7 @@ func guide_topic_body(topic: String) -> String:
 		"cards":
 			return "卡框顏色跟 OVR 走：青 65–70、綠 71–75、藍 76–80、紅 81–85、紫 86–90。特訓漲 OVR 會換卡色，年薪也會重抓。一般卡技能必須特訓 +5 才會在比賽生效，未解鎖仍會顯示技能說明。部分知名球星採用球迷熟悉的致敬名稱，例如 69大魔王、野獸覺醒、大房東收租與中華隊救星；名稱是遊戲化稱呼，不代表官方認定。其他致敬名稱包含台灣飛人、少俠出劍、阿美族戰士、寶島艾佛森、噴射機起飛、本土洋將、小鋼炮、高砲開火、黑豹突襲、安佛森變速、板凳核彈、鋒線萬用膠、冷面司令、台灣魔獸、台灣KD、球場魔術師、新北飆風玫瑰與中華隊最愛。金卡不看 OVR，只給黃金世代老將，一隊限 1 人。鑽卡是額外比賽冠軍或推薦滿人拿到的特殊卡，不能交易、不能刪除。同一人只能有一張（名單或保管箱）。任何管道取得已擁有的人都算重複卡，不進第二張，依卡色換成黃金：青 10、綠 15、藍 25、紅 40、紫 70、金 100、鑽石 120；跳出小視窗通知，原卡與訓練保留。沒有三張隨便合成養超模這條路。"
 		"lineup":
-			return "先發五人：後場三人（PG／SG／SF）、前場兩人（PF／C）。同區換位置不算錯。放錯前後場時，先發五人各 -10 OVR，卡片上會立刻變成扣完的數字。SF 可以頂前場，但該位只 -5。點編隊裡兩張卡即可互換。名單不會從保管箱自動補回；登錄 7–12 人都能開打，名單越接近 12 人，輪替劣勢越小；12 人不扣輪替優勢。這不是直接扣除固定勝率。球員可以連續出賽，不需要等待恢復。"
+			return "先發五人位置固定為 PG、SG、SF、PF、C，並標示後場／鋒線／前場。雙位置球員以資料中的第一位置作為主位置，第二位置須特訓 +5 後按下突破解鎖；未解鎖副位置使用時 OVR -5，已解鎖則不扣。完全錯位同樣 OVR -5，卡片會即時顯示修正後數字。點編隊裡兩張卡即可互換。名單不會從保管箱自動補回；登錄 7–12 人都能開打，名單越接近 12 人，輪替劣勢越小；12 人不扣輪替優勢。這不是直接扣除固定勝率。球員可以連續出賽，不需要等待恢復。"
 		"season":
 			return "遊戲例行賽 %d 場。%s。系列賽完成才開放選秀；下一季保留收藏與資源。" % [regular_season_length(), PlayoffSeries.rules(current_league).label]
 		"combo":
@@ -8600,7 +8652,7 @@ func guide_topic_body(topic: String) -> String:
 		"reward":
 			return "每場結算資金：勝 +%d 萬、敗 +%d 萬（含額外比賽）。國內聯賽仍只有贏球才給黃金 20–50、球探點 1–3、薪資帽 +50 萬與特訓點；連勝加成維持原設定。SBL 薪資帽起始 3000 萬，PLG／TPBL 8000 萬。一般 SBL 卡年薪 50–300 萬，其他聯盟與特殊卡沿用原定價。" % [match_budget_reward(true), match_budget_reward(false)]
 		"league":
-			return "SBL：外援 1 人、薪資帽 3000 萬。PLG：外援 3 人、帽 8000 萬。TPBL：外援註冊 4、場上 2，帽 8000 萬。外籍生三聯盟都最多 2、不佔洋將。職業前二才能買額外比賽通行證。"
+			return "SBL：外援 1 人、場上最多 1 人、薪資帽 3000 萬。PLG：外援註冊 3 人、每節最多 2 人次，遊戲場上同時最多 2 人、帽 8000 萬。TPBL：外援註冊 4 人、場上同時最多 2 人，帽 8000 萬。外籍生三聯盟都最多 2、不佔洋將。職業前二才能買額外比賽通行證。"
 		"match":
 			return "雙方使用相同的回合模擬規則，投籃、失誤與進攻籃板共同形成比分，沒有固定分數區間。四節平手會進入延長賽，直到分出勝負。技能只由當節上場且已解鎖的球員觸發；一般卡須特訓 +5，紫卡、黃金卡與鑽石卡維持原規則。單張技能效果約控制在最多 6 個勝率百分點，全隊技能合計約最多 12 個百分點，不會取代 OVR。半場落後時可調整一次攻防戰術。系列賽對手輸球後可能調整防守，可在賽前查看。勝負看陣容、輪替、戰術對位與技能，也保留比賽的不確定性。"
 		"gold":
@@ -15557,12 +15609,13 @@ func show_player_sheet(player: Dictionary, back: Callable, confirm := Callable()
 		)
 		train_button.disabled = sessions >= TRAINING_MAX_SESSIONS or int(card.get("match_appearances", 0)) < 3 or training_points < 1 or budget_million < 20
 		content.add_child(train_button)
-		if sessions >= TRAINING_MAX_SESSIONS:
-			var breakthrough := action_button("突破（未來開放）", Color("4b3b69"), func():
-				flash_notice("突破技能系統尚未開放，已保留你的 5 次特訓進度。")
+		if sessions >= TRAINING_MAX_SESSIONS and has_secondary_position(card):
+			var unlocked := bool(card.get("secondary_position_unlocked", false))
+			var breakthrough := action_button("副位置：%s" % ("已解鎖" if unlocked else "突破解鎖"), Color("4b3b69"), func():
+				unlock_secondary_position(owned_index)
 			, Vector2(0, 42))
-			breakthrough.disabled = true
-			breakthrough.tooltip_text = "特訓滿 5 次後可用；技能突破功能將於未來版本開放"
+			breakthrough.disabled = unlocked
+			breakthrough.tooltip_text = "完成特訓 +5 後解鎖第二位置" if not unlocked else "副位置已解鎖"
 			content.add_child(breakthrough)
 	var sheet_bar := HBoxContainer.new()
 	sheet_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
