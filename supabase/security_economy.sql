@@ -178,3 +178,51 @@ end;
 $$;
 revoke all on function public.godot_economy_bootstrap() from public, anon;
 grant execute on function public.godot_economy_bootstrap() to authenticated;
+
+-- Match settlement envelope. The client reports only the completed match
+-- outcome; the server enforces the reward envelope and idempotency.
+create table if not exists tb_economy_private.match_settlements (
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  match_id uuid not null,
+  won boolean not null,
+  league text not null check (league in ('SBL','PLG','TPBL','extra')),
+  budget integer not null,
+  gold integer not null,
+  scout integer not null,
+  training integer not null,
+  created_at timestamptz not null default clock_timestamp(),
+  primary key(owner_id, match_id)
+);
+revoke all on tb_economy_private.match_settlements from public, anon, authenticated;
+
+create or replace function public.godot_match_settle(
+  p_match_id uuid, p_won boolean, p_league text, p_budget integer,
+  p_gold integer default 0, p_scout integer default 0, p_training integer default 0
+) returns jsonb language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); a public.godot_economy_accounts; old tb_economy_private.match_settlements;
+declare b integer; g integer; s integer; t integer; result jsonb;
+begin
+  if uid is null then raise exception 'LOGIN_REQUIRED' using errcode='28000'; end if;
+  if p_match_id is null or p_league not in ('SBL','PLG','TPBL','extra') then raise exception 'INVALID_MATCH'; end if;
+  if p_won then
+    if p_budget < 0 or p_budget > 100 or p_gold < 0 or p_gold > 50 or p_scout < 0 or p_scout > 3 or p_training not in (0,1) then raise exception 'REWARD_OUT_OF_RANGE'; end if;
+  elsif p_budget < 0 or p_budget > 50 or p_gold <> 0 or p_scout <> 0 or p_training <> 0 then
+    raise exception 'REWARD_OUT_OF_RANGE';
+  end if;
+  perform pg_advisory_xact_lock(hashtextextended(uid::text || ':match:' || p_match_id::text,0));
+  select * into old from tb_economy_private.match_settlements where owner_id=uid and match_id=p_match_id;
+  if found then
+    select * into a from public.godot_economy_accounts where owner_id=uid;
+    return jsonb_build_object('ok',true,'replayed',true,'balance',jsonb_build_object('budget_million',a.budget_million,'gold',a.gold,'scout_points',a.scout_points,'training_points',a.training_points));
+  end if;
+  select * into a from public.godot_economy_accounts where owner_id=uid for update;
+  if not found then insert into public.godot_economy_accounts(owner_id) values(uid) returning * into a; end if;
+  b:=a.budget_million+p_budget; g:=a.gold+p_gold; s:=a.scout_points+p_scout; t:=a.training_points+p_training;
+  update public.godot_economy_accounts set budget_million=b,gold=g,scout_points=s,training_points=t,version=version+1,updated_at=clock_timestamp() where owner_id=uid;
+  result:=jsonb_build_object('budget_million',b,'gold',g,'scout_points',s,'training_points',t);
+  insert into tb_economy_private.match_settlements(owner_id,match_id,won,league,budget,gold,scout,training) values(uid,p_match_id,p_won,p_league,p_budget,p_gold,p_scout,p_training);
+  return jsonb_build_object('ok',true,'replayed',false,'balance',result);
+end;
+$$;
+revoke all on function public.godot_match_settle(uuid,boolean,text,integer,integer,integer,integer) from public, anon;
+grant execute on function public.godot_match_settle(uuid,boolean,text,integer,integer,integer,integer) to authenticated;
