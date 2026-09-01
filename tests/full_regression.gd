@@ -21,6 +21,7 @@ func run() -> void:
 	await test_no_headline_selection()
 	await test_catalog()
 	await test_veteran_and_training_rules()
+	await test_duplicate_release_and_sort()
 	await test_scout_distribution()
 	await test_free_agent_signing()
 	await test_economy_update()
@@ -96,6 +97,24 @@ func test_veteran_and_training_rules() -> void:
 	var card: Control = game.lobby_player_card(game.team_players[0], false, 0, false, 96)
 	check(card.find_child("TrainingBadge", true, false) != null and card.find_child("TrainingGlow", true, false) != null, "trained card shows bonus and glow")
 	card.free()
+
+func test_duplicate_release_and_sort() -> void:
+	await fresh_game()
+	var base: Dictionary = game.to_game_player({"name":"測試球員", "position":"SG", "ovr":76, "origin_team_id":"sbl_yulon"})
+	game.card_inventory = [base.duplicate(true), base.duplicate(true)]
+	game.gold = 100
+	check(game.can_release_duplicate(game.card_inventory[0]), "duplicate vault card can be released")
+	var reward: int = game.duplicate_gold_for(base)
+	game.release_vault_player(0, true)
+	check(game.card_inventory.size() == 1 and game.gold == 100 + reward, "releasing duplicate card grants rarity gold and keeps the other copy")
+	game.card_inventory.append(base.duplicate(true))
+	game.card_inventory[0]["ovr"] = 90
+	game.card_inventory[1]["ovr"] = 70
+	var sorted: Array[int] = game.sorted_vault_indices()
+	check(sorted.size() == 2 and sorted[0] == 0, "vault default sorting orders OVR high to low")
+	game.vault_sort_mode = "ovr_asc"
+	sorted = game.sorted_vault_indices()
+	check(sorted.size() == 2 and sorted[0] == 1, "vault sorting can switch to OVR low to high")
 
 func settle_extra_fixture(won: bool) -> void:
 	game.start_extra_match()

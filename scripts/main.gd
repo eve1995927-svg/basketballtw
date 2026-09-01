@@ -325,6 +325,7 @@ var vault_filter_origin := ""
 var vault_filter_ovr := 0
 var vault_filter_kind := "pos"
 var vault_filter_tier := ""
+var vault_sort_mode := "ovr_desc"
 var market_filter_pos := ""
 var market_filter_origin := ""
 var market_filter_ovr := 0
@@ -7243,6 +7244,88 @@ func stash_to_vault(player: Dictionary) -> void:
 		return
 	card_inventory.append(player.duplicate(true))
 
+func duplicate_card_count(player: Dictionary) -> int:
+	var key := player_identity_key(player)
+	if key.is_empty():
+		return 0
+	var count := 0
+	for item in team_players:
+		if item is Dictionary and player_identity_key(item) == key:
+			count += 1
+	for item in card_inventory:
+		if item is Dictionary and player_identity_key(item) == key:
+			count += 1
+	return count
+
+func can_release_duplicate(player: Dictionary) -> bool:
+	return not player.is_empty() and not is_locked_prize(player) and duplicate_card_count(player) > 1
+
+func release_vault_player(index: int, confirmed := false) -> void:
+	if index < 0 or index >= card_inventory.size() or not (card_inventory[index] is Dictionary):
+		return
+	var card: Dictionary = card_inventory[index]
+	if not can_release_duplicate(card):
+		flash_notice("只有重複卡可以釋出換黃金；鑽石卡不可釋出。")
+		return
+	var reward := duplicate_gold_for(card)
+	if not confirmed:
+		show_guide_sheet("釋出重複卡", "%s 已有重複卡，釋出這張可獲得 %d 黃金。" % [card.get("name", "球員"), reward], GOLD, "確認釋出", func():
+			close_guide_modal()
+			if index < card_inventory.size() and can_release_duplicate(card_inventory[index]) and player_identity_key(card_inventory[index]) == player_identity_key(card):
+				release_vault_player(index, true)
+		)
+		return
+	card_inventory.remove_at(index)
+	gold += reward
+	last_event = "%s 重複卡已釋出，獲得黃金 +%d。" % [card.get("name", "球員"), reward]
+	last_news = last_event
+	save_game()
+	flash_notice(last_event)
+	show_card_vault()
+
+func vault_sort_label() -> String:
+	match vault_sort_mode:
+		"ovr_asc": return "OVR 低→高"
+		"salary_desc": return "年薪 高→低"
+		"name": return "姓名 A→Z"
+		"tier": return "卡色 稀有→普"
+		_: return "OVR 高→低"
+
+func cycle_vault_sort() -> void:
+	var modes := ["ovr_desc", "ovr_asc", "salary_desc", "name", "tier"]
+	var at := modes.find(vault_sort_mode)
+	vault_sort_mode = modes[(at + 1) % modes.size()]
+	show_card_vault()
+
+func sorted_vault_indices() -> Array[int]:
+	var indices: Array[int] = []
+	for i in card_inventory.size():
+		if card_inventory[i] is Dictionary and vault_matches_filter(to_game_player(card_inventory[i])):
+			indices.append(i)
+	indices.sort_custom(func(a: int, b: int):
+			var left: Dictionary = to_game_player(card_inventory[a])
+			var right: Dictionary = to_game_player(card_inventory[b])
+			match vault_sort_mode:
+				"ovr_asc":
+					if int(left.get("ovr", 70)) != int(right.get("ovr", 70)):
+						return int(left.get("ovr", 70)) < int(right.get("ovr", 70))
+				"salary_desc":
+					if int(left.get("salary_million", 0)) != int(right.get("salary_million", 0)):
+						return int(left.get("salary_million", 0)) > int(right.get("salary_million", 0))
+				"name":
+					if str(left.get("name", "")) != str(right.get("name", "")):
+						return str(left.get("name", "")) < str(right.get("name", ""))
+				"tier":
+					var rank := {"diamond": 0, "gold": 1, "purple": 2, "red": 3, "blue": 4, "green": 5, "cyan": 6}
+					if int(rank.get(player_tier_key(left), 9)) != int(rank.get(player_tier_key(right), 9)):
+						return int(rank.get(player_tier_key(left), 9)) < int(rank.get(player_tier_key(right), 9))
+				_:
+					if int(left.get("ovr", 70)) != int(right.get("ovr", 70)):
+						return int(left.get("ovr", 70)) > int(right.get("ovr", 70))
+			return a < b
+	)
+	return indices
+
 func move_roster_to_vault(index: int) -> void:
 	if index < 0 or index >= team_players.size() or team_players.size() <= minimum_roster_to_play():
 		flash_notice("至少保留 7 人才能開打")
@@ -11662,6 +11745,7 @@ func vault_filter_bar() -> Control:
 	var row := HBoxContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_constant_override("separation", 4)
+	row.add_child(roster_filter_chip("排序：" + vault_sort_label(), false, func(): cycle_vault_sort()))
 	row.add_child(roster_filter_chip("位置", vault_filter_kind == "pos", func():
 		vault_filter_kind = "pos"
 		show_card_vault()
@@ -11769,7 +11853,7 @@ func show_card_vault() -> void:
 		flow.add_theme_constant_override("v_separation", 6)
 		var card_w := lobby_card_width(true)
 		var shown := 0
-		for i in card_inventory.size():
+		for i in sorted_vault_indices():
 			if not (card_inventory[i] is Dictionary):
 				continue
 			var player: Dictionary = to_game_player(card_inventory[i])
@@ -11791,6 +11875,13 @@ func show_card_vault() -> void:
 			login.tooltip_text = "直接登錄；若名單已滿、超薪資帽或資格受限，會進入換人選擇。"
 			login.add_theme_font_size_override("font_size", 13 if is_handheld() else 11)
 			entry.add_child(login)
+			if can_release_duplicate(player):
+				var release_reward := duplicate_gold_for(player)
+				var release := action_button("釋出 +%d 黃金" % release_reward, GOLD, func(): release_vault_player(idx), Vector2(card_w, 34))
+				release.name = "ReleaseDuplicateButton"
+				release.tooltip_text = "這張是重複卡；釋出後獲得黃金，另一張仍會保留。"
+				release.add_theme_font_size_override("font_size", 12 if is_handheld() else 11)
+				entry.add_child(release)
 			flow.add_child(entry)
 			shown += 1
 		if shown == 0:
