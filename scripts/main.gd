@@ -145,7 +145,6 @@ const NATURAL_DUAL := {
 	"周桂羽": ["SF", "SG"],
 	"阿巴西": ["SF", "PF"],
 	"林志傑": ["SF", "SG"],
-	"白曜誠": ["PG", "SG"],
 	"賀丹": ["SF", "PF"],
 }
 const FICTIONAL_TEAM_NAMES := {
@@ -1566,16 +1565,16 @@ func lineup_mismatch_count() -> int:
 
 func lineup_mismatch_line() -> String:
 	if lineup_wrong_side():
-		return "先發放錯前後場，五人各 -10 OVR"
+		return "先發位置不符，該位 -5 OVR"
 	if lineup_sf_front():
-		return "SF 頂前場可以，該位 -5 OVR"
+		return "先發位置不符，該位 -5 OVR"
 	return ""
 
 func lineup_mismatch_short() -> String:
 	if lineup_wrong_side():
-		return "放錯區\n五人 -10"
+		return "位置不符\n該位 -5"
 	if lineup_sf_front():
-		return "SF 頂前場\n該位 -5"
+		return "位置不符\n該位 -5"
 	return ""
 
 func lineup_side_hint() -> Control:
@@ -1607,7 +1606,7 @@ func position_mark(player: Dictionary) -> String:
 	return parts[0]
 
 func pos_chip(player: Dictionary, compact := false) -> Control:
-	var dual := player_pos_list(player).size() >= 2
+	var dual := player_all_positions(player).size() >= 2
 	var accent := ORANGE if dual else GOLD
 	var mark := position_mark(player)
 	if compact:
@@ -10933,7 +10932,7 @@ func lobby_roster_board(swap_mode := false) -> Control:
 	box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_theme_constant_override("separation", 4)
 	board.add_child(padded(box, 6))
-	var starter_title := "先發 · 點兩張卡互換 · 放錯前後場 -10 OVR" if swap_mode else "先發 · 點卡看資料"
+	var starter_title := "先發 · 點兩張卡互換 · 位置不符 -5 OVR" if swap_mode else "先發 · 點卡看資料"
 	var head := HBoxContainer.new()
 	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.alignment = BoxContainer.ALIGNMENT_CENTER
