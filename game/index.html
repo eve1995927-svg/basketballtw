@@ -98,6 +98,27 @@ body {
 	margin: 0 auto;
 }
 
+#status-loading-text {
+	position: absolute;
+	bottom: calc(10% + 28px);
+	left: 16px;
+	right: 16px;
+	color: #d6e4e9;
+	font: 700 14px/1.4 system-ui, sans-serif;
+	text-align: center;
+	text-shadow: 0 2px 8px #000;
+}
+
+#status-retry {
+	margin-top: .8rem;
+	padding: .65rem 1rem;
+	border: 1px solid #efc56d;
+	border-radius: .6rem;
+	color: #fff;
+	background: #183444;
+	font: 700 14px system-ui, sans-serif;
+}
+
 #status-notice {
 	background-color: #5b3943;
 	border-radius: 0.5rem;
@@ -128,6 +149,7 @@ body {
 		<div id="status">
 			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
 			<progress id="status-progress"></progress>
+			<div id="status-loading-text" role="status">正在準備球隊資料… 0%</div>
 			<div id="status-notice"></div>
 			<p id="loading-legal">非官方體育模擬器，無聯盟或球隊官方授權。能力、薪資與賽果為遊戲設定。<br><a href="../legal.html" target="_blank" rel="noopener noreferrer">遊戲聲明與權利說明 ↗</a></p>
 		</div>
@@ -135,9 +157,9 @@ body {
 		<script src="index.js"></script>
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":91962364,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-GODOT_CONFIG.mainPack = "roster111.pck";
+GODOT_CONFIG.mainPack = "input110.pck";
 delete GODOT_CONFIG.fileSizes["index.pck"];
-GODOT_CONFIG.fileSizes["roster111.pck"] = 92224812;
+GODOT_CONFIG.fileSizes["input110.pck"] = 92854096;
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -145,6 +167,21 @@ const engine = new Engine(GODOT_CONFIG);
 	const statusOverlay = document.getElementById('status');
 	const statusProgress = document.getElementById('status-progress');
 	const statusNotice = document.getElementById('status-notice');
+	const statusLoadingText = document.getElementById('status-loading-text');
+	const startedAt = Date.now();
+	let lastPercent = 0;
+	const waitingMessages = [
+		'正在準備球隊資料',
+		'正在載入球員卡與球場',
+		'正在確認遊戲版本',
+		'網路較慢時會多等一下，進度不會遺失',
+	];
+	const loadingTicker = setInterval(() => {
+		if (!initializing) return clearInterval(loadingTicker);
+		const seconds = Math.floor((Date.now() - startedAt) / 1000);
+		const message = waitingMessages[Math.min(waitingMessages.length - 1, Math.floor(seconds / 8))];
+		statusLoadingText.textContent = `${message}… ${lastPercent}% · ${seconds} 秒`;
+	}, 1000);
 
 	let initializing = true;
 	let statusMode = '';
@@ -160,6 +197,7 @@ const engine = new Engine(GODOT_CONFIG);
 		}
 		statusOverlay.style.visibility = 'visible';
 		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+		statusLoadingText.style.display = mode === 'progress' ? 'block' : 'none';
 		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
 		statusMode = mode;
 	}
@@ -177,13 +215,13 @@ const engine = new Engine(GODOT_CONFIG);
 
 	function displayFailureNotice(err) {
 		console.error(err);
-		if (err instanceof Error) {
-			setStatusNotice(err.message);
-		} else if (typeof err === 'string') {
-			setStatusNotice(err);
-		} else {
-			setStatusNotice('An unknown error occurred.');
-		}
+		setStatusNotice('目前連線沒有完成，遊戲進度仍安全保留。\n請檢查網路後重新載入；若使用 LINE／IG 內建瀏覽器，請改用 Safari 或 Chrome。');
+		const retry = document.createElement('button');
+		retry.id = 'status-retry';
+		retry.type = 'button';
+		retry.textContent = '重新載入';
+		retry.addEventListener('click', () => location.reload());
+		statusNotice.appendChild(retry);
 		setStatusMode('notice');
 		initializing = false;
 	}
@@ -228,6 +266,9 @@ const engine = new Engine(GODOT_CONFIG);
 		engine.startGame({
 			'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
+					lastPercent = Math.max(lastPercent, Math.min(100, Math.round(current / total * 100)));
+					const seconds = Math.floor((Date.now() - startedAt) / 1000);
+					statusLoadingText.textContent = `正在下載遊戲資料… ${lastPercent}% · ${seconds} 秒`;
 					statusProgress.value = current;
 					statusProgress.max = total;
 				} else {
