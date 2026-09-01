@@ -9025,11 +9025,14 @@ func finish_extra_match(won: bool) -> void:
 	generate_box_sheet(int(last_score[0]))
 	record_extra_result(won)
 	var prize_note := ""
+	var training_gain := 0
 	if won:
+		training_points += 1
+		training_gain = 1
 		extra_wins += 1
 		if not extra_queue.is_empty():
 			extra_queue.remove_at(0)
-		last_event = "額外比賽贏了 %s。冠軍進度 %d。" % [last_opponent.get("name", "對手"), extra_wins]
+		last_event = "額外比賽贏了 %s。冠軍進度 %d，特訓點 +1。" % [last_opponent.get("name", "對手"), extra_wins]
 		var need := int(extra_event_data(extra_event).get("need", 3))
 		if extra_wins >= need:
 			if not bool(extra_champions.get(extra_event, false)):
@@ -9054,7 +9057,7 @@ func finish_extra_match(won: bool) -> void:
 	var budget_gain := match_budget_reward(won)
 	budget_million += budget_gain
 	last_event += " 資金 +$%d 萬。" % budget_gain
-	last_match_gain = {"won": won, "budget": budget_gain, "gold": 0, "scout": 0, "cap": 0, "train": 0, "extra": true, "event_id": extra_event, "note": prize_note}
+	last_match_gain = {"won": won, "budget": budget_gain, "gold": 0, "scout": 0, "cap": 0, "train": training_gain, "extra": true, "event_id": extra_event, "note": prize_note}
 	last_match_played = true
 	last_progress_event = "三分 %d-%d · %s" % [match_threes[0], match_threes[1], last_tactic_report]
 	save_extra_run(extra_event)
