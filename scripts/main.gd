@@ -1351,6 +1351,15 @@ func normalize_pos_code(raw: String) -> String:
 		_:
 			return t if t.length() <= 3 else ""
 
+func canonical_position_text(raw: String) -> String:
+	var parts: PackedStringArray = PackedStringArray()
+	var normalized_raw := raw.to_upper().replace("／", "/").replace("-", "/").replace("、", "/")
+	for piece in normalized_raw.split("/"):
+		var code := normalize_pos_code(piece)
+		if not code.is_empty() and not parts.has(code):
+			parts.append(code)
+	return "/".join(parts)
+
 func infer_swing_pos(_player: Dictionary, _primary: String) -> String:
 	return ""
 
@@ -1363,18 +1372,18 @@ func listed_position_from_data(player: Dictionary) -> String:
 	# overwrite a corrected veteran position later in the conversion pipeline.
 	var veteran_profile := golden_generation_profile(player)
 	if not veteran_profile.is_empty():
-		var curated := normalize_pos_code(str(veteran_profile.get("position", veteran_profile.get("pos", ""))))
+		var curated := canonical_position_text(str(veteran_profile.get("position", veteran_profile.get("pos", ""))))
 		if not curated.is_empty():
 			return curated
 	for raw in public_players:
 		if str(raw.get("name", "")) == who:
-			var listed := normalize_pos_code(str(raw.get("position", raw.get("pos", ""))))
+			var listed := canonical_position_text(str(raw.get("position", raw.get("pos", ""))))
 			if not listed.is_empty():
 				return listed
 	for team in league_teams:
 		for raw in team.get("players", []):
 			if raw is Dictionary and str(raw.get("name", "")) == who:
-				var listed2 := normalize_pos_code(str(raw.get("position", raw.get("pos", ""))))
+				var listed2 := canonical_position_text(str(raw.get("position", raw.get("pos", ""))))
 				if not listed2.is_empty():
 					return listed2
 	return ""

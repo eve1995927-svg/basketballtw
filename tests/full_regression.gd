@@ -68,6 +68,12 @@ func test_veteran_and_training_rules() -> void:
 	check(retired.get("pos", "") == "SF" and retired.get("golden_generation", false), "呂政儒 is a retired SF golden veteran")
 	var imported_retired: Dictionary = game.to_game_player({"name":"呂政儒", "position":"SG/SF", "ovr":74, "origin_team_id":"kings"})
 	check(imported_retired.get("pos", "") == "SF", "curated veteran position overrides stale public roster position")
+	for profile in game.career_rules.get("golden_generation", []):
+		if not (profile is Dictionary):
+			continue
+		var curated_name := str(profile.get("name", ""))
+		var curated_card: Dictionary = game.to_game_player({"name": curated_name, "position": "SG", "ovr": int(profile.get("ovr", 70))})
+		check(curated_card.get("pos", "") == str(profile.get("position", "")), "every golden-generation card keeps curated position: " + curated_name)
 	var p: Dictionary = game.team_players[0]
 	p["match_appearances"] = 2
 	game.team_players[0] = p
@@ -240,8 +246,7 @@ func test_catalog() -> void:
 					roster_has_ovr = true
 			check(roster_has_ovr, "opponent roster includes position and OVR details: " + event_id)
 			game.close_guide_modal()
-	var unknown: Dictionary = game.to_game_player({"name": "陳信安", "ovr": 80})
-	check(game.position_data_missing(unknown), "missing veteran source position is explicitly identified")
+	check(game.position_data_missing({"name": "陳信安", "ovr": 80}), "missing veteran source position is explicitly identified")
 
 func unowned_player() -> Dictionary:
 	for raw in game.public_players:
