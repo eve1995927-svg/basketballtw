@@ -9555,8 +9555,8 @@ func _android_share_image(abs_path: String, text: String) -> bool:
 		return false
 	var Intent = JavaClassWrapper.wrap("android.content.Intent")
 	var FileCls = JavaClassWrapper.wrap("java.io.File")
-	var Uri = JavaClassWrapper.wrap("android.net.Uri")
-	if Intent == null or FileCls == null or Uri == null:
+	var FileProvider = JavaClassWrapper.wrap("androidx.core.content.FileProvider")
+	if Intent == null or FileCls == null or FileProvider == null:
 		return false
 	var intent = Intent.new()
 	intent.setAction("android.intent.action.SEND")
@@ -9564,9 +9564,14 @@ func _android_share_image(abs_path: String, text: String) -> bool:
 	if not text.is_empty():
 		intent.putExtra("android.intent.extra.TEXT", text)
 	var file = FileCls.new(abs_path)
-	var uri = Uri.fromFile(file)
+	# Android 7+ rejects file:// URIs (FileUriExposedException). Godot's
+	# Android template already registers this FileProvider for the app.
+	var authority := str(activity.getPackageName()) + ".fileprovider"
+	var uri = FileProvider.getUriForFile(activity, authority, file)
+	if uri == null:
+		return false
 	intent.putExtra("android.intent.extra.STREAM", uri)
-	intent.addFlags(1)
+	intent.addFlags(1) # FLAG_GRANT_READ_URI_PERMISSION
 	var chooser = Intent.createChooser(intent, "分享球員卡")
 	activity.startActivity(chooser)
 	return true
