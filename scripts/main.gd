@@ -9289,14 +9289,21 @@ func show_share_sheet(text: String, share_player: Dictionary = {}) -> void:
 	sheet.anchor_top = 1.0
 	sheet.anchor_right = 1.0
 	sheet.anchor_bottom = 1.0
-	var nav := 70 if (current_stage >= 3 and current_stage < 6) else 12
+	# The share sheet is a modal and may safely sit above the persistent nav.
+	# Reserving the full nav height made it extend past the top on compact
+	# landscape phones (568x320).
+	var nav := 12
 	if is_instance_valid(card_reveal_modal):
 		nav = 18
 	var has_card := not share_player.is_empty()
+	var view := get_viewport_rect().size
 	sheet.offset_right = -float(maxi(pad.z, 12) + 8)
-	sheet.offset_bottom = -float(maxi(pad.w, 12) + nav + 52)
-	sheet.offset_left = sheet.offset_right - (360 if compact_phone() else 400)
-	sheet.offset_top = sheet.offset_bottom - (348 if has_card else 188)
+	sheet.offset_bottom = -float(maxi(pad.w, 12) + nav + 12)
+	var sheet_width := 360.0 if compact_phone() else 400.0
+	var requested_height := 296.0 if has_card and compact_phone() else (348.0 if has_card else 188.0)
+	var max_height := maxf(180.0, view.y - float(pad.y + pad.w + nav + 20))
+	sheet.offset_left = sheet.offset_right - minf(sheet_width, maxf(260.0, view.x - float(pad.x + pad.z + 16)))
+	sheet.offset_top = sheet.offset_bottom - minf(requested_height, max_height)
 	sheet.add_theme_stylebox_override("panel", panel_style(Color("0c1927fc"), GOLD, 16, 2))
 	veil.add_child(sheet)
 	var box := VBoxContainer.new()
@@ -9306,7 +9313,7 @@ func show_share_sheet(text: String, share_player: Dictionary = {}) -> void:
 	if has_card:
 		var preview := CenterContainer.new()
 		preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		preview.add_child(lobby_player_card(to_game_player(share_player), true, -1, false, 86))
+		preview.add_child(lobby_player_card(to_game_player(share_player), true, -1, false, 70 if compact_phone() else 86))
 		box.add_child(preview)
 		box.add_child(plain_label("打開系統分享，在面板裡選 LINE", 11, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
 	var grid := GridContainer.new()
@@ -9328,7 +9335,7 @@ func social_share_chip(target: Dictionary, action: Callable) -> Control:
 	var accent: Color = target.get("color", GOLD)
 	var hit := Button.new()
 	hit.text = ""
-	hit.custom_minimum_size = Vector2(0, 88)
+	hit.custom_minimum_size = Vector2(0, 64 if compact_phone() else 88)
 	hit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	hit.add_theme_stylebox_override("normal", panel_style(Color("f4f6f8"), accent, 12, 1))
