@@ -33,6 +33,7 @@ const LEGAL_NOTICE_TITLE := "遊戲聲明與權利說明"
 const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官方聯盟或球隊產品。\n\n遊戲中部分隊名、球員名稱與賽事名稱參考真實籃球資訊，並非全部虛構。球員能力、卡片稀有度、遊戲薪資、交易、陣容及比賽結果屬於遊戲模擬設定，不代表真實人物的實際表現、合約、行為或官方評價。\n\n本遊戲與任何真實職業籃球聯盟、球隊或球員無官方授權、合作、贊助或背書關係。\n\n遊戲所涉及的名稱、商標、隊徽、照片、肖像及其他素材之相關權利，仍屬各該權利人。本聲明不構成素材使用授權，也不表示相關使用當然合法或免除依法應負的責任。\n\n本說明不要求使用者放棄依法享有的權利。\n\n更新日期：2026 年 8 月 31 日"
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
+const APP_VERSION := "0.9.3"
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const STYLIZED_ART := [
 	"res://assets/art/hero_pg.png",
@@ -500,6 +501,7 @@ var iap_pending_sku := ""
 var oauth_code_verifier := ""
 var auth_redirect := AUTH_REDIRECT
 var auth_listen_port := 8765
+var analytics_session_sent := false
 
 var opponents := [
 	{"name": "裕隆恐龍", "rating": 73, "city": "新北", "league": "SBL", "team_id": "sbl_yulon"},
@@ -7684,6 +7686,7 @@ func taiwan_date_key(utc_seconds: int) -> String:
 	return "%04d-%02d-%02d" % [int(now.get("year", 0)), int(now.get("month", 0)), int(now.get("day", 0))]
 
 func show_activity_hub() -> void:
+	track_event("screen_activity")
 	active_menu = "activity"
 	cloud_pull_activity()
 	var content := begin_screen("活動", "台灣籃球活動中心 · 賽季期間開放", 4)
@@ -9864,6 +9867,7 @@ func show_login() -> void:
 		body.add_child(offline)
 		if not OS.has_feature("web"):
 			body.add_child(bind_account_button("使用 Google 登入", Color("f4f4f4"), Color("111111"), func(): start_oauth("google"), "res://assets/ui/logos/google.svg"))
+			body.add_child(bind_account_button("使用 Apple 登入", Color("111111"), Color("f4f4f4"), func(): start_oauth("apple")))
 		else:
 			body.add_child(wrap_label("網頁版請用下方信箱驗證碼登入；Google 登入目前只在 App 開放。", 18, MUTED))
 		body.add_child(wrap_label("離線進度保存在此瀏覽器，請勿清除網站資料。" if OS.has_feature("web") else "離線進度只存在這台裝置，移除 App 會遺失。", 18, MUTED))
@@ -10409,6 +10413,7 @@ func choose_live_player(index: int) -> void:
 	show_card_reveal(player)
 
 func show_dashboard() -> void:
+	track_event("screen_dashboard", {"league": current_league, "season_phase": season_phase})
 	prep_extra_event = ""
 	if match_rewards_pending:
 		show_match_presentation()
@@ -12931,6 +12936,7 @@ func show_post_match() -> void:
 		line += "。"
 		push_news(line)
 		last_match_played = true
+		track_event("match_completed", {"won": won, "league": current_league, "score_for": int(last_score[0]), "score_against": int(last_score[1]), "extra": extra_just})
 		match_rewards_pending = false
 	_settling_match = false
 	if settling:
@@ -13702,6 +13708,29 @@ func supabase_headers(use_user := false) -> PackedStringArray:
 		"Prefer: return=representation",
 	])
 
+func analytics_platform() -> String:
+	if OS.has_feature("ios"):
+		return "ios"
+	if OS.has_feature("android"):
+		return "android"
+	if OS.has_feature("web"):
+		return "web"
+	if OS.has_feature("desktop"):
+		return "desktop"
+	return "unknown"
+
+func track_event(event_name: String, properties: Dictionary = {}) -> void:
+	# Analytics is opt-in through account login and never blocks gameplay.
+	if auth_access.is_empty() or auth_user_id.is_empty() or event_name.is_empty():
+		return
+	var safe: Dictionary = {}
+	for key in properties:
+		var k := str(key)
+		if k.length() <= 32 and not k.contains("email") and not k.contains("token") and not k.contains("password"):
+			safe[k] = properties[key]
+	var row := {"owner_id": auth_user_id, "event_name": event_name.left(64), "platform": analytics_platform(), "game_version": APP_VERSION, "properties": safe}
+	cloud_send("analytics_" + event_name, "%s/rest/v1/godot_analytics_events" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, JSON.stringify(row))
+
 func start_auth_listener() -> void:
 	# Browsers cannot host a TCP callback server. Do not resize or treat them as native windows.
 	if OS.has_feature("web"):
@@ -13859,6 +13888,7 @@ func logout_account() -> void:
 	auth_refresh = ""
 	auth_user_id = ""
 	auth_email = ""
+	analytics_session_sent = false
 	login_email = remembered
 	oauth_code_verifier = ""
 	pending_enter_after_auth = false
@@ -14062,6 +14092,7 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 			return
 		if not auth_email.is_empty():
 			login_email = auth_email
+		track_event("login_success", {"method": "oauth" if kind == "user" else "email_otp"})
 		var changed_profile := local_profile_id != auth_user_id
 		if changed_profile:
 			cancel_cloud_requests()
@@ -14186,6 +14217,9 @@ func notify_cloud_save_offline() -> void:
 	flash_notice("本機已存檔。雲端暫時連不上，離線也能玩。")
 
 func finish_auth_enter() -> void:
+	if not analytics_session_sent and not auth_user_id.is_empty():
+		analytics_session_sent = true
+		track_event("session_start", {"league": current_league})
 	sync_read_complete = not sync_error
 	if sync_read_complete:
 		cloud_refresh_attempted = false
