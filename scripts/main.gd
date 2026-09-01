@@ -7918,7 +7918,6 @@ func show_challenge_hub() -> void:
 		, Vector2(0, 40))
 		badge_button.icon = load_png_tex("res://assets/art/badges/%s.png" % badge_id)
 		badge_button.expand_icon = true
-		badge_button.icon_max_width = 28
 		badge_button.tooltip_text = str(badge.get("hint", ""))
 		badge_grid.add_child(badge_button)
 
@@ -9354,6 +9353,13 @@ func social_share_chip(target: Dictionary, action: Callable) -> Control:
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	badge.add_child(icon)
+	if icon.texture == null:
+		# SVG imports can be unavailable briefly on a first mobile launch. Keep
+		# the target readable and tappable instead of showing a broken-image box.
+		var fallback := label(caption.left(1), 20, accent, true, HORIZONTAL_ALIGNMENT_CENTER)
+		fallback.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		badge.add_child(fallback)
 	col.add_child(badge)
 	var name_node := label(caption, 11, Color("1a1a1a"), true, HORIZONTAL_ALIGNMENT_CENTER)
 	name_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
