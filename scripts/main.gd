@@ -9862,9 +9862,10 @@ func show_login() -> void:
 		var offline := bind_account_button("先離線遊玩（不需登入）", GOLD, Color("1a1200"), func(): continue_after_login())
 		offline.name = "OfflinePlayButton"
 		body.add_child(offline)
-		var google := bind_account_button("Google 登入（網頁暫未開放）" if OS.has_feature("web") else "使用 Google 登入", Color("f4f4f4"), Color("111111"), func(): start_oauth("google"), "res://assets/ui/logos/google.svg")
-		google.disabled = OS.has_feature("web")
-		body.add_child(google)
+		if not OS.has_feature("web"):
+			body.add_child(bind_account_button("使用 Google 登入", Color("f4f4f4"), Color("111111"), func(): start_oauth("google"), "res://assets/ui/logos/google.svg"))
+		else:
+			body.add_child(wrap_label("網頁版請用下方信箱驗證碼登入；Google 登入目前只在 App 開放。", 18, MUTED))
 		body.add_child(wrap_label("離線進度保存在此瀏覽器，請勿清除網站資料。" if OS.has_feature("web") else "離線進度只存在這台裝置，移除 App 會遺失。", 18, MUTED))
 		body.add_child(label("或用信箱驗證碼", 12, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
 		var mail := text_field("電子信箱", login_email)
