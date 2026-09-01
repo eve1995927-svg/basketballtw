@@ -499,9 +499,12 @@ var last_known_unlocks: Array = []
 var pending_path := ""
 var iap_pending_sku := ""
 var oauth_code_verifier := ""
+var web_auth_consumed := false
 var auth_redirect := AUTH_REDIRECT
 var auth_listen_port := 8765
 var analytics_session_sent := false
+var analytics_install_id := ""
+var analytics_install_pinged := false
 
 var opponents := [
 	{"name": "裕隆恐龍", "rating": 73, "city": "新北", "league": "SBL", "team_id": "sbl_yulon"},
@@ -579,6 +582,7 @@ func _ready() -> void:
 	ensure_bgm()
 	call_deferred("_kick_bgm")
 	ensure_cloud()
+	_ping_anonymous_install()
 	restore_auth_session()
 	start_auth_listener()
 	load_cached_web_news()
@@ -4946,6 +4950,7 @@ func _process(delta: float) -> void:
 		resource_hud_elapsed = 0.0
 		refresh_resource_hud()
 	poll_auth_server()
+	poll_web_auth_callback()
 	_iap_poll_elapsed += delta
 	if _iap_poll_elapsed >= 0.25:
 		_iap_poll_elapsed = 0.0
@@ -9865,11 +9870,11 @@ func show_login() -> void:
 		var offline := bind_account_button("先離線遊玩（不需登入）", GOLD, Color("1a1200"), func(): continue_after_login())
 		offline.name = "OfflinePlayButton"
 		body.add_child(offline)
+		body.add_child(bind_account_button("使用 Google 登入", Color("f4f4f4"), Color("111111"), func(): start_oauth("google"), "res://assets/ui/logos/google.svg"))
 		if not OS.has_feature("web"):
-			body.add_child(bind_account_button("使用 Google 登入", Color("f4f4f4"), Color("111111"), func(): start_oauth("google"), "res://assets/ui/logos/google.svg"))
 			body.add_child(bind_account_button("使用 Apple 登入", Color("111111"), Color("f4f4f4"), func(): start_oauth("apple")))
 		else:
-			body.add_child(wrap_label("網頁版請用下方信箱驗證碼登入；Google 登入目前只在 App 開放。", 18, MUTED))
+			body.add_child(wrap_label("網頁版會使用安全的 HTTPS 回呼；若瀏覽器阻擋，請改用信箱驗證碼。", 18, MUTED))
 		body.add_child(wrap_label("離線進度保存在此瀏覽器，請勿清除網站資料。" if OS.has_feature("web") else "離線進度只存在這台裝置，移除 App 會遺失。", 18, MUTED))
 		body.add_child(label("或用信箱驗證碼", 12, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
 		var mail := text_field("電子信箱", login_email)
@@ -13612,7 +13617,7 @@ func _cloud_request_active() -> void:
 		_on_cloud_http(HTTPRequest.RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray())
 
 func cloud_can_retry(result: int, code: int) -> bool:
-	var safe := int(cloud_active.get("method", -1)) == HTTPClient.METHOD_GET or cloud_pending.begins_with("sync_save_") or cloud_pending in ["push", "push_account", "push_legacy", "ranked_status", "ranked_play", "ranked_join", "ranked_leave"]
+	var safe := int(cloud_active.get("method", -1)) == HTTPClient.METHOD_GET or cloud_pending.begins_with("sync_save_") or cloud_pending in ["push", "push_account", "push_legacy", "ranked_status", "ranked_play", "ranked_join", "ranked_leave", "install_ping"]
 	return safe and cloud_retry_count < CLOUD_MAX_RETRIES and (result != HTTPRequest.RESULT_SUCCESS or code in [408, 429, 500, 502, 503, 504])
 
 func cancel_cloud_requests() -> void:
@@ -13731,6 +13736,32 @@ func track_event(event_name: String, properties: Dictionary = {}) -> void:
 	var row := {"owner_id": auth_user_id, "event_name": event_name.left(64), "platform": analytics_platform(), "game_version": APP_VERSION, "properties": safe}
 	cloud_send("analytics_" + event_name, "%s/rest/v1/godot_analytics_events" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, JSON.stringify(row))
 
+func _ping_anonymous_install() -> void:
+	if analytics_install_pinged:
+		return
+	var path := "user://tb_analytics_install_id.txt"
+	if FileAccess.file_exists(path):
+		var file := FileAccess.open(path, FileAccess.READ)
+		if file != null:
+			analytics_install_id = file.get_as_text().strip_edges()
+	if analytics_install_id.is_empty() or not _looks_like_uuid(analytics_install_id):
+		analytics_install_id = RankedRules.request_id()
+		var file := FileAccess.open(path, FileAccess.WRITE)
+		if file != null:
+			file.store_string(analytics_install_id)
+	if analytics_install_id.is_empty():
+		return
+	analytics_install_pinged = true
+	var body := JSON.stringify({
+		"p_install_id": analytics_install_id,
+		"p_platform": analytics_platform(),
+		"p_game_version": APP_VERSION,
+	})
+	cloud_send("install_ping", "%s/rest/v1/rpc/godot_install_ping" % SUPABASE_URL, supabase_headers(), HTTPClient.METHOD_POST, body)
+
+func _looks_like_uuid(value: String) -> bool:
+	return value.length() == 36 and value.count("-") == 4
+
 func start_auth_listener() -> void:
 	# Browsers cannot host a TCP callback server. Do not resize or treat them as native windows.
 	if OS.has_feature("web"):
@@ -13811,7 +13842,14 @@ func pkce_challenge(verifier: String) -> String:
 
 func start_oauth(provider: String) -> void:
 	if OS.has_feature("web"):
-		flash_notice("網頁 Google 登入尚未開放，請先離線遊玩；不會清除原存檔。")
+		if provider != "google":
+			flash_notice("網頁版目前提供 Google 或信箱驗證碼登入。")
+			return
+		web_auth_consumed = false
+		var web_redirect := "https://eve1995927-svg.github.io/basketballtw/game/index.html"
+		var url := "%s/auth/v1/authorize?provider=google&redirect_to=%s&response_type=token" % [SUPABASE_URL, web_redirect.uri_encode()]
+		flash_notice("正在開啟 Google 登入…")
+		JavaScriptBridge.eval("window.location.href=" + JSON.stringify(url))
 		return
 	start_auth_listener()
 	if auth_server == null:
@@ -13826,6 +13864,22 @@ func start_oauth(provider: String) -> void:
 	]
 	flash_notice("瀏覽器會打開，登入後回到遊戲。")
 	OS.shell_open(url)
+
+func poll_web_auth_callback() -> void:
+	if not OS.has_feature("web") or web_auth_consumed:
+		return
+	var fragment := str(JavaScriptBridge.eval("window.location.hash.substring(1)"))
+	if fragment.is_empty() or not fragment.contains("access_token="):
+		return
+	web_auth_consumed = true
+	var token := _query_value(fragment, "access_token")
+	var refresh := _query_value(fragment, "refresh_token")
+	if token.is_empty():
+		web_auth_consumed = false
+		return
+	auth_refresh = refresh
+	JavaScriptBridge.eval("window.history.replaceState({}, document.title, window.location.pathname + window.location.search)")
+	apply_access_token(token)
 
 func exchange_auth_code(code: String) -> void:
 	var body := JSON.stringify({
@@ -14027,6 +14081,9 @@ func auth_error_message(code: int, payload: String, sending := false) -> String:
 	return "驗證信未寄出，請確認信箱或稍後再試。" if sending else "驗證碼無效或已過期，請確認信件中的完整驗證碼。"
 
 func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
+	if kind == "install_ping":
+		# Anonymous telemetry is best effort and must never interrupt play.
+		return
 	if kind.begins_with("sync_save_"):
 		CloudSync.complete(self,kind,code,payload)
 		return
