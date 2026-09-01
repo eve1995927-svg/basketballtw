@@ -130,3 +130,51 @@ revoke insert, update, delete on public.godot_release_config from anon, authenti
 insert into public.godot_release_config(platform,minimum_version) values
   ('android','0.9.3'),('ios','0.9.3'),('web','0.9.3'),('all','0.9.3')
 on conflict (platform) do nothing;
+
+-- One-time, non-destructive backfill from the existing authoritative save.
+-- It only creates a missing account row; it never overwrites a server ledger.
+create or replace function tb_economy_private.safe_int(v text, fallback integer)
+returns integer language plpgsql immutable as $$
+begin
+  if v is null or v !~ '^-?[0-9]+$' then return fallback; end if;
+  return greatest(-2147483648, least(2147483647, v::numeric::integer));
+end;
+$$;
+revoke all on function tb_economy_private.safe_int(text,integer) from public, anon, authenticated;
+insert into public.godot_economy_accounts(owner_id,budget_million,gold,scout_points,training_points)
+select distinct on (s.owner_id)
+  s.owner_id,
+  greatest(0, tb_economy_private.safe_int(s.save_json->>'budget_million',300)),
+  greatest(0, tb_economy_private.safe_int(s.save_json->>'gold',100)),
+  greatest(0, tb_economy_private.safe_int(s.save_json->>'scout_points',20)),
+  greatest(0, tb_economy_private.safe_int(s.save_json->>'training_points',2))
+from public.godot_club_slots s
+where jsonb_typeof(s.save_json)='object'
+  and not exists (select 1 from public.godot_economy_accounts a where a.owner_id=s.owner_id)
+order by s.owner_id, s.updated_at desc, s.slot asc
+on conflict (owner_id) do nothing;
+
+create or replace function public.godot_economy_bootstrap()
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); row public.godot_economy_accounts;
+begin
+  if uid is null then raise exception 'LOGIN_REQUIRED' using errcode='28000'; end if;
+  select * into row from public.godot_economy_accounts where owner_id=uid;
+  if not found then
+    insert into public.godot_economy_accounts(owner_id,budget_million,gold,scout_points,training_points)
+    select uid,
+      greatest(0,tb_economy_private.safe_int(s.save_json->>'budget_million',300)),
+      greatest(0,tb_economy_private.safe_int(s.save_json->>'gold',100)),
+      greatest(0,tb_economy_private.safe_int(s.save_json->>'scout_points',20)),
+      greatest(0,tb_economy_private.safe_int(s.save_json->>'training_points',2))
+    from public.godot_club_slots s where s.owner_id=uid
+    order by s.updated_at desc, s.slot asc limit 1
+    on conflict (owner_id) do nothing;
+    select * into row from public.godot_economy_accounts where owner_id=uid;
+  end if;
+  return jsonb_build_object('budget_million',row.budget_million,'gold',row.gold,
+    'scout_points',row.scout_points,'training_points',row.training_points,'version',row.version);
+end;
+$$;
+revoke all on function public.godot_economy_bootstrap() from public, anon;
+grant execute on function public.godot_economy_bootstrap() to authenticated;

@@ -6,6 +6,7 @@
 2. **RLS 與權限邊界**：資源帳戶只能由本人讀取，寫入只能透過 RPC；ledger 與未來收據表對客戶端完全關閉。不要把 service role key 放入 Godot、APK、iOS 或網站。
 3. **付費驗證資料層**：建立私有 `verified_purchases`，只接受伺服器驗證後的 Apple／Google 交易；正式商城仍需 Edge Function 串 Apple／Google 收據驗證後才發貨。
 4. **遠端版本開關**：`godot_release_config` 可設定各平台最低版本、維護狀態與公告。客戶端下一版應在進入主畫面前讀取此表。
+5. **既有玩家回填**：Migration 已從雲端存檔以最新 slot 初始化缺少帳本的帳號；本次已建立 238 筆帳本，既有帳本不會被覆寫。
 
 ## 仍需在下一個版本接上的部分
 
