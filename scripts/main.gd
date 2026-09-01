@@ -2299,6 +2299,37 @@ func hud_economy_row(_compact := true) -> Control:
 	refresh_resource_hud()
 	return row
 
+func resource_display_number(raw_value: int, suffix := "") -> String:
+	# Keep the value readable in a narrow chip. Values are still exact; only the
+	# unit changes once the number would otherwise become an unreadable string.
+	var value := maxi(raw_value, 0)
+	if suffix == "萬" and value >= 10000:
+		var hundred_million := float(value) / 10000.0
+		return ("%.1f億" % hundred_million).replace(".0億", "億")
+	var digits := str(value)
+	var grouped := digits
+	# Keep the normal HUD format (for example 3,000 salary cap remains 3000)
+	# so existing players recognise it; add grouping only when it materially
+	# improves readability for five-digit balances and above.
+	if value >= 10000:
+		grouped = ""
+		while digits.length() > 3:
+			grouped = "," + digits.substr(digits.length() - 3, 3) + grouped
+			digits = digits.substr(0, digits.length() - 3)
+		grouped = digits + grouped
+	return grouped + suffix
+
+func resource_value_font_size(text_value: String, base_size: int) -> int:
+	# Barlow Condensed is compact, but long balances still need a safe floor.
+	var count := text_value.length()
+	if count >= 11:
+		return maxi(9, base_size - 4)
+	if count >= 9:
+		return maxi(10, base_size - 3)
+	if count >= 7:
+		return maxi(11, base_size - 2)
+	return base_size
+
 func refresh_resource_hud() -> void:
 	if resource_hud_labels.is_empty():
 		return
@@ -2307,12 +2338,18 @@ func refresh_resource_hud() -> void:
 	if values == resource_hud_snapshot:
 		return
 	resource_hud_snapshot = values
-	var text_values := {"budget": "%d萬" % budget_million, "gold": str(gold), "salary": "%d/%d" % [used, salary_cap], "scout": str(scout_points)}
+	var text_values := {
+		"budget": resource_display_number(budget_million, "萬"),
+		"gold": resource_display_number(gold),
+		"salary": "%s/%s" % [resource_display_number(used), resource_display_number(salary_cap)],
+		"scout": resource_display_number(scout_points),
+	}
 	for key in resource_hud_labels:
 		var node = resource_hud_labels[key]
 		if not is_instance_valid(node):
 			continue
 		node.text = text_values[key]
+		node.add_theme_font_size_override("font_size", resource_value_font_size(node.text, 12 if is_handheld() else 16))
 		if key == "salary":
 			node.add_theme_color_override("font_color", RED if used > salary_cap else GREEN)
 
