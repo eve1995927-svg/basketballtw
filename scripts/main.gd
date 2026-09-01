@@ -9338,9 +9338,11 @@ func social_share_chip(target: Dictionary, action: Callable) -> Control:
 	hit.custom_minimum_size = Vector2(0, 64 if compact_phone() else 88)
 	hit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	hit.add_theme_stylebox_override("normal", panel_style(Color("f4f6f8"), accent, 12, 1))
-	hit.add_theme_stylebox_override("hover", panel_style(Color("ffffff"), GOLD, 12, 1))
-	hit.add_theme_stylebox_override("pressed", panel_style(Color("dfe6ee"), TEXT, 12, 1))
+	# Dark material keeps white system icons and colored social marks readable
+	# on both OLED phones and bright desktop previews.
+	hit.add_theme_stylebox_override("normal", panel_style(Color("122333"), accent, 12, 1))
+	hit.add_theme_stylebox_override("hover", panel_style(Color("1d354a"), GOLD, 12, 1))
+	hit.add_theme_stylebox_override("pressed", panel_style(Color("0b1824"), TEXT, 12, 1))
 	var col := VBoxContainer.new()
 	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	col.offset_top = 8
@@ -9368,7 +9370,7 @@ func social_share_chip(target: Dictionary, action: Callable) -> Control:
 		fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		badge.add_child(fallback)
 	col.add_child(badge)
-	var name_node := label(caption, 11, Color("1a1a1a"), true, HORIZONTAL_ALIGNMENT_CENTER)
+	var name_node := label(caption, 11, TEXT, true, HORIZONTAL_ALIGNMENT_CENTER)
 	name_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(name_node)
 	hit.pressed.connect(func():
