@@ -108,10 +108,13 @@ func test_extra_records() -> void:
 	game.reset_league_table()
 	var league_before: Dictionary = game.league_table.duplicate(true)
 	var season_before := [game.season_games, game.season_wins, game.season_losses]
+	game.training_points = 0
 	for eid in ["easl", "bcl", "jones", "wcq"]:
 		game.pick_extra_entry(eid, {})
 		var opponent_id: String = game.extra_queue[0].id
+		var training_before: int = game.training_points
 		await settle_extra_fixture(true)
+		check(game.training_points == training_before + 1, "extra-match win awards exactly one training point: " + eid)
 		var records: Dictionary = game.extra_run(eid).records
 		check(records.club.w == 1 and records.club.l == 0, eid + " records user win")
 		check(records[opponent_id].l == 1, eid + " records opponent loss")
