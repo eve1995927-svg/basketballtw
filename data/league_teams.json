@@ -18,31 +18,34 @@
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/fubon/players/fubon_0.jpg",
         "origin_team_id": "fubon",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "fubon_1",
         "name": "陳又瑋",
         "position": "PG",
         "identity": "local",
-        "ovr": 70,
+        "ovr": 76,
         "potential": 76,
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/fubon/players/fubon_1.jpg",
         "origin_team_id": "fubon",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "fubon_2",
         "name": "周桂羽",
         "position": "SF",
         "identity": "local",
-        "ovr": 85,
+        "ovr": 80,
         "potential": 92,
         "salary_million": 303.4,
         "photo": "res://assets/images/teams/fubon/players/fubon_2.jpg",
         "origin_team_id": "fubon",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "fubon_3",
@@ -54,7 +57,8 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/fubon/players/fubon_3.jpg",
         "origin_team_id": "fubon",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "fubon_4",
@@ -66,7 +70,8 @@
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "fubon",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "fubon_5",
@@ -78,7 +83,8 @@
         "salary_million": 384.0,
         "photo": "",
         "origin_team_id": "fubon",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "fubon_6",
@@ -90,7 +96,8 @@
         "salary_million": 393.7,
         "photo": "",
         "origin_team_id": "fubon",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "fubon_7",
@@ -102,7 +109,8 @@
         "salary_million": 242.6,
         "photo": "",
         "origin_team_id": "fubon",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "fubon_8",
@@ -114,7 +122,8 @@
         "salary_million": 249.0,
         "photo": "",
         "origin_team_id": "fubon",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "fubon_9",
@@ -126,7 +135,8 @@
         "salary_million": 255.5,
         "photo": "res://assets/images/teams/fubon/players/fubon_9.jpg",
         "origin_team_id": "fubon",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "fubon_r111_5194749a8c",
@@ -135,13 +145,14 @@
         "identity": "foreign_student",
         "ovr": 78,
         "potential": 85,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "fubon",
         "skill_id": "two_way_wing",
         "roster_source": "https://pleagueofficial.com/team/1",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "fubon_r111_3efd6eb09e",
@@ -150,13 +161,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "fubon",
         "skill_id": "floor_general",
         "roster_source": "https://pleagueofficial.com/team/1",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "fubon_r111_5779a792a8",
@@ -165,13 +177,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "fubon",
         "skill_id": "screen_hub",
         "roster_source": "https://pleagueofficial.com/team/1",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "高位策應"
       },
       {
         "id": "fubon_r111_cbc3eccf4d",
@@ -180,13 +193,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "fubon",
         "skill_id": "floor_general",
         "roster_source": "https://pleagueofficial.com/team/1",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "fubon_r111_0cce136213",
@@ -195,13 +209,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "fubon",
         "skill_id": "two_way_wing",
         "roster_source": "https://pleagueofficial.com/team/1",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "fubon_r111_335746b641",
@@ -210,13 +225,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "fubon",
         "skill_id": "screen_hub",
         "roster_source": "https://pleagueofficial.com/team/1",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "高位策應"
       },
       {
         "id": "fubon_r111_cf785a4d40",
@@ -225,13 +241,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "fubon",
         "skill_id": "screen_hub",
         "roster_source": "https://pleagueofficial.com/team/1",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "高位策應"
       }
     ]
   },
@@ -249,12 +266,13 @@
         "name": "陳將双",
         "position": "PG",
         "identity": "local",
-        "ovr": 69,
+        "ovr": 76,
         "potential": 74,
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/pilots/players/pilots_0.jpg",
         "origin_team_id": "pilots",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "pilots_1",
@@ -266,31 +284,34 @@
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/pilots/players/pilots_1.jpg",
         "origin_team_id": "pilots",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "pilots_2",
         "name": "白曜誠",
         "position": "PG",
         "identity": "local",
-        "ovr": 71,
+        "ovr": 75,
         "potential": 78,
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/pilots/players/pilots_2.jpg",
         "origin_team_id": "pilots",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "pilots_3",
         "name": "盧峻翔",
         "position": "PG",
         "identity": "local",
-        "ovr": 88,
+        "ovr": 86,
         "potential": 96,
         "salary_million": 325.2,
         "photo": "res://assets/images/teams/pilots/players/pilots_3.jpg",
         "origin_team_id": "pilots",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "pilots_4",
@@ -302,7 +323,8 @@
         "salary_million": 223.8,
         "photo": "res://assets/images/teams/pilots/players/pilots_4.jpg",
         "origin_team_id": "pilots",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "pilots_5",
@@ -314,43 +336,47 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/pilots/players/pilots_5.jpg",
         "origin_team_id": "pilots",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "pilots_6",
         "name": "伯朗",
         "position": "C",
         "identity": "foreign",
-        "ovr": 81,
+        "ovr": 86,
         "potential": 87,
         "salary_million": 393.7,
         "photo": "res://assets/images/teams/pilots/players/pilots_6.jpg",
         "origin_team_id": "pilots",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "pilots_7",
         "name": "葛拉漢",
         "position": "SF",
         "identity": "foreign",
-        "ovr": 82,
+        "ovr": 80,
         "potential": 89,
         "salary_million": 403.4,
         "photo": "res://assets/images/teams/pilots/players/pilots_7.jpg",
         "origin_team_id": "pilots",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "pilots_8",
         "name": "米爾納",
         "position": "SF",
         "identity": "foreign",
-        "ovr": 83,
+        "ovr": 81,
         "potential": 91,
         "salary_million": 413.3,
         "photo": "res://assets/images/teams/pilots/players/pilots_8.jpg",
         "origin_team_id": "pilots",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "pilots_9",
@@ -362,37 +388,40 @@
         "salary_million": 138.0,
         "photo": "res://assets/images/teams/pilots/players/pilots_9.jpg",
         "origin_team_id": "pilots",
-        "skill_id": "bench_spark"
+        "skill_id": "bench_spark",
+        "skill_name": "替補火花"
       },
       {
         "id": "pilots_r111_61ed8cd1ec",
         "name": "丁恩迪",
         "position": "C",
-        "identity": "local",
+        "identity": "foreign_student",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "pilots",
         "skill_id": "screen_hub",
         "roster_source": "https://pleagueofficial.com/team/2",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "高位策應"
       },
       {
         "id": "pilots_r111_d698b41efe",
         "name": "李家慷",
         "position": "PG/SG",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 78,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "pilots",
         "skill_id": "floor_general",
         "roster_source": "https://pleagueofficial.com/team/2",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       }
     ]
   },
@@ -415,7 +444,8 @@
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/ghosthawks/players/ghosthawks_0.jpg",
         "origin_team_id": "ghosthawks",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "ghosthawks_1",
@@ -427,7 +457,8 @@
         "salary_million": 303.4,
         "photo": "res://assets/images/teams/ghosthawks/players/ghosthawks_1.jpg",
         "origin_team_id": "ghosthawks",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "ghosthawks_3",
@@ -439,19 +470,21 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/ghosthawks/players/ghosthawks_3.jpg",
         "origin_team_id": "ghosthawks",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "ghosthawks_4",
         "name": "謝宗融",
         "position": "C",
         "identity": "local",
-        "ovr": 73,
+        "ovr": 76,
         "potential": 82,
         "salary_million": 223.8,
         "photo": "res://assets/images/teams/ghosthawks/players/ghosthawks_4.jpg",
         "origin_team_id": "ghosthawks",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "ghosthawks_5",
@@ -463,19 +496,21 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/ghosthawks/players/ghosthawks_5.jpg",
         "origin_team_id": "ghosthawks",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "ghosthawks_6",
         "name": "陳范柏彥",
         "position": "SF",
         "identity": "local",
-        "ovr": 75,
+        "ovr": 78,
         "potential": 81,
         "salary_million": 236.2,
         "photo": "res://assets/images/teams/ghosthawks/players/ghosthawks_6.jpg",
         "origin_team_id": "ghosthawks",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "ghosthawks_7",
@@ -487,7 +522,8 @@
         "salary_million": 403.4,
         "photo": "res://assets/images/teams/ghosthawks/players/ghosthawks_7.jpg",
         "origin_team_id": "ghosthawks",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "ghosthawks_8",
@@ -499,7 +535,8 @@
         "salary_million": 413.3,
         "photo": "",
         "origin_team_id": "ghosthawks",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "ghosthawks_9",
@@ -511,37 +548,40 @@
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "ghosthawks",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "ghosthawks_r111_9a936eecc3",
         "name": "白薩",
         "position": "PG/SG",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 77,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "ghosthawks",
         "skill_id": "floor_general",
         "roster_source": "https://pleagueofficial.com/team/7",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "ghosthawks_r111_b56554ee56",
         "name": "丹尼爾",
         "position": "C",
         "identity": "foreign_student",
-        "ovr": 78,
+        "ovr": 74,
         "potential": 85,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "ghosthawks",
         "skill_id": "screen_hub",
         "roster_source": "https://pleagueofficial.com/team/7",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "高位策應"
       }
     ]
   },
@@ -564,7 +604,8 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/yankey/players/yankey_0.jpg",
         "origin_team_id": "yankey",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "yankey_1",
@@ -576,7 +617,8 @@
         "salary_million": 255.5,
         "photo": "",
         "origin_team_id": "yankey",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "yankey_2",
@@ -588,7 +630,8 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/yankey/players/yankey_2.jpg",
         "origin_team_id": "yankey",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "yankey_3",
@@ -600,43 +643,47 @@
         "salary_million": 230.0,
         "photo": "",
         "origin_team_id": "yankey",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "yankey_4",
         "name": "陳昱瑞",
         "position": "SG",
         "identity": "local",
-        "ovr": 84,
+        "ovr": 74,
         "potential": 93,
         "salary_million": 296.4,
         "photo": "res://assets/images/teams/yankey/players/yankey_4.jpg",
         "origin_team_id": "yankey",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "yankey_5",
         "name": "呂冠霆",
         "position": "SF",
         "identity": "local",
-        "ovr": 77,
+        "ovr": 72,
         "potential": 82,
         "salary_million": 249.0,
         "photo": "res://assets/images/teams/yankey/players/yankey_5.jpg",
         "origin_team_id": "yankey",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "yankey_6",
         "name": "張鎮衙",
         "position": "SF",
         "identity": "local",
-        "ovr": 78,
+        "ovr": 77,
         "potential": 84,
         "salary_million": 255.5,
         "photo": "res://assets/images/teams/yankey/players/yankey_6.jpg",
         "origin_team_id": "yankey",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "yankey_7",
@@ -648,7 +695,8 @@
         "salary_million": 242.6,
         "photo": "res://assets/images/teams/yankey/players/yankey_7.jpg",
         "origin_team_id": "yankey",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "yankey_8",
@@ -660,7 +708,8 @@
         "salary_million": 303.4,
         "photo": "res://assets/images/teams/yankey/players/yankey_8.jpg",
         "origin_team_id": "yankey",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "yankey_9",
@@ -672,7 +721,8 @@
         "salary_million": 242.6,
         "photo": "res://assets/images/teams/yankey/players/yankey_9.jpg",
         "origin_team_id": "yankey",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "yankey_10",
@@ -684,7 +734,8 @@
         "salary_million": 236.2,
         "photo": "res://assets/images/teams/yankey/players/yankey_10.jpg",
         "origin_team_id": "yankey",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "yankey_11",
@@ -696,7 +747,8 @@
         "salary_million": 413.3,
         "photo": "",
         "origin_team_id": "yankey",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "yankey_12",
@@ -708,7 +760,8 @@
         "salary_million": 403.4,
         "photo": "res://assets/images/teams/yankey/players/yankey_12.jpg",
         "origin_team_id": "yankey",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "yankey_r111_576bae688f",
@@ -717,28 +770,30 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "yankey",
         "skill_id": "floor_general",
         "roster_source": "https://pleagueofficial.com/team/8/coach_player",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "yankey_r111_286779ea2c",
         "name": "張傑瑋",
         "position": "PG/SG",
-        "identity": "local",
-        "ovr": 72,
+        "identity": "foreign_student",
+        "ovr": 78,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "yankey",
         "skill_id": "floor_general",
         "roster_source": "https://pleagueofficial.com/team/8/coach_player",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "yankey_r111_4bcd33c3fc",
@@ -747,13 +802,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "yankey",
         "skill_id": "floor_general",
         "roster_source": "https://pleagueofficial.com/team/8/coach_player",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "yankey_r111_861253fcc1",
@@ -762,13 +818,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "yankey",
         "skill_id": "two_way_wing",
         "roster_source": "https://pleagueofficial.com/team/8/coach_player",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "yankey_r111_49078cad84",
@@ -777,13 +834,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "yankey",
         "skill_id": "screen_hub",
         "roster_source": "https://pleagueofficial.com/team/8/coach_player",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "高位策應"
       },
       {
         "id": "yankey_r111_008a3cc020",
@@ -792,13 +850,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "yankey",
         "skill_id": "glass_cleaner",
         "roster_source": "https://pleagueofficial.com/team/8/coach_player",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "yankey_r111_aa4c09a00f",
@@ -807,13 +866,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "yankey",
         "skill_id": "two_way_wing",
         "roster_source": "https://pleagueofficial.com/team/8/coach_player",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       }
     ]
   },
@@ -836,79 +896,86 @@
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_0.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "dreamers_1",
         "name": "馬建豪",
-        "position": "SF",
+        "position": "SG/SF",
         "identity": "local",
-        "ovr": 70,
+        "ovr": 80,
         "potential": 76,
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_1.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "dreamers_2",
         "name": "張宗憲",
         "position": "SG",
         "identity": "local",
-        "ovr": 71,
+        "ovr": 77,
         "potential": 78,
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_2.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "dreamers_3",
         "name": "吳家駿",
         "position": "PG",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 70,
         "potential": 80,
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_3.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "dreamers_4",
         "name": "基德",
         "position": "SF",
         "identity": "foreign",
-        "ovr": 84,
+        "ovr": 80,
         "potential": 93,
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "dreamers",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "dreamers_5",
         "name": "林俊吉",
         "position": "PG",
         "identity": "local",
-        "ovr": 83,
+        "ovr": 80,
         "potential": 88,
         "salary_million": 289.3,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_5.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "dreamers_6",
         "name": "簡偉儒",
         "position": "SG",
         "identity": "local",
-        "ovr": 75,
+        "ovr": 70,
         "potential": 81,
         "salary_million": 236.2,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_6.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "dreamers_7",
@@ -920,19 +987,21 @@
         "salary_million": 242.6,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_7.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "dreamers_8",
         "name": "李德威",
         "position": "C",
         "identity": "local",
-        "ovr": 77,
+        "ovr": 70,
         "potential": 85,
         "salary_million": 249.0,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_8.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "dreamers_9",
@@ -944,7 +1013,8 @@
         "salary_million": 423.4,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_9.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "dreamers_10",
@@ -956,7 +1026,8 @@
         "salary_million": 384.0,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_10.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "dreamers_11",
@@ -968,19 +1039,21 @@
         "salary_million": 393.7,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_11.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "dreamers_12",
         "name": "蔣淯安",
         "position": "PG",
         "identity": "local",
-        "ovr": 85,
+        "ovr": 82,
         "potential": 92,
         "salary_million": 303.4,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_12.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "dreamers_13",
@@ -992,7 +1065,8 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/dreamers/players/dreamers_13.jpg",
         "origin_team_id": "dreamers",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "dreamers_r111_6e0fb8080a",
@@ -1001,13 +1075,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "dreamers",
         "skill_id": "two_way_wing",
         "roster_source": "https://zh.wikipedia.org/wiki/福爾摩沙夢想家",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "dreamers_r111_1f7d868b45",
@@ -1016,13 +1091,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "dreamers",
         "skill_id": "three_and_d",
         "roster_source": "https://zh.wikipedia.org/wiki/福爾摩沙夢想家",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "定點砲台"
       },
       {
         "id": "dreamers_r111_f7ecd059e8",
@@ -1031,13 +1107,14 @@
         "identity": "foreign",
         "ovr": 85,
         "potential": 90,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "dreamers",
         "skill_id": "glass_cleaner",
         "roster_source": "https://zh.wikipedia.org/wiki/福爾摩沙夢想家",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "禁區卡位"
       }
     ]
   },
@@ -1060,7 +1137,8 @@
         "salary_million": 384.0,
         "photo": "res://assets/images/teams/lioneers/players/lioneers_0.jpg",
         "origin_team_id": "lioneers",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "lioneers_1",
@@ -1072,7 +1150,8 @@
         "salary_million": 205.8,
         "photo": "",
         "origin_team_id": "lioneers",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "lioneers_2",
@@ -1084,7 +1163,8 @@
         "salary_million": 296.4,
         "photo": "res://assets/images/teams/lioneers/players/lioneers_2.jpg",
         "origin_team_id": "lioneers",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "lioneers_3",
@@ -1096,7 +1176,8 @@
         "salary_million": 217.7,
         "photo": "",
         "origin_team_id": "lioneers",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "lioneers_4",
@@ -1108,7 +1189,8 @@
         "salary_million": 223.8,
         "photo": "res://assets/images/teams/lioneers/players/lioneers_4.jpg",
         "origin_team_id": "lioneers",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "lioneers_5",
@@ -1120,31 +1202,34 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/lioneers/players/lioneers_5.jpg",
         "origin_team_id": "lioneers",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "lioneers_6",
         "name": "劉丞勳",
         "position": "PG",
         "identity": "local",
-        "ovr": 75,
+        "ovr": 79,
         "potential": 81,
         "salary_million": 236.2,
         "photo": "res://assets/images/teams/lioneers/players/lioneers_6.jpg",
         "origin_team_id": "lioneers",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "lioneers_7",
         "name": "傅友",
         "position": "SG",
         "identity": "local",
-        "ovr": 76,
+        "ovr": 72,
         "potential": 83,
         "salary_million": 242.6,
         "photo": "",
         "origin_team_id": "lioneers",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "lioneers_8",
@@ -1156,19 +1241,21 @@
         "salary_million": 249.0,
         "photo": "res://assets/images/teams/lioneers/players/lioneers_8.jpg",
         "origin_team_id": "lioneers",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "lioneers_9",
         "name": "帕塞獅",
         "position": "C",
         "identity": "foreign",
-        "ovr": 84,
+        "ovr": 80,
         "potential": 93,
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "lioneers",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "lioneers_10",
@@ -1180,7 +1267,8 @@
         "salary_million": 384.0,
         "photo": "",
         "origin_team_id": "lioneers",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "lioneers_11",
@@ -1192,7 +1280,8 @@
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/lioneers/players/lioneers_11.jpg",
         "origin_team_id": "lioneers",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "lioneers_12",
@@ -1204,7 +1293,8 @@
         "salary_million": 403.4,
         "photo": "",
         "origin_team_id": "lioneers",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "lioneers_13",
@@ -1216,7 +1306,8 @@
         "salary_million": 413.3,
         "photo": "",
         "origin_team_id": "lioneers",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "lioneers_14",
@@ -1228,7 +1319,8 @@
         "salary_million": 223.8,
         "photo": "",
         "origin_team_id": "lioneers",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "lioneers_15",
@@ -1240,7 +1332,8 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/lioneers/players/lioneers_15.jpg",
         "origin_team_id": "lioneers",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "lioneers_r111_2de9e77466",
@@ -1249,13 +1342,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "lioneers",
         "skill_id": "two_way_wing",
         "roster_source": "https://zh.wikipedia.org/wiki/新竹御嵿攻城獅",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       }
     ]
   },
@@ -1278,19 +1372,21 @@
         "salary_million": 200.0,
         "photo": "",
         "origin_team_id": "aquas",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "aquas_1",
         "name": "于煥亞",
         "position": "SG",
         "identity": "local",
-        "ovr": 70,
+        "ovr": 78,
         "potential": 76,
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/aquas/players/aquas_1.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "aquas_2",
@@ -1302,7 +1398,8 @@
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/aquas/players/aquas_2.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "aquas_3",
@@ -1314,7 +1411,8 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/aquas/players/aquas_3.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "aquas_4",
@@ -1326,7 +1424,8 @@
         "salary_million": 296.4,
         "photo": "res://assets/images/teams/aquas/players/aquas_4.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "aquas_5",
@@ -1338,7 +1437,8 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/aquas/players/aquas_5.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "aquas_6",
@@ -1350,7 +1450,8 @@
         "salary_million": 393.7,
         "photo": "res://assets/images/teams/aquas/players/aquas_6.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "aquas_7",
@@ -1362,7 +1463,8 @@
         "salary_million": 242.6,
         "photo": "res://assets/images/teams/aquas/players/aquas_7.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "aquas_8",
@@ -1374,19 +1476,21 @@
         "salary_million": 249.0,
         "photo": "res://assets/images/teams/aquas/players/aquas_8.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "aquas_9",
         "name": "洛斯柯",
         "position": "C",
         "identity": "foreign",
-        "ovr": 84,
+        "ovr": 81,
         "potential": 93,
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "aquas",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "aquas_10",
@@ -1398,7 +1502,8 @@
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/aquas/players/aquas_10.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "aquas_11",
@@ -1410,7 +1515,8 @@
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/aquas/players/aquas_11.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "aquas_12",
@@ -1422,7 +1528,8 @@
         "salary_million": 403.4,
         "photo": "",
         "origin_team_id": "aquas",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "aquas_13",
@@ -1434,7 +1541,8 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/aquas/players/aquas_13.jpg",
         "origin_team_id": "aquas",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "aquas_r111_1505534f0e",
@@ -1443,13 +1551,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "aquas",
         "skill_id": "two_way_wing",
         "roster_source": "https://zh.wikipedia.org/wiki/高雄全家海神",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "aquas_r111_e793dfa9f0",
@@ -1458,13 +1567,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "aquas",
         "skill_id": "glass_cleaner",
         "roster_source": "https://zh.wikipedia.org/wiki/高雄全家海神",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "禁區卡位"
       }
     ]
   },
@@ -1482,12 +1592,13 @@
         "name": "阿巴西",
         "position": "SF",
         "identity": "local",
-        "ovr": 88,
+        "ovr": 83,
         "potential": 93,
         "salary_million": 325.2,
         "photo": "res://assets/images/teams/dea/players/dea_0.jpg",
         "origin_team_id": "dea",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "dea_1",
@@ -1499,7 +1610,8 @@
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/dea/players/dea_1.jpg",
         "origin_team_id": "dea",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "dea_2",
@@ -1511,7 +1623,8 @@
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/dea/players/dea_2.jpg",
         "origin_team_id": "dea",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "dea_3",
@@ -1523,7 +1636,8 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/dea/players/dea_3.jpg",
         "origin_team_id": "dea",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "dea_4",
@@ -1535,19 +1649,21 @@
         "salary_million": 223.8,
         "photo": "res://assets/images/teams/dea/players/dea_4.jpg",
         "origin_team_id": "dea",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "dea_5",
         "name": "謝亞軒",
         "position": "PG",
         "identity": "local",
-        "ovr": 83,
+        "ovr": 80,
         "potential": 88,
         "salary_million": 289.3,
         "photo": "res://assets/images/teams/dea/players/dea_5.jpg",
         "origin_team_id": "dea",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "dea_6",
@@ -1559,7 +1675,8 @@
         "salary_million": 236.2,
         "photo": "res://assets/images/teams/dea/players/dea_6.jpg",
         "origin_team_id": "dea",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "dea_7",
@@ -1571,7 +1688,8 @@
         "salary_million": 282.4,
         "photo": "res://assets/images/teams/dea/players/dea_7.jpg",
         "origin_team_id": "dea",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "dea_8",
@@ -1583,7 +1701,8 @@
         "salary_million": 413.3,
         "photo": "",
         "origin_team_id": "dea",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "dea_9",
@@ -1595,7 +1714,8 @@
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "dea",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "dea_10",
@@ -1607,19 +1727,21 @@
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/dea/players/dea_10.jpg",
         "origin_team_id": "dea",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "dea_11",
         "name": "簡廷兆",
         "position": "PG",
         "identity": "local",
-        "ovr": 70,
+        "ovr": 76,
         "potential": 76,
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/dea/players/dea_11.jpg",
         "origin_team_id": "dea",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "dea_12",
@@ -1631,7 +1753,8 @@
         "salary_million": 403.4,
         "photo": "",
         "origin_team_id": "dea",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "dea_13",
@@ -1643,7 +1766,8 @@
         "salary_million": 413.3,
         "photo": "",
         "origin_team_id": "dea",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "dea_14",
@@ -1655,7 +1779,8 @@
         "salary_million": 223.8,
         "photo": "res://assets/images/teams/dea/players/dea_14.jpg",
         "origin_team_id": "dea",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "dea_r111_bfe1d40f9a",
@@ -1664,13 +1789,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "dea",
         "skill_id": "two_way_wing",
         "roster_source": "https://zh.wikipedia.org/wiki/新北中信特攻",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "dea_r111_719c9894d8",
@@ -1679,13 +1805,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "dea",
         "skill_id": "floor_general",
         "roster_source": "https://zh.wikipedia.org/wiki/新北中信特攻",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       }
     ]
   },
@@ -1703,12 +1830,13 @@
         "name": "林書緯",
         "position": "PG",
         "identity": "local",
-        "ovr": 85,
+        "ovr": 80,
         "potential": 90,
         "salary_million": 303.4,
         "photo": "res://assets/images/teams/kings/players/kings_0.jpg",
         "origin_team_id": "kings",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "kings_1",
@@ -1720,7 +1848,8 @@
         "salary_million": 393.7,
         "photo": "",
         "origin_team_id": "kings",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "kings_2",
@@ -1732,7 +1861,8 @@
         "salary_million": 403.4,
         "photo": "",
         "origin_team_id": "kings",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "kings_3",
@@ -1744,19 +1874,21 @@
         "salary_million": 217.7,
         "photo": "",
         "origin_team_id": "kings",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "kings_4",
         "name": "周儀翔",
         "position": "SF",
         "identity": "local",
-        "ovr": 73,
+        "ovr": 76,
         "potential": 82,
         "salary_million": 223.8,
         "photo": "res://assets/images/teams/kings/players/kings_4.jpg",
         "origin_team_id": "kings",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "kings_5",
@@ -1768,7 +1900,8 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/kings/players/kings_5.jpg",
         "origin_team_id": "kings",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "kings_6",
@@ -1780,7 +1913,8 @@
         "salary_million": 236.2,
         "photo": "res://assets/images/teams/kings/players/kings_6.jpg",
         "origin_team_id": "kings",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "kings_7",
@@ -1792,43 +1926,47 @@
         "salary_million": 242.6,
         "photo": "res://assets/images/teams/kings/players/kings_7.jpg",
         "origin_team_id": "kings",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "kings_8",
         "name": "王柏智",
         "position": "C",
         "identity": "local",
-        "ovr": 77,
+        "ovr": 70,
         "potential": 85,
         "salary_million": 249.0,
         "photo": "res://assets/images/teams/kings/players/kings_8.jpg",
         "origin_team_id": "kings",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "kings_9",
         "name": "林彥廷",
         "position": "PG",
         "identity": "local",
-        "ovr": 78,
+        "ovr": 75,
         "potential": 87,
         "salary_million": 255.5,
         "photo": "res://assets/images/teams/kings/players/kings_9.jpg",
         "origin_team_id": "kings",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "kings_10",
         "name": "蘇士軒",
         "position": "PF",
         "identity": "local",
-        "ovr": 69,
+        "ovr": 74,
         "potential": 74,
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/kings/players/kings_10.jpg",
         "origin_team_id": "kings",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "kings_11",
@@ -1840,7 +1978,8 @@
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/kings/players/kings_11.jpg",
         "origin_team_id": "kings",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "kings_12",
@@ -1852,7 +1991,8 @@
         "salary_million": 403.4,
         "photo": "",
         "origin_team_id": "kings",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "kings_13",
@@ -1864,7 +2004,8 @@
         "salary_million": 413.3,
         "photo": "",
         "origin_team_id": "kings",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "ghosthawks_2",
@@ -1876,7 +2017,8 @@
         "salary_million": 217.7,
         "photo": "",
         "origin_team_id": "kings",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "kings_r111_8b7a796f13",
@@ -1885,14 +2027,15 @@
         "identity": "local",
         "ovr": 76,
         "potential": 83,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "res://assets/images/teams/kings/players/kings_r111_8b7a796f13.jpg",
         "origin_team_id": "kings",
         "skill_id": "two_way_wing",
         "roster_source": "https://cardioid-tangerine-h6a3.squarespace.com/roster",
         "roster_checked_at": "2026-08-31",
         "rating_basis": "game_balance_not_official",
-        "photo_source": "https://images.squarespace-cdn.com/content/v1/60adbfc6e3b3063ed196efc7/4f9107fc-73d3-4850-963a-03bea0dd91b8/SEAL5492.jpg?format=500w"
+        "photo_source": "https://images.squarespace-cdn.com/content/v1/60adbfc6e3b3063ed196efc7/4f9107fc-73d3-4850-963a-03bea0dd91b8/SEAL5492.jpg?format=500w",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "kings_r111_7cd5e92554",
@@ -1901,44 +2044,47 @@
         "identity": "local",
         "ovr": 70,
         "potential": 77,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "res://assets/images/teams/kings/players/kings_r111_7cd5e92554.jpg",
         "origin_team_id": "kings",
         "skill_id": "two_way_wing",
         "roster_source": "https://cardioid-tangerine-h6a3.squarespace.com/roster",
         "roster_checked_at": "2026-08-31",
         "rating_basis": "game_balance_not_official",
-        "photo_source": "https://images.squarespace-cdn.com/content/v1/60adbfc6e3b3063ed196efc7/cf48f554-ce8b-4e6f-81e9-63eb55014d13/SEAL5655.jpg?format=500w"
+        "photo_source": "https://images.squarespace-cdn.com/content/v1/60adbfc6e3b3063ed196efc7/cf48f554-ce8b-4e6f-81e9-63eb55014d13/SEAL5655.jpg?format=500w",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "kings_r111_5b0c0f98f3",
         "name": "杰倫",
         "position": "PG/SG",
         "identity": "foreign",
-        "ovr": 85,
+        "ovr": 84,
         "potential": 90,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "kings",
         "skill_id": "floor_general",
         "roster_source": "https://cardioid-tangerine-h6a3.squarespace.com/roster",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "kings_r111_3055d96261",
         "name": "傑登",
         "position": "SF/PF",
         "identity": "foreign",
-        "ovr": 82,
+        "ovr": 80,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "kings",
         "skill_id": "two_way_wing",
         "roster_source": "https://cardioid-tangerine-h6a3.squarespace.com/roster",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "kings_r111_68567f4127",
@@ -1947,28 +2093,30 @@
         "identity": "foreign",
         "ovr": 84,
         "potential": 90,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "kings",
         "skill_id": "two_way_wing",
         "roster_source": "https://cardioid-tangerine-h6a3.squarespace.com/roster",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "kings_r111_6a104554f7",
         "name": "沃許本",
         "position": "C",
         "identity": "foreign",
-        "ovr": 85,
+        "ovr": 80,
         "potential": 90,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "kings",
         "skill_id": "screen_hub",
         "roster_source": "https://cardioid-tangerine-h6a3.squarespace.com/roster",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "高位策應"
       }
     ]
   },
@@ -1991,7 +2139,8 @@
         "salary_million": 317.9,
         "photo": "res://assets/images/teams/mars/players/mars_0.jpg",
         "origin_team_id": "mars",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "mars_1",
@@ -2003,7 +2152,8 @@
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/mars/players/mars_1.jpg",
         "origin_team_id": "mars",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "mars_2",
@@ -2015,7 +2165,8 @@
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/mars/players/mars_2.jpg",
         "origin_team_id": "mars",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "mars_3",
@@ -2027,7 +2178,8 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/mars/players/mars_3.jpg",
         "origin_team_id": "mars",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "mars_4",
@@ -2039,7 +2191,8 @@
         "salary_million": 223.8,
         "photo": "res://assets/images/teams/mars/players/mars_4.jpg",
         "origin_team_id": "mars",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "mars_5",
@@ -2051,7 +2204,8 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/mars/players/mars_5.jpg",
         "origin_team_id": "mars",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "mars_6",
@@ -2063,7 +2217,8 @@
         "salary_million": 236.2,
         "photo": "res://assets/images/teams/mars/players/mars_6.jpg",
         "origin_team_id": "mars",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "mars_7",
@@ -2075,7 +2230,8 @@
         "salary_million": 242.6,
         "photo": "",
         "origin_team_id": "mars",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "mars_8",
@@ -2087,31 +2243,34 @@
         "salary_million": 242.6,
         "photo": "res://assets/images/teams/mars/players/mars_8.jpg",
         "origin_team_id": "mars",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "mars_9",
         "name": "麥基",
         "position": "PG",
         "identity": "foreign",
-        "ovr": 84,
+        "ovr": 80,
         "potential": 93,
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "mars",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "mars_10",
         "name": "雷蒙恩",
         "position": "PG",
         "identity": "local",
-        "ovr": 69,
+        "ovr": 78,
         "potential": 74,
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/mars/players/mars_10.jpg",
         "origin_team_id": "mars",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "mars_11",
@@ -2123,19 +2282,21 @@
         "salary_million": 393.7,
         "photo": "",
         "origin_team_id": "mars",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "mars_12",
         "name": "陳冠全",
         "position": "C",
         "identity": "local",
-        "ovr": 71,
+        "ovr": 75,
         "potential": 78,
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/mars/players/mars_12.jpg",
         "origin_team_id": "mars",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "mars_r111_6aa9283fda",
@@ -2144,43 +2305,46 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "mars",
         "skill_id": "glass_cleaner",
         "roster_source": "https://zh.wikipedia.org/wiki/臺北台新戰神",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "mars_r111_0d3f593540",
         "name": "吳志鍇",
         "position": "SF/PF",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 75,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "mars",
         "skill_id": "two_way_wing",
         "roster_source": "https://zh.wikipedia.org/wiki/臺北台新戰神",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "mars_r111_532fb16df4",
         "name": "謝銘駿",
         "position": "PG/SG",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 76,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "mars",
         "skill_id": "floor_general",
         "roster_source": "https://zh.wikipedia.org/wiki/臺北台新戰神",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "mars_r111_3f223b967b",
@@ -2189,13 +2353,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "mars",
         "skill_id": "two_way_wing",
         "roster_source": "https://zh.wikipedia.org/wiki/臺北台新戰神",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       }
     ]
   },
@@ -2218,19 +2383,21 @@
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/leopards/players/leopards_0.jpg",
         "origin_team_id": "leopards",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "leopards_1",
         "name": "高錦瑋",
         "position": "PG",
         "identity": "local",
-        "ovr": 85,
+        "ovr": 80,
         "potential": 91,
         "salary_million": 303.4,
         "photo": "res://assets/images/teams/leopards/players/leopards_1.jpg",
         "origin_team_id": "leopards",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "leopards_2",
@@ -2242,7 +2409,8 @@
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/leopards/players/leopards_2.jpg",
         "origin_team_id": "leopards",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "leopards_3",
@@ -2254,7 +2422,8 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/leopards/players/leopards_3.jpg",
         "origin_team_id": "leopards",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "leopards_4",
@@ -2266,7 +2435,8 @@
         "salary_million": 223.8,
         "photo": "",
         "origin_team_id": "leopards",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "leopards_5",
@@ -2278,7 +2448,8 @@
         "salary_million": 384.0,
         "photo": "",
         "origin_team_id": "leopards",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "leopards_6",
@@ -2290,19 +2461,21 @@
         "salary_million": 236.2,
         "photo": "res://assets/images/teams/leopards/players/leopards_6.jpg",
         "origin_team_id": "leopards",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "leopards_7",
         "name": "林信寬",
         "position": "SF",
         "identity": "local",
-        "ovr": 76,
+        "ovr": 79,
         "potential": 83,
         "salary_million": 242.6,
         "photo": "res://assets/images/teams/leopards/players/leopards_7.jpg",
         "origin_team_id": "leopards",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "leopards_8",
@@ -2314,19 +2487,21 @@
         "salary_million": 413.3,
         "photo": "res://assets/images/teams/leopards/players/leopards_8.jpg",
         "origin_team_id": "leopards",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "leopards_9",
         "name": "溫布許",
         "position": "SF",
         "identity": "foreign",
-        "ovr": 84,
+        "ovr": 80,
         "potential": 93,
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "leopards",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "leopards_10",
@@ -2338,31 +2513,34 @@
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/leopards/players/leopards_10.jpg",
         "origin_team_id": "leopards",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "leopards_11",
         "name": "錢肯尼",
         "position": "SG",
         "identity": "local",
-        "ovr": 70,
+        "ovr": 77,
         "potential": 76,
         "salary_million": 205.8,
         "photo": "",
         "origin_team_id": "leopards",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "leopards_12",
         "name": "曹薰襄",
         "position": "PG",
         "identity": "local",
-        "ovr": 71,
+        "ovr": 74,
         "potential": 78,
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/leopards/players/leopards_12.jpg",
         "origin_team_id": "leopards",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "leopards_13",
@@ -2374,7 +2552,8 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/leopards/players/leopards_13.jpg",
         "origin_team_id": "leopards",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "leopards_r111_f93a2f7760",
@@ -2383,13 +2562,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "leopards",
         "skill_id": "two_way_wing",
         "roster_source": "https://zh.wikipedia.org/wiki/桃園台啤永豐雲豹",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "leopards_r111_e4da0f9ddb",
@@ -2398,13 +2578,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "leopards",
         "skill_id": "two_way_wing",
         "roster_source": "https://zh.wikipedia.org/wiki/桃園台啤永豐雲豹",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "leopards_r111_67e9516697",
@@ -2413,13 +2594,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 300,
+        "salary_million": 300.0,
         "photo": "",
         "origin_team_id": "leopards",
         "skill_id": "floor_general",
         "roster_source": "https://zh.wikipedia.org/wiki/桃園台啤永豐雲豹",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       }
     ]
   },
@@ -2442,7 +2624,8 @@
         "salary_million": 200.0,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_pure_1",
@@ -2454,7 +2637,8 @@
         "salary_million": 205.8,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_pure_2",
@@ -2466,7 +2650,8 @@
         "salary_million": 211.7,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_pure_3",
@@ -2478,19 +2663,21 @@
         "salary_million": 217.7,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_pure_4",
         "name": "伊波卡",
         "position": "PF",
         "identity": "foreign_student",
-        "ovr": 84,
+        "ovr": 79,
         "potential": 93,
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "sbl_pure_5",
@@ -2502,43 +2689,47 @@
         "salary_million": 230.0,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_pure_6",
         "name": "陳昭群",
         "position": "SF",
         "identity": "local",
-        "ovr": 75,
+        "ovr": 68,
         "potential": 81,
         "salary_million": 236.2,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_pure_7",
         "name": "黃建智",
         "position": "SF",
         "identity": "local",
-        "ovr": 76,
+        "ovr": 70,
         "potential": 83,
         "salary_million": 242.6,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_pure_8",
         "name": "顏宗瑋",
         "position": "C",
         "identity": "local",
-        "ovr": 77,
+        "ovr": 70,
         "potential": 85,
         "salary_million": 249.0,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "sbl_pure_9",
@@ -2550,7 +2741,8 @@
         "salary_million": 255.5,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_pure_10",
@@ -2562,7 +2754,8 @@
         "salary_million": 384.0,
         "photo": "",
         "origin_team_id": "sbl_pure",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "sbl_pure_r111_cec99c9705",
@@ -2571,13 +2764,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_pure",
         "skill_id": "floor_general",
         "roster_source": "https://sleague.tw/squad/13795",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_pure_r111_7d7afe0bce",
@@ -2586,13 +2780,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_pure",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13795",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_pure_r111_7a0d34ff9c",
@@ -2601,13 +2796,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_pure",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13795",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_pure_r111_110903b2a5",
@@ -2616,13 +2812,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_pure",
         "skill_id": "floor_general",
         "roster_source": "https://sleague.tw/squad/13795",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_pure_r111_6a4221312b",
@@ -2631,13 +2828,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_pure",
         "skill_id": "floor_general",
         "roster_source": "https://sleague.tw/squad/13795",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       }
     ]
   },
@@ -2660,7 +2858,8 @@
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/sbl_kites/players/sbl_kites_0.jpg",
         "origin_team_id": "sbl_kites",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_kites_1",
@@ -2672,7 +2871,8 @@
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/sbl_kites/players/sbl_kites_1.jpg",
         "origin_team_id": "sbl_kites",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_kites_2",
@@ -2684,31 +2884,34 @@
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/sbl_kites/players/sbl_kites_2.jpg",
         "origin_team_id": "sbl_kites",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_kites_3",
         "name": "余祥平",
-        "position": "PG",
+        "position": "SF",
         "identity": "local",
         "ovr": 72,
         "potential": 80,
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/sbl_kites/players/sbl_kites_3.jpg",
         "origin_team_id": "sbl_kites",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_kites_5",
         "name": "黃泓諭",
-        "position": "PG",
+        "position": "SG",
         "identity": "local",
         "ovr": 74,
         "potential": 79,
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/sbl_kites/players/sbl_kites_5.jpg",
         "origin_team_id": "sbl_kites",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_kites_6",
@@ -2720,31 +2923,34 @@
         "salary_million": 236.2,
         "photo": "res://assets/images/teams/sbl_kites/players/sbl_kites_6.jpg",
         "origin_team_id": "sbl_kites",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_kites_8",
         "name": "林孟學",
-        "position": "SF",
+        "position": "PF",
         "identity": "local",
-        "ovr": 77,
+        "ovr": 73,
         "potential": 85,
         "salary_million": 249.0,
         "photo": "res://assets/images/teams/sbl_kites/players/sbl_kites_8.jpg",
         "origin_team_id": "sbl_kites",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_kites_9",
         "name": "胡凱翔",
         "position": "SF",
         "identity": "local",
-        "ovr": 78,
+        "ovr": 75,
         "potential": 87,
         "salary_million": 255.5,
         "photo": "res://assets/images/teams/sbl_kites/players/sbl_kites_9.jpg",
         "origin_team_id": "sbl_kites",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_kites_10",
@@ -2756,7 +2962,8 @@
         "salary_million": 384.0,
         "photo": "res://assets/images/teams/sbl_kites/players/sbl_kites_10.jpg",
         "origin_team_id": "sbl_kites",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "sbl_kites_r111_f25f385701",
@@ -2765,13 +2972,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_kites",
         "skill_id": "floor_general",
         "roster_source": "https://sleague.tw/squad/13796",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_kites_r111_a7c2261706",
@@ -2780,13 +2988,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_kites",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13796",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_kites_r111_4eb1a7ec77",
@@ -2795,13 +3004,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_kites",
         "skill_id": "floor_general",
         "roster_source": "https://sleague.tw/squad/13796",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_kites_r111_137f18a3e1",
@@ -2810,13 +3020,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_kites",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13796",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_kites_r111_c8286054f6",
@@ -2825,13 +3036,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_kites",
         "skill_id": "floor_general",
         "roster_source": "https://sleague.tw/squad/13796",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       }
     ]
   },
@@ -2854,7 +3066,8 @@
         "salary_million": 200.0,
         "photo": "res://assets/images/teams/sbl_bank/players/sbl_bank_0.png",
         "origin_team_id": "sbl_bank",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_1",
@@ -2866,7 +3079,8 @@
         "salary_million": 205.8,
         "photo": "res://assets/images/teams/sbl_bank/players/sbl_bank_1.png",
         "origin_team_id": "sbl_bank",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_bank_2",
@@ -2878,7 +3092,8 @@
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/sbl_bank/players/sbl_bank_2.png",
         "origin_team_id": "sbl_bank",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_3",
@@ -2890,7 +3105,8 @@
         "salary_million": 217.7,
         "photo": "res://assets/images/teams/sbl_bank/players/sbl_bank_3.png",
         "origin_team_id": "sbl_bank",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_bank_4",
@@ -2902,7 +3118,8 @@
         "salary_million": 223.8,
         "photo": "res://assets/images/teams/sbl_bank/players/sbl_bank_4.png",
         "origin_team_id": "sbl_bank",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_bank_5",
@@ -2914,55 +3131,60 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/sbl_bank/players/sbl_bank_5.png",
         "origin_team_id": "sbl_bank",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_6",
         "name": "張家禾",
-        "position": "SF",
+        "position": "SH/SF",
         "identity": "local",
         "ovr": 75,
         "potential": 81,
         "salary_million": 236.2,
         "photo": "res://assets/images/teams/sbl_bank/players/sbl_bank_6.png",
         "origin_team_id": "sbl_bank",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_7",
         "name": "郭翰",
         "position": "C",
         "identity": "local",
-        "ovr": 76,
+        "ovr": 73,
         "potential": 83,
         "salary_million": 242.6,
         "photo": "res://assets/images/teams/sbl_bank/players/sbl_bank_7.png",
         "origin_team_id": "sbl_bank",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "sbl_bank_8",
         "name": "高健益",
         "position": "PG",
         "identity": "local",
-        "ovr": 77,
+        "ovr": 70,
         "potential": 85,
         "salary_million": 249.0,
         "photo": "res://assets/images/teams/sbl_bank/players/sbl_bank_8.png",
         "origin_team_id": "sbl_bank",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_bank_9",
         "name": "佩吉特",
         "position": "C",
         "identity": "foreign",
-        "ovr": 84,
+        "ovr": 80,
         "potential": 93,
         "salary_million": 423.4,
         "photo": "res://assets/images/teams/sbl_bank/players/sbl_bank_9.png",
         "origin_team_id": "sbl_bank",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "sbl_bank_r111_da08d9318e",
@@ -2971,13 +3193,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_bank",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13797",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_r111_2dfeace535",
@@ -2986,13 +3209,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_bank",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13797",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_r111_249c672291",
@@ -3001,13 +3225,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_bank",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13797",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_r111_22bc01c7d5",
@@ -3016,13 +3241,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_bank",
         "skill_id": "floor_general",
         "roster_source": "https://sleague.tw/squad/13797",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_bank_r111_926f20f5f0",
@@ -3031,13 +3257,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_bank",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13797",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_r111_b5de6c3435",
@@ -3046,13 +3273,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_bank",
         "skill_id": "floor_general",
         "roster_source": "https://sleague.tw/squad/13797",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_bank_r111_f4788c3975",
@@ -3061,13 +3289,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_bank",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13797",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_r111_0b8c64caf4",
@@ -3076,13 +3305,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_bank",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13797",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_r111_52f309824c",
@@ -3091,13 +3321,14 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_bank",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13797",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_bank_r111_34d0b87e3f",
@@ -3106,13 +3337,14 @@
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
-        "salary_million": 220,
+        "salary_million": 220.0,
         "photo": "",
         "origin_team_id": "sbl_bank",
         "skill_id": "screen_hub",
         "roster_source": "https://sleague.tw/squad/13797",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "高位策應"
       }
     ]
   },
@@ -3135,7 +3367,8 @@
         "salary_million": 200.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_beer_1",
@@ -3147,7 +3380,8 @@
         "salary_million": 205.8,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_beer_2",
@@ -3159,31 +3393,34 @@
         "salary_million": 211.7,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_beer_3",
         "name": "塔林",
         "position": "C",
         "identity": "foreign",
-        "ovr": 83,
+        "ovr": 80,
         "potential": 91,
         "salary_million": 413.3,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "sbl_beer_4",
         "name": "謝承諳",
         "position": "SF",
         "identity": "local",
-        "ovr": 73,
+        "ovr": 70,
         "potential": 82,
         "salary_million": 223.8,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_beer_5",
@@ -3195,67 +3432,73 @@
         "salary_million": 230.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_beer_6",
         "name": "鄭駿龍",
         "position": "PG",
         "identity": "local",
-        "ovr": 75,
+        "ovr": 70,
         "potential": 81,
         "salary_million": 236.2,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_beer_7",
         "name": "王鈞聖",
         "position": "PG",
         "identity": "local",
-        "ovr": 76,
+        "ovr": 71,
         "potential": 83,
         "salary_million": 242.6,
         "photo": "res://assets/images/teams/sbl_beer/players/sbl_beer_7.jpg",
         "origin_team_id": "sbl_beer",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_beer_8",
         "name": "曾品富",
         "position": "SF",
         "identity": "local",
-        "ovr": 77,
+        "ovr": 70,
         "potential": 85,
         "salary_million": 249.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_beer_9",
         "name": "吳宏興",
         "position": "C",
         "identity": "local",
-        "ovr": 78,
+        "ovr": 72,
         "potential": 87,
         "salary_million": 255.5,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "sbl_beer_10",
         "name": "石博恩",
         "position": "SF",
         "identity": "foreign_student",
-        "ovr": 69,
+        "ovr": 74,
         "potential": 74,
         "salary_million": 200.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_beer_11",
@@ -3267,7 +3510,8 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/sbl_beer/players/sbl_beer_11.jpg",
         "origin_team_id": "sbl_beer",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_beer_12",
@@ -3279,7 +3523,8 @@
         "salary_million": 255.5,
         "photo": "res://assets/images/teams/sbl_beer/players/sbl_beer_12.jpg",
         "origin_team_id": "sbl_beer",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_beer_13",
@@ -3291,7 +3536,8 @@
         "salary_million": 223.8,
         "photo": "",
         "origin_team_id": "sbl_beer",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_beer_r111_4def3d94b3",
@@ -3300,103 +3546,110 @@
         "identity": "local",
         "ovr": 72,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
         "skill_id": "floor_general",
         "roster_source": "https://sleague.tw/squad/13798",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_beer_r111_7e562764f2",
         "name": "賴俊廷",
         "position": "SF/PF",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 70,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13798",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_beer_r111_929bd8130b",
         "name": "周伯勳",
         "position": "SF/PF",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 76,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13798",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_beer_r111_8db77d9279",
         "name": "陳鈺安",
         "position": "SF/PF",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 69,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13798",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_beer_r111_f14c8b1df0",
         "name": "范士恩",
         "position": "SF/PF",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 75,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
         "skill_id": "two_way_wing",
         "roster_source": "https://sleague.tw/squad/13798",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_beer_r111_88d8482bf6",
         "name": "江啟安",
         "position": "PG/SG",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 70,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
         "skill_id": "floor_general",
         "roster_source": "https://sleague.tw/squad/13798",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_beer_r111_80b474e769",
         "name": "陳兆豪",
         "position": "C",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 70,
         "potential": 79,
-        "salary_million": 120,
+        "salary_million": 120.0,
         "photo": "",
         "origin_team_id": "sbl_beer",
         "skill_id": "screen_hub",
         "roster_source": "https://sleague.tw/squad/13798",
         "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official"
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "高位策應"
       }
     ]
   },
@@ -3414,24 +3667,26 @@
         "name": "魏子雲",
         "position": "SG",
         "identity": "local",
-        "ovr": 72,
+        "ovr": 70,
         "potential": 77,
         "salary_million": 217.7,
         "photo": "",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "sbl_yulon_1",
         "name": "布蘭登",
         "position": "C",
         "identity": "foreign",
-        "ovr": 81,
+        "ovr": 80,
         "potential": 87,
         "salary_million": 393.7,
         "photo": "res://assets/images/teams/sbl_yulon/players/sbl_yulon_1.jpg",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "sbl_yulon_2",
@@ -3443,7 +3698,8 @@
         "salary_million": 211.7,
         "photo": "res://assets/images/teams/sbl_yulon/players/sbl_yulon_2.jpg",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_yulon_3",
@@ -3455,7 +3711,8 @@
         "salary_million": 217.7,
         "photo": "",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "floor_general"
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       },
       {
         "id": "sbl_yulon_4",
@@ -3467,55 +3724,60 @@
         "salary_million": 223.8,
         "photo": "",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "sbl_yulon_5",
         "name": "王翊帆",
         "position": "SG",
         "identity": "local",
-        "ovr": 74,
+        "ovr": 71,
         "potential": 79,
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/sbl_yulon/players/sbl_yulon_5.jpg",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "three_and_d"
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       },
       {
         "id": "sbl_yulon_6",
         "name": "陳俊男",
         "position": "SF",
         "identity": "local",
-        "ovr": 75,
+        "ovr": 72,
         "potential": 81,
         "salary_million": 236.2,
         "photo": "",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_yulon_7",
         "name": "仲俊威",
         "position": "SF",
         "identity": "local",
-        "ovr": 76,
+        "ovr": 70,
         "potential": 83,
         "salary_million": 242.6,
         "photo": "",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_yulon_8",
         "name": "王凱裕",
         "position": "SF",
         "identity": "local",
-        "ovr": 77,
+        "ovr": 73,
         "potential": 85,
         "salary_million": 249.0,
         "photo": "",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "two_way_wing"
+        "skill_id": "two_way_wing",
+        "skill_name": "雙向側翼"
       },
       {
         "id": "sbl_yulon_9",
@@ -3527,7 +3789,8 @@
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "sbl_yulon_10",
@@ -3539,7 +3802,8 @@
         "salary_million": 230.0,
         "photo": "res://assets/images/teams/sbl_yulon/players/sbl_yulon_10.jpg",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "sbl_yulon_11",
@@ -3551,7 +3815,8 @@
         "salary_million": 205.8,
         "photo": "",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "screen_hub"
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應"
       },
       {
         "id": "sbl_yulon_12",
@@ -3563,7 +3828,8 @@
         "salary_million": 261.4,
         "photo": "res://assets/images/teams/sbl_yulon/players/sbl_yulon_12.jpg",
         "origin_team_id": "sbl_yulon",
-        "skill_id": "glass_cleaner"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       }
     ]
   }

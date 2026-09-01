@@ -54,7 +54,11 @@
     "skill_id": "screen_hub",
     "skill_name": "高位策應",
     "skill_description": "擋拆與二次進攻更有效，適合半場傳導",
-    "source": "P.LEAGUE+ 2025-26"
+    "source": "P.LEAGUE+ 2025-26",
+    "identity": "local",
+    "ovr": 68,
+    "potential": 0,
+    "salary_million": 0.0
   },
   {
     "id": "plg_2025_chung_yi_jen",
@@ -73,7 +77,11 @@
     "skill_id": "three_and_d",
     "skill_name": "定點砲台",
     "skill_description": "空檔三分命中率提升，快節奏戰術額外加成",
-    "source": "P.LEAGUE+ 2025-26"
+    "source": "P.LEAGUE+ 2025-26",
+    "identity": "local",
+    "ovr": 68,
+    "potential": 0,
+    "salary_million": 0.0
   },
   {
     "id": "plg_2025_chen_jiang_shuang",
@@ -206,7 +214,11 @@
     "skill_id": "bench_spark",
     "skill_name": "替補火花",
     "skill_description": "替補登場時提升攻守連貫",
-    "source": "P.LEAGUE+ 2025-26"
+    "source": "P.LEAGUE+ 2025-26",
+    "identity": "local",
+    "ovr": 68,
+    "potential": 0,
+    "salary_million": 0.0
   },
   {
     "id": "plg_2025_kuo_shao_chieh",
@@ -225,7 +237,11 @@
     "skill_id": "lockdown",
     "skill_name": "外圍鎖鏈",
     "skill_description": "降低對手外線效率，對射手型對手更有效",
-    "source": "P.LEAGUE+ 2025-26"
+    "source": "P.LEAGUE+ 2025-26",
+    "identity": "local",
+    "ovr": 68,
+    "potential": 0,
+    "salary_million": 0.0
   },
   {
     "id": "plg_2025_wang_lu_hsiang",
@@ -244,7 +260,11 @@
     "skill_id": "hustle",
     "skill_name": "拼搶能量",
     "skill_description": "提升抄截與失誤轉換事件機率",
-    "source": "P.LEAGUE+ 2025-26"
+    "source": "P.LEAGUE+ 2025-26",
+    "identity": "local",
+    "ovr": 68,
+    "potential": 0,
+    "salary_million": 0.0
   },
   {
     "id": "plg_2025_ku_mao_wei_jia",
@@ -263,7 +283,11 @@
     "skill_id": "floor_general",
     "skill_name": "節奏大師",
     "skill_description": "提升團隊默契轉換，降低比賽失誤波動",
-    "source": "P.LEAGUE+ 2025-26"
+    "source": "P.LEAGUE+ 2025-26",
+    "identity": "local",
+    "ovr": 68,
+    "potential": 0,
+    "salary_million": 0.0
   },
   {
     "id": "plg_2025_lin_zheng",
@@ -416,7 +440,11 @@
     "skill_id": "hustle",
     "skill_name": "拼搶能量",
     "skill_description": "提升抄截與失誤轉換事件機率",
-    "source": "P.LEAGUE+ 2025-26"
+    "source": "P.LEAGUE+ 2025-26",
+    "identity": "local",
+    "ovr": 68,
+    "potential": 0,
+    "salary_million": 0.0
   },
   {
     "id": "plg_2025_chuang_chao_sheng",
@@ -454,7 +482,11 @@
     "skill_id": "playmaker",
     "skill_name": "二次助攻",
     "skill_description": "助攻與球權分享提升，團隊進攻更平滑",
-    "source": "P.LEAGUE+ 2025-26"
+    "source": "P.LEAGUE+ 2025-26",
+    "identity": "local",
+    "ovr": 68,
+    "potential": 0,
+    "salary_million": 0.0
   },
   {
     "id": "plg_2025_chiang_chia_le",
@@ -511,7 +543,11 @@
     "skill_id": "hustle",
     "skill_name": "拼搶能量",
     "skill_description": "提升抄截與失誤轉換事件機率",
-    "source": "P.LEAGUE+ 2025-26"
+    "source": "P.LEAGUE+ 2025-26",
+    "identity": "local",
+    "ovr": 68,
+    "potential": 0,
+    "salary_million": 0.0
   },
   {
     "id": "plg_2025_chang_chen_ya",

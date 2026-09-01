@@ -1,0 +1,1573 @@
+{
+  "year": 2026,
+  "checked_on": "2026-08-29",
+  "sources": [
+    {
+      "league": "PLG",
+      "official": true,
+      "url": "https://pleagueofficial.com/draft/2026-27/draft-receive",
+      "identity": "local",
+      "ovr": 77,
+      "potential": 0,
+      "salary_million": 300.0,
+      "skill_id": "veteran_leadership",
+      "skill_name": "老將領導"
+    },
+    {
+      "league": "TPBL",
+      "official": true,
+      "url": "https://tpbl.basketball/draft/list",
+      "identity": "local",
+      "ovr": 77,
+      "potential": 0,
+      "salary_million": 300.0,
+      "skill_id": "veteran_leadership",
+      "skill_name": "老將領導"
+    },
+    {
+      "league": "SBL",
+      "official": false,
+      "url": "https://news.nextapple.com/politics/20260802/7323E9AB908CAFCBADC02001BEC06E61",
+      "corroboration": "https://www.basketballtop5.com/news/detail/38327",
+      "identity": "local",
+      "ovr": 77,
+      "potential": 0,
+      "salary_million": 300.0,
+      "skill_id": "veteran_leadership",
+      "skill_name": "老將領導"
+    }
+  ],
+  "notes": "三聯盟報名聯集，按姓名去重。TPBL 退出者若仍列於 PLG 報名表則保留。不同來源的學校／位置分別保存；首個有資料來源供畫面使用。SBL 名單為兩份公開報導交叉核對，待官方表補驗。OVR、潛力、薪資、AI 順位及未知位置均為遊戲設定，不是真實評價或官方選秀结果。",
+  "players": [
+    {
+      "id": "draft2026_郭嘉安",
+      "name": "郭嘉安",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "國立體育大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "國立體育大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "國立體育大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 73,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_史魯齊",
+      "name": "史魯齊",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "黎明技術學院",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "黎明技術學院",
+          "status": "withdrawn",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_王語烽",
+      "name": "王語烽",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "國立高雄師範大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_李盛新",
+      "name": "李盛新",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "天主教輔仁大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 73,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_李宗漢",
+      "name": "李宗漢",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "中信金融管理學院",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "中信金融管理學院",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "中信金融管理學院",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_劉恩任",
+      "name": "劉恩任",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "中信金融管理學院",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "中信金融管理學院",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "中信金融管理學院",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_王鼎鈞",
+      "name": "王鼎鈞",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "健行科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "健行科技大學",
+          "status": "withdrawn",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_史密斯",
+      "name": "史密斯",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "健行科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_許浩翔",
+      "name": "許浩翔",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "中信金融管理學院",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "中信金融管理學院",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "中信金融管理學院",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_潘偉傑",
+      "name": "潘偉傑",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "健行科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "健行科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_馬友程",
+      "name": "馬友程",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "臺北市立大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "臺北市立大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_陳宇軒",
+      "name": "陳宇軒",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "國立臺北護理健康大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "嘉南藥理大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_許皓洋",
+      "name": "許皓洋",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "臺北市立大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "臺北市立大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_張志守",
+      "name": "張志守",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "Evergreen State College",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "Evergreen State College",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_傅友",
+      "name": "傅友",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "West Virginia Tech",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "West Virginia Tech",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_張庭瑋",
+      "name": "張庭瑋",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "University of Washington",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "Occidental College",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_黃浚倢",
+      "name": "黃浚倢",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "國立臺灣藝術大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "國立臺灣藝術大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "國立臺灣藝術大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_陳柏丞",
+      "name": "陳柏丞",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "中國文化大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "中國文化大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "中國文化大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_鄭文傑",
+      "name": "鄭文傑",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "臺北市立大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "臺北市立大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "臺北市立大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_莫森",
+      "name": "莫森",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "天主教輔仁大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_邱晨洋",
+      "name": "邱晨洋",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "國立臺南大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_吳志鍇",
+      "name": "吳志鍇",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "國立政治大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "國立政治大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 72,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_波波卡",
+      "name": "波波卡",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "國立政治大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "foreign_student",
+      "ovr": 73,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_林子桓",
+      "name": "林子桓",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "University of Charleston",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "University of Charleston",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "University of Charleston",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_曾唯庭",
+      "name": "曾唯庭",
+      "registrations": [
+        {
+          "league": "PLG",
+          "position": "PG",
+          "school": "臺北市立大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "臺北市立大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "臺北市立大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_賀丹",
+      "name": "賀丹",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "Cornell University",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 79,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_王俊凱",
+      "name": "王俊凱",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "醒吾科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "醒吾科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_蔡明峻",
+      "name": "蔡明峻",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "醒吾科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "醒吾科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_盧奕辰",
+      "name": "盧奕辰",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "國立臺北商業大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "國立臺北商業大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_李祐哲",
+      "name": "李祐哲",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "國立虎尾科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "國立虎尾科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_陳恩",
+      "name": "陳恩",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "中原大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "中原大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_林瑞安",
+      "name": "林瑞安",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "University of La Verne",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "University of La Verne",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_廖胤辰",
+      "name": "廖胤辰",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "新榮高中",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "醒吾科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_潘建宏",
+      "name": "潘建宏",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "天主教輔仁大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "天主教輔仁大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_陳廷霖",
+      "name": "陳廷霖",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "義守大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_陳皓宇",
+      "name": "陳皓宇",
+      "registrations": [
+        {
+          "league": "TPBL",
+          "position": "PG",
+          "school": "中原大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        },
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "中原大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_潘彥愷",
+      "name": "潘彥愷",
+      "registrations": [
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "國立臺灣師範大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_張東庭",
+      "name": "張東庭",
+      "registrations": [
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "國立體育大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_莫斯塔發",
+      "name": "莫斯塔發",
+      "registrations": [
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "國立政治大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "foreign_student",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_廖原祥",
+      "name": "廖原祥",
+      "registrations": [
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "龍華科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_蔡柏充",
+      "name": "蔡柏充",
+      "registrations": [
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "國立臺中科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_李書丞",
+      "name": "李書丞",
+      "registrations": [
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "亞洲大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_杜帛鴻",
+      "name": "杜帛鴻",
+      "registrations": [
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "國立臺灣科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_鞠丞哲",
+      "name": "鞠丞哲",
+      "registrations": [
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "健行科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    },
+    {
+      "id": "draft2026_劉皓瑋",
+      "name": "劉皓瑋",
+      "registrations": [
+        {
+          "league": "SBL",
+          "position": "PG",
+          "school": "龍華科技大學",
+          "status": "registered",
+          "identity": "local",
+          "ovr": 77,
+          "potential": 0,
+          "salary_million": 300.0,
+          "skill_id": "veteran_leadership",
+          "skill_name": "老將領導"
+        }
+      ],
+      "identity": "local",
+      "ovr": 68,
+      "potential": 0,
+      "salary_million": 0.0,
+      "skill_id": "bench_spark",
+      "skill_name": "即戰力"
+    }
+  ],
+  "identity": "local",
+  "ovr": 77,
+  "potential": 0,
+  "salary_million": 300.0,
+  "skill_id": "veteran_leadership",
+  "skill_name": "老將領導"
+}
