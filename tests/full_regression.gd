@@ -20,6 +20,7 @@ func run() -> void:
 	await fresh_game()
 	await test_no_headline_selection()
 	await test_catalog()
+	await test_veteran_and_training_rules()
 	await test_scout_distribution()
 	await test_free_agent_signing()
 	await test_economy_update()
@@ -56,6 +57,37 @@ func test_no_headline_selection() -> void:
 		var score: Array[int] = MatchSimulator.game({"rating": 76, "offense": 0.2, "defense": 0.2, "pace": 24, "three_rate": 0.38}, {"rating": 75, "offense": 0.2, "defense": 0.2, "pace": 24, "three_rate": 0.36}, rng)
 		scores["%d-%d" % [score[0], score[1]]] = true
 	check(scores.size() >= 4, "repeated matches produce varied scores instead of a fixed result")
+
+func test_veteran_and_training_rules() -> void:
+	await fresh_game()
+	var veteran: Dictionary = game.to_game_player({"name":"田壘", "ovr":81, "origin_team_id":"sbl_yulon"})
+	check(veteran.get("pos", "") == "PF", "田壘 uses curated PF position")
+	var guard: Dictionary = game.to_game_player({"name":"李學林", "ovr":75, "origin_team_id":"sbl_yulon"})
+	check(guard.get("pos", "") == "PG", "李學林 uses curated PG position")
+	var retired: Dictionary = game.to_game_player({"name":"呂政儒", "ovr":74, "origin_team_id":"sbl_yulon"})
+	check(retired.get("pos", "") == "SF" and retired.get("golden_generation", false), "呂政儒 is a retired SF golden veteran")
+	var p: Dictionary = game.team_players[0]
+	p["match_appearances"] = 2
+	game.team_players[0] = p
+	game.training_points = 1
+	game.budget_million = 1000
+	var before: int = int(p.get("training_sessions", 0))
+	game.apply_player_training(0, false)
+	check(int(game.team_players[0].get("training_sessions", 0)) == int(before) and game.training_points == 1, "training is gated until three appearances")
+	p = game.team_players[0]
+	p["match_appearances"] = 3
+	game.team_players[0] = p
+	game.apply_player_training(0, false)
+	check(int(game.team_players[0].get("training_sessions", 0)) == int(before) + 1 and game.training_points == 0, "first training succeeds at 100 percent")
+	p = game.team_players[0]
+	p["training_sessions"] = 5
+	game.team_players[0] = p
+	game.training_points = 1
+	game.apply_player_training(0, false)
+	check(game.training_points == 1 and int(game.team_players[0].get("training_sessions", 0)) == 5, "fifth completed training blocks further attempts")
+	var card: Control = game.lobby_player_card(game.team_players[0], false, 0, false, 96)
+	check(card.find_child("TrainingBadge", true, false) != null and card.find_child("TrainingGlow", true, false) != null, "trained card shows bonus and glow")
+	card.free()
 
 func settle_extra_fixture(won: bool) -> void:
 	game.start_extra_match()
