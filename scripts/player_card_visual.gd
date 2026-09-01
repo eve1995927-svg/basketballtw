@@ -113,11 +113,6 @@ func configure(data: Dictionary, fonts: Dictionary) -> void:
 		training.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		canvas.add_child(training)
 		label(training, "Value", "+%d" % int(data.get("training_sessions", 0)), Rect2(2, 0, 38, 18), fonts.kicker, 13, Color("9de7ff"))
-		if int(data.get("training_sessions", 0)) >= 5:
-			var glow := TrainingGlow.new()
-			glow.name = "TrainingGlow"
-			glow.size = DESIGN_SIZE
-			canvas.add_child(glow)
 	if footer_gradient == null:
 		var gradient := Gradient.new()
 		gradient.offsets = PackedFloat32Array([0.0, 0.30, 0.63, 1.0])
@@ -164,6 +159,12 @@ func configure(data: Dictionary, fonts: Dictionary) -> void:
 		label(canvas, "OriginName", data.origin, Rect2(14, 141, 116, 23), fonts.bold, 13, Color("e0e6ed"))
 	label(canvas, "PlayerName", data.player_name, Rect2(14, 161, 116, 28), fonts.bold, 21)
 	label(canvas, "Salary", data.salary, Rect2(14, 188, 116, 20), fonts.bold, 14, Color("e5c885"))
+	if int(data.get("training_sessions", 0)) >= 5:
+		# Draw after the frame so the completed-training glow remains visible.
+		var glow := TrainingGlow.new()
+		glow.name = "TrainingGlow"
+		glow.size = DESIGN_SIZE
+		canvas.add_child(glow)
 	resized.connect(_fit_canvas)
 	_fit_canvas()
 

@@ -15387,6 +15387,13 @@ func show_player_sheet(player: Dictionary, back: Callable, confirm := Callable()
 		)
 		train_button.disabled = sessions >= TRAINING_MAX_SESSIONS or int(card.get("match_appearances", 0)) < 3 or training_points < 1 or budget_million < 20
 		content.add_child(train_button)
+		if sessions >= TRAINING_MAX_SESSIONS:
+			var breakthrough := action_button("突破（未來開放）", Color("4b3b69"), func():
+				flash_notice("突破技能系統尚未開放，已保留你的 5 次特訓進度。")
+			, Vector2(0, 42))
+			breakthrough.disabled = true
+			breakthrough.tooltip_text = "特訓滿 5 次後可用；技能突破功能將於未來版本開放"
+			content.add_child(breakthrough)
 	var sheet_bar := HBoxContainer.new()
 	sheet_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sheet_bar.add_theme_constant_override("separation", 4 if phone else 6)
