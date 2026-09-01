@@ -1,5 +1,8 @@
-// 發布前把網址換成 Google Play 封閉測試與 TestFlight 公開邀請連結。
-window.GAME_LINKS = {
-  android: 'https://play.google.com/apps/testing/com.yongye.taiwanbasketballgm',
-  ios: 'https://testflight.apple.com/join/vdDt2uwZ'
-};
+/*
+ * Public download links live here so a future custom domain only needs one
+ * small edit. Keep unavailable test links empty instead of showing dead URLs.
+ */
+window.GAME_LINKS = Object.freeze({
+  android: "",
+  ios: ""
+});

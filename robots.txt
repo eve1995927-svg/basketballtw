@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /game/
+Sitemap: https://eve1995927-svg.github.io/basketballtw/sitemap.xml
