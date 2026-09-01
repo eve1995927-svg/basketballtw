@@ -247,6 +247,18 @@ const SKILL_INDIVIDUAL_Q4_CAP := 0.75
 const SKILL_TEAM_OFFENSE_CAP := 0.72
 const SKILL_TEAM_DEFENSE_CAP := 0.72
 const SKILL_TEAM_Q4_CAP := 0.90
+const FAN_SKILL_NAMES := {
+	"盧峻翔": "69大魔王",
+	"林志傑": "野獸覺醒",
+	"陳信安": "台灣飛人",
+	"田壘": "少俠出劍",
+	"曾文鼎": "大房東收租",
+	"楊敬敏": "阿美族戰士",
+	"李學林": "寶島艾佛森",
+	"張宗憲": "噴射機起飛",
+	"蔡文誠": "本土洋將",
+	"林庭謙": "中華隊救星",
+}
 const WEB_NEWS_PATH := "user://taiwan_basketball_webnews.json"
 const WEB_NEWS_RSS := "https://news.google.com/rss/search?q=SBL+OR+PLG+OR+TPBL+OR+%E5%8F%B0%E7%81%A3%E7%B1%83%E7%90%83&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
 const LINE_QR_PATH := "res://assets/ui/line_community_qr.jpg"
@@ -4450,6 +4462,10 @@ func to_game_player(raw: Dictionary, image_override := "") -> Dictionary:
 	var profile: Dictionary = skill_profile(skill_id)
 	player["skill_name"] = str(profile.get("name", "即戰力"))
 	player["skill_description"] = str(profile.get("description", ""))
+	# Fan-facing names are a presentation layer; the existing balanced skill
+	# effect remains unchanged until a dedicated skill design is approved.
+	if FAN_SKILL_NAMES.has(str(player.get("name", ""))):
+		player["skill_name"] = str(FAN_SKILL_NAMES.get(str(player.get("name", ""))))
 	player["salary_million"] = published_salary(player)
 	player["color"] = player_tier_key(player)
 	player["tier"] = str(player.get("tier", "RARE"))
