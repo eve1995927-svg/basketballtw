@@ -64,7 +64,7 @@ begin
      or abs(coalesce(p_delta_scout,0)) > 1000000 or abs(coalesce(p_delta_training,0)) > 100000 then
     raise exception 'ECONOMY_DELTA_TOO_LARGE';
   end if;
-  if auth.role() <> 'service_role' and (
+  if coalesce((select auth.jwt()->>'role'),'') <> 'service_role' and (
       p_action not in ('sign_player','trade_fee','scout_purchase','scout_refresh','training')
       or p_delta_budget > 0 or p_delta_gold > 0 or p_delta_scout > 0 or p_delta_training > 0
     ) then
@@ -200,14 +200,22 @@ create or replace function public.godot_match_settle(
   p_gold integer default 0, p_scout integer default 0, p_training integer default 0
 ) returns jsonb language plpgsql security definer set search_path = '' as $$
 declare uid uuid := auth.uid(); a public.godot_economy_accounts; old tb_economy_private.match_settlements;
-declare b integer; g integer; s integer; t integer; result jsonb;
+declare b integer; g integer; s integer; t integer; reward_budget integer; reward_gold integer; reward_scout integer; reward_training integer; result jsonb;
 begin
   if uid is null then raise exception 'LOGIN_REQUIRED' using errcode='28000'; end if;
   if p_match_id is null or p_league not in ('SBL','PLG','TPBL','extra') then raise exception 'INVALID_MATCH'; end if;
+  -- Never trust reward values supplied by a client.  Keep the arguments for
+  -- backwards-compatible RPC calls, but derive the canonical envelope here.
   if p_won then
-    if p_budget < 0 or p_budget > 100 or p_gold < 0 or p_gold > 50 or p_scout < 0 or p_scout > 3 or p_training not in (0,1) then raise exception 'REWARD_OUT_OF_RANGE'; end if;
-  elsif p_budget < 0 or p_budget > 50 or p_gold <> 0 or p_scout <> 0 or p_training <> 0 then
-    raise exception 'REWARD_OUT_OF_RANGE';
+    reward_budget := 20;
+    reward_gold := 5 + mod(abs(hashtextextended(p_match_id::text, 0)), 6);
+    reward_scout := 1 + mod(abs(hashtextextended(p_match_id::text || ':scout', 0)), 3);
+    reward_training := 1;
+  else
+    reward_budget := 10;
+    reward_gold := 0;
+    reward_scout := 0;
+    reward_training := 0;
   end if;
   perform pg_advisory_xact_lock(hashtextextended(uid::text || ':match:' || p_match_id::text,0));
   select * into old from tb_economy_private.match_settlements where owner_id=uid and match_id=p_match_id;
@@ -217,10 +225,10 @@ begin
   end if;
   select * into a from public.godot_economy_accounts where owner_id=uid for update;
   if not found then insert into public.godot_economy_accounts(owner_id) values(uid) returning * into a; end if;
-  b:=a.budget_million+p_budget; g:=a.gold+p_gold; s:=a.scout_points+p_scout; t:=a.training_points+p_training;
+  b:=a.budget_million+reward_budget; g:=a.gold+reward_gold; s:=a.scout_points+reward_scout; t:=a.training_points+reward_training;
   update public.godot_economy_accounts set budget_million=b,gold=g,scout_points=s,training_points=t,version=version+1,updated_at=clock_timestamp() where owner_id=uid;
   result:=jsonb_build_object('budget_million',b,'gold',g,'scout_points',s,'training_points',t);
-  insert into tb_economy_private.match_settlements(owner_id,match_id,won,league,budget,gold,scout,training) values(uid,p_match_id,p_won,p_league,p_budget,p_gold,p_scout,p_training);
+  insert into tb_economy_private.match_settlements(owner_id,match_id,won,league,budget,gold,scout,training) values(uid,p_match_id,p_won,p_league,reward_budget,reward_gold,reward_scout,reward_training);
   return jsonb_build_object('ok',true,'replayed',false,'balance',result);
 end;
 $$;
