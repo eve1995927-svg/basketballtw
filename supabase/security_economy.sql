@@ -193,6 +193,7 @@ create table if not exists tb_economy_private.match_settlements (
   created_at timestamptz not null default clock_timestamp(),
   primary key(owner_id, match_id)
 );
+alter table tb_economy_private.match_settlements enable row level security;
 revoke all on tb_economy_private.match_settlements from public, anon, authenticated;
 
 create or replace function public.godot_match_settle(
