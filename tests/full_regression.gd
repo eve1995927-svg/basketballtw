@@ -241,11 +241,11 @@ func test_catalog() -> void:
 	var market_expected := 0
 	for raw in game.all_league_players():
 		var converted: Dictionary = game.to_game_player(raw)
-		if game.player_tier_key(converted) not in ["gold", "diamond"] and int(converted.get("ovr", 70)) < 80:
+		if game.player_tier_key(converted) not in ["gold", "diamond"] and int(converted.get("ovr", 70)) < 80 and not game.team_has_player(converted):
 			market_expected += 1
 	check(market_pool.size() == market_expected, "trade and free-agent markets expose non-gold/non-diamond players below OVR 80")
 	for card in market_pool:
-		check(game.player_tier_key(card) not in ["gold", "diamond"] and int(card.get("ovr", 70)) < 80, "market excludes premium and OVR 80+ cards")
+		check(game.player_tier_key(card) not in ["gold", "diamond"] and int(card.get("ovr", 70)) < 80 and not game.team_has_player(card), "market excludes premium, owned, and OVR 80+ cards")
 	for who in ["熊祥泰", "林彥廷", "喬納森"]:
 		check(market_pool.any(func(p): return p.name == who), "requested Kings player is obtainable in market: " + who)
 	for event_id in ["easl", "bcl", "jones", "wcq"]:

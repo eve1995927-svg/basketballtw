@@ -6754,6 +6754,10 @@ func market_player_pool() -> Array[Dictionary]:
 		# or trade listings.
 		if int(player.get("ovr", 70)) >= 80:
 			continue
+		# Do not offer a card that is already on this roster, in the vault, or
+		# assigned to another saved team. This prevents confusing self-trades.
+		if team_has_player(player):
+			continue
 		seen[key] = true
 		result.append(player)
 	result.sort_custom(func(a: Dictionary, b: Dictionary):
