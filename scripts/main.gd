@@ -7009,7 +7009,7 @@ func show_draft_market() -> void:
 	active_menu = "market"
 	var content := begin_screen("2026 選秀", "完整賽季含季後賽結束才開放 · 每隊一輪 · 逆戰績順位", 4)
 	if not draft_eligible():
-		content.add_child(callout("選秀尚未開放", "請先打完目前國內聯盟的整個賽季，包括晉級的季後賽。額外比賽不影響選秀資格。", CYAN))
+		content.add_child(callout("尚未取得選秀資格", "請先打完目前國內聯盟的整個賽季，包括晉級的季後賽。額外比賽不影響選秀資格。", CYAN))
 		return
 	prepare_draft()
 	var position := int(draft_state.get("user_pick", 1))
@@ -7372,7 +7372,7 @@ func sign_free_agent(raw: Dictionary) -> void:
 
 func draft_player(raw: Dictionary) -> void:
 	if not draft_eligible() or bool(draft_state.get("completed", false)):
-		flash_notice("尚未開放選秀，或本季已選過")
+		flash_notice("尚未取得選秀資格，或本季已完成選秀")
 		return
 	prepare_draft()
 	var rookie: Dictionary = {}
