@@ -14815,6 +14815,26 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 		server_settlement_ready = true
 		call_deferred("show_post_match")
 		return
+	if kind == "economy_bootstrap":
+		if code < 200 or code >= 300:
+			cloud_status = "雲端資源尚未同步，本機資料保留；請稍後重試。"
+			finish_auth_enter()
+			return
+		var account_balance: Variant = JSON.parse_string(payload)
+		if account_balance is Array and not account_balance.is_empty():
+			account_balance = account_balance[0]
+		if not (account_balance is Dictionary):
+			cloud_status = "雲端資源回應格式錯誤，本機資料保留。"
+			finish_auth_enter()
+			return
+		budget_million = maxi(0, int(account_balance.get("budget_million", budget_million)))
+		gold = maxi(0, int(account_balance.get("gold", gold)))
+		scout_points = maxi(0, int(account_balance.get("scout_points", scout_points)))
+		training_points = maxi(0, int(account_balance.get("training_points", training_points)))
+		save_game()
+		flash_notice("已同步雲端資源")
+		finish_auth_enter()
+		return
 	if kind.begins_with("ranked_"):
 		RankedFlow.complete(self,kind,code,payload)
 		return
@@ -14966,7 +14986,7 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 				if blob.has("last_slot"):
 					active_save_slot = int(blob.get("last_slot", active_save_slot))
 				save_account()
-		finish_auth_enter()
+		cloud_send("economy_bootstrap", "%s/rest/v1/rpc/godot_economy_bootstrap" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, "{}")
 		return
 	if kind == "pull_activity_schedule" or kind == "pull_activity_leaderboard":
 		if code >= 200 and code < 300:
