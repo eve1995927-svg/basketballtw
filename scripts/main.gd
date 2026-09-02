@@ -8266,6 +8266,16 @@ func show_daily_tasks() -> void:
 		var pending_pass_days := monthly_pass_claimable_days(today)
 		var pass_claimed := pending_pass_days <= 0
 		content.add_child(callout("主場應援月卡 · 30 天簽到", "每日資金 +100 萬 · 黃金 +20 · 球探點 +5\n已領 %d／30 天；漏領資源可累積。\n專屬球員卡框與看板可到設定切換。" % monthly_pass_claimed_days, GOLD if not pass_claimed else GREEN))
+		var day_grid := GridContainer.new()
+		day_grid.columns = 5
+		day_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		day_grid.add_theme_constant_override("h_separation", 5)
+		day_grid.add_theme_constant_override("v_separation", 5)
+		for day in range(1, 31):
+			var day_button := action_button("第 %d 天\n%s" % [day, "已領" if day <= monthly_pass_claimed_days else ("可補領" if day <= monthly_pass_claimed_days + pending_pass_days else "待領")], GREEN if day <= monthly_pass_claimed_days else (GOLD if day <= monthly_pass_claimed_days + pending_pass_days else Color("254e6b")), func(): pass, Vector2(0, 42))
+			day_button.disabled = true
+			day_grid.add_child(day_button)
+		content.add_child(day_grid)
 		var pass_button := action_button("月卡今日已領取" if pass_claimed else "領取月卡今日資源", GOLD if not pass_claimed else Color("254e6b"), func():
 			var claim_days := monthly_pass_claimable_days(taiwan_today_key())
 			if claim_days <= 0:
