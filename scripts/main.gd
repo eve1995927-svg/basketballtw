@@ -2715,6 +2715,24 @@ func golden_generation_profile(raw: Dictionary) -> Dictionary:
 			return item
 	return {}
 
+func veteran_prime_team_id(player: Dictionary) -> String:
+	var profile := golden_generation_profile(player)
+	return str(profile.get("prime_team_id", "")) if not profile.is_empty() else ""
+
+func veteran_prime_team_name(player: Dictionary) -> String:
+	var profile := golden_generation_profile(player)
+	return str(profile.get("prime_team_name", "")) if not profile.is_empty() else ""
+
+func veteran_prime_logo(player: Dictionary) -> Texture2D:
+	var profile := golden_generation_profile(player)
+	if profile.is_empty():
+		return null
+	var asset := str(profile.get("prime_team_logo_asset", ""))
+	if not asset.is_empty():
+		return team_logo_tex("asset:" + asset)
+	var team_id := str(profile.get("prime_team_id", ""))
+	return team_logo_tex(team_id) if not team_id.is_empty() else null
+
 func is_veteran_player(raw: Dictionary) -> bool:
 	return not golden_generation_profile(raw).is_empty()
 
@@ -2735,6 +2753,17 @@ func apply_veteran_card(player: Dictionary) -> Dictionary:
 	if profile.is_empty():
 		return player
 	player["golden_generation"] = true
+	# Historical club identity is presentation data; keep origin_team_id intact
+	# so squad-combo rules are not silently changed by an old card.
+	var prime_id := str(profile.get("prime_team_id", ""))
+	var prime_name := str(profile.get("prime_team_name", ""))
+	var prime_asset := str(profile.get("prime_team_logo_asset", ""))
+	if not prime_id.is_empty():
+		player["prime_team_id"] = prime_id
+	if not prime_name.is_empty():
+		player["prime_team_name"] = prime_name
+	if not prime_asset.is_empty():
+		player["prime_team_logo_asset"] = prime_asset
 	# Veteran cards use the curated historical position, even when a public
 	# roster entry has an incomplete or outdated position.
 	var veteran_pos := str(profile.get("position", ""))
@@ -3253,6 +3282,19 @@ func is_national_flag(team_id: String) -> bool:
 func team_logo_tex(team_id: String) -> Texture2D:
 	if team_id.is_empty():
 		return null
+	# Historical veteran cards may reference an exact bundled asset (including
+	# webp), independent of the current fictional league team id.
+	if team_id.begins_with("asset:"):
+		var asset_path := team_id.trim_prefix("asset:")
+		var asset_key := "logo#asset#%s" % asset_path
+		if _tex_cache.has(asset_key) and _tex_cache[asset_key] is Texture2D:
+			return _tex_cache[asset_key]
+		var historical := load_png_tex("res://%s" % asset_path)
+		if historical == null:
+			return null
+		var cut_historical := knockout_white_logo(historical)
+		_tex_cache[asset_key] = cut_historical
+		return cut_historical
 	if team_id.begins_with("club_"):
 		var club_key := "logo#club#%s" % team_id
 		if _tex_cache.has(club_key) and _tex_cache[club_key] is Texture2D:
@@ -11233,7 +11275,9 @@ func player_origin_name_row(player: Dictionary, name_px := 10) -> Control:
 	var who := str(player.get("name", "球員"))
 	var line := who
 	if not is_locked_prize(player):
-		var origin_title := team_short_name(origin_id(player))
+		var origin_title := veteran_prime_team_name(player)
+		if origin_title.is_empty():
+			origin_title = team_short_name(origin_id(player))
 		if not origin_title.is_empty():
 			line = "%s %s" % [origin_title, who]
 	var name_mark := polish_title(plain_label(line, name_px, TEXT, true, HORIZONTAL_ALIGNMENT_CENTER))
@@ -11293,11 +11337,21 @@ func lobby_player_card(player: Dictionary, _starter: bool, index := -1, swap_mod
 		hit.modulate = Color(1.16, 0.94, 0.74)
 	elif selected:
 		hit.modulate = Color(1.08, 1.04, 0.84)
-	# Printed origin remains the original team; combo flexibility only affects gameplay.
+	# Printed origin remains the original team for normal cards.  Veteran cards
+	# print the club from their prime years; combo flexibility only affects play.
 	var printed_origin := str(player.get("origin_team_id", ""))
 	if printed_origin.is_empty():
 		printed_origin = team_id_from_display_name(str(player.get("team", "")))
-	var origin_title := "" if player_tier_key(player) == "diamond" else team_display_name(printed_origin)
+	var printed_logo: Texture2D = null
+	var printed_mark_origin := printed_origin
+	var origin_title := "" if player_tier_key(player) == "diamond" else veteran_prime_team_name(player)
+	if is_veteran_player(player):
+		printed_logo = veteran_prime_logo(player)
+		var prime_id := veteran_prime_team_id(player)
+		if not prime_id.is_empty():
+			printed_mark_origin = prime_id
+	if origin_title.is_empty() and player_tier_key(player) != "diamond":
+		origin_title = team_display_name(printed_origin)
 	if bool(player.get("draft_2026", false)):
 		origin_title = str(player.get("draft_school", "2026 選秀新人"))
 	if origin_title.is_empty() and player_tier_key(player) != "diamond":
@@ -11310,8 +11364,8 @@ func lobby_player_card(player: Dictionary, _starter: bool, index := -1, swap_mod
 		"frame": card_frame_for(player_tier_key(player)),
 		"frame_tint": card_frame_tint(player_tier_key(player)),
 		"tier": player_tier_key(player),
-		"logo": team_logo_tex(printed_origin) if show_team_mark else null,
-		"logo_mark": team_mark_letter(printed_origin) if show_team_mark else "",
+		"logo": printed_logo if (show_team_mark and printed_logo != null) else (team_logo_tex(printed_origin) if show_team_mark else null),
+		"logo_mark": team_mark_letter(printed_mark_origin) if show_team_mark else "",
 		"origin": origin_title,
 		"position": "—" if position_data_missing(player) else "/".join(player_pos_list(player)),
 		"ovr": effective_ovr(player, index),

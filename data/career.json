@@ -14,6 +14,9 @@
     {
       "name": "陳信安",
       "position": "SF/SG",
+      "prime_team_id": "sbl_yulon",
+      "prime_team_name": "裕隆納智捷",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_yulon.png",
       "ovr": 82,
       "salary_million": 800,
       "blurb": "台灣飛人 · 旅外先驅 · 甲組時代招牌"
@@ -21,6 +24,9 @@
     {
       "name": "田壘",
       "position": "PF",
+      "prime_team_id": "dacin",
+      "prime_team_name": "達欣工程",
+      "prime_team_logo_asset": "assets/ui/team_logos/dea.webp",
       "ovr": 81,
       "salary_million": 750,
       "blurb": "少俠 · SBL 指標長人 · 2013 亞錦賽擊敗中國"
@@ -28,6 +34,9 @@
     {
       "name": "林志傑",
       "position": "SF/SG",
+      "prime_team_id": "sbl_beer",
+      "prime_team_name": "台灣啤酒",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_beer.png",
       "ovr": 83,
       "salary_million": 1000,
       "blurb": "野獸 · CBA 最成功台將 · 2025-26 公開行情約 1000 萬"
@@ -35,6 +44,9 @@
     {
       "name": "戴維斯",
       "position": "C/PF",
+      "prime_team_id": "sbl_beer",
+      "prime_team_name": "台灣啤酒",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_beer.png",
       "ovr": 79,
       "salary_million": 600,
       "blurb": "Q · 中華隊首位歸化 · 2013 亞錦賽四強禁區支柱"
@@ -42,6 +54,9 @@
     {
       "name": "曾文鼎",
       "position": "C/PF",
+      "prime_team_id": "sbl_beer",
+      "prime_team_name": "台灣啤酒",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_beer.png",
       "ovr": 78,
       "salary_million": 520,
       "blurb": "大房東 · 再興雙塔 · CBA 與國家隊禁區核心"
@@ -49,6 +64,9 @@
     {
       "name": "周儀翔",
       "position": "SF/SG",
+      "prime_team_id": "sbl_yulon",
+      "prime_team_name": "裕隆納智捷",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_yulon.png",
       "ovr": 77,
       "salary_million": 850,
       "blurb": "CBA 返台世代 · 黃金世代傳承賽代表"
@@ -56,6 +74,9 @@
     {
       "name": "蔡文誠",
       "position": "SF/PF",
+      "prime_team_id": "fubon",
+      "prime_team_name": "臺北富邦勇士",
+      "prime_team_logo_asset": "assets/ui/team_logos/fubon.png",
       "ovr": 82,
       "salary_million": 480,
       "blurb": "本土洋將 · 八座冠軍 · 兩度 FMVP · 富邦隊長"
@@ -63,6 +84,9 @@
     {
       "name": "楊敬敏",
       "position": "SG/SF",
+      "prime_team_id": "sbl_beer",
+      "prime_team_name": "台灣啤酒",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_beer.png",
       "ovr": 76,
       "salary_million": 450,
       "blurb": "阿美族戰士 · 與林志傑組成台啤得分雙劍"
@@ -70,6 +94,9 @@
     {
       "name": "李學林",
       "position": "PG",
+      "prime_team_id": "sbl_yulon",
+      "prime_team_name": "裕隆納智捷",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_yulon.png",
       "ovr": 75,
       "salary_million": 420,
       "blurb": "CBA 後場 · 黃金世代組織核心"
@@ -77,6 +104,9 @@
     {
       "name": "吳岱豪",
       "position": "PF/C",
+      "prime_team_id": "dacin",
+      "prime_team_name": "達欣工程",
+      "prime_team_logo_asset": "assets/ui/team_logos/dea.webp",
       "ovr": 74,
       "salary_million": 380,
       "blurb": "再興雙塔 · 2001 大換血最年輕國手之一"
@@ -84,6 +114,9 @@
     {
       "name": "呂政儒",
       "position": "SF",
+      "prime_team_id": "sbl_yulon",
+      "prime_team_name": "裕隆納智捷",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_yulon.png",
       "retired": true,
       "ovr": 74,
       "salary_million": 360,
@@ -92,6 +125,9 @@
     {
       "name": "陳世念",
       "position": "PG",
+      "prime_team_id": "sbl_beer",
+      "prime_team_name": "台灣啤酒",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_beer.png",
       "ovr": 73,
       "salary_million": 350,
       "blurb": "黃金世代控衛 · 傳承賽常客"
@@ -99,6 +135,9 @@
     {
       "name": "簡浩",
       "position": "SF",
+      "prime_team_id": "fubon",
+      "prime_team_name": "臺北富邦勇士",
+      "prime_team_logo_asset": "assets/ui/team_logos/fubon.png",
       "ovr": 73,
       "salary_million": 340,
       "blurb": "混血射手 · 黃金世代側翼"
@@ -106,6 +145,9 @@
     {
       "name": "周士淵",
       "position": "SG/SF",
+      "prime_team_id": "sbl_yulon",
+      "prime_team_name": "裕隆納智捷",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_yulon.png",
       "ovr": 72,
       "salary_million": 320,
       "blurb": "黃金世代側翼 · 裕隆資深戰力"
@@ -113,6 +155,9 @@
     {
       "name": "洪志善",
       "position": "PG",
+      "prime_team_id": "sbl_beer",
+      "prime_team_name": "台灣啤酒",
+      "prime_team_logo_asset": "assets/ui/team_logos/sbl_beer.png",
       "ovr": 78,
       "salary_million": 300,
       "blurb": "黃金世代後場 · 年薪地板 300 萬"
@@ -120,6 +165,9 @@
     {
       "name": "吳永仁",
       "position": "PG",
+      "prime_team_id": "dacin",
+      "prime_team_name": "達欣工程",
+      "prime_team_logo_asset": "assets/ui/team_logos/dea.webp",
       "ovr": 70,
       "salary_million": 300,
       "blurb": "黃金世代後衛 · 後轉教練"
