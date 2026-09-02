@@ -8068,6 +8068,10 @@ func taiwan_date_key(utc_seconds: int) -> String:
 func monthly_pass_claimable_days(today: String) -> int:
 	if not monthly_pass_active or monthly_pass_claimed_days >= 30:
 		return 0
+	# If the free check-in was already claimed before the pass was purchased,
+	# today's reward is considered used and cannot be claimed a second time.
+	if daily_checkin_date == today and monthly_pass_claimed_date != today:
+		return 0
 	if monthly_pass_claimed_date.is_empty():
 		return 1
 	var from_ts := Time.get_unix_time_from_datetime_string(monthly_pass_claimed_date + "T00:00:00")
@@ -8250,10 +8254,15 @@ func show_daily_tasks() -> void:
 	active_menu = "tasks"
 	var content := begin_screen("任務", "每日 00:00（台灣時間）刷新 · 完成後獎勵會立即入帳", 4)
 	var today := taiwan_today_key()
-	var claimed := daily_checkin_date == today
+	var monthly_pending := monthly_pass_claimable_days(today) if monthly_pass_active else 0
+	var claimed := daily_checkin_date == today or (monthly_pass_active and monthly_pending <= 0)
 	var day_text := "%d／30 天" % daily_checkin_days
-	content.add_child(callout("每日打卡", "今天完成：資金 +30 萬\n累積進度：%s\n每日 00:00（台灣時間）刷新" % day_text, GOLD if not claimed else GREEN))
+	var daily_text := "月卡已包含今日資源，不能重複領取" if monthly_pass_active else "今天完成：資金 +30 萬"
+	content.add_child(callout("每日打卡", "%s\n累積進度：%s\n每日 00:00（台灣時間）刷新" % [daily_text, day_text], GOLD if not claimed else GREEN))
 	var claim := action_button("今日打卡已完成" if claimed else "領取今日資金 +30 萬", GREEN if not claimed else Color("254e6b"), func():
+		if monthly_pass_active:
+			flash_notice("月卡已包含今日資源，不能重複領取")
+			return
 		if daily_checkin_date == taiwan_today_key():
 			flash_notice("今天已領取，明天 00:00 後刷新")
 			return
@@ -8273,8 +8282,8 @@ func show_daily_tasks() -> void:
 		save_game()
 		show_daily_tasks()
 	, Vector2(0, 48))
-	claim.text = "今日打卡已完成" if claimed else "領取今日資金 +30 萬"
-	claim.disabled = claimed
+	claim.text = "月卡已包含今日打卡" if monthly_pass_active else ("今日打卡已完成" if claimed else "領取今日資金 +30 萬")
+	claim.disabled = claimed or monthly_pass_active
 	content.add_child(claim)
 	if monthly_pass_active:
 		var pending_pass_days := monthly_pass_claimable_days(today)
@@ -8296,6 +8305,9 @@ func show_daily_tasks() -> void:
 				flash_notice("月卡今日已領取")
 				return
 			monthly_pass_claimed_date = taiwan_today_key()
+			# A monthly claim is also today's check-in; the free reward is locked
+			# for this date so the two economy tracks can never stack.
+			daily_checkin_date = monthly_pass_claimed_date
 			monthly_pass_claimed_days = mini(30, monthly_pass_claimed_days + claim_days)
 			budget_million += 100 * claim_days
 			gold += 20 * claim_days
