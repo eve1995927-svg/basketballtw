@@ -23,6 +23,8 @@ const ButtonSkin = preload("res://scripts/button_skin.gd")
 # Compact phone controls: keep the label size, reduce the surrounding box.
 # 44 is the practical touch floor; going to a literal 40 would reintroduce missed taps.
 const MOBILE_TOUCH_SIZE := 44.0
+# 全部對手球員的固定難度加成。只套用在對手複本，不會改到玩家名單或原始資料。
+const OPPONENT_OVR_BONUS := 5
 
 const SAVE_PATH := "user://taiwan_basketball_save.json"
 const AUDIO_SETTINGS_PATH := "user://audio_settings.json"
@@ -1193,8 +1195,28 @@ func current_match_opponent() -> Dictionary:
 	if extra_match or (not prep_extra_event.is_empty() and prep_extra_event == extra_event):
 		var extra := extra_match_opponent()
 		if not extra.is_empty():
-			return extra
-	return league_match_opponent()
+			return apply_opponent_ovr_bonus(extra)
+	return apply_opponent_ovr_bonus(league_match_opponent())
+
+func apply_opponent_ovr_bonus(raw: Dictionary) -> Dictionary:
+	# 目前場次可能會被多個畫面讀取；標記可避免同一份對手複本重複加成。
+	var rival := raw.duplicate(true)
+	if bool(rival.get("_opponent_ovr_bonus_applied", false)):
+		return rival
+	rival["_opponent_ovr_bonus_applied"] = true
+	rival["rating"] = clampi(int(rival.get("rating", 70)) + OPPONENT_OVR_BONUS, 50, 99)
+	var players = rival.get("players", [])
+	if players is Array:
+		var boosted: Array = []
+		for item in players:
+			if item is Dictionary:
+				var player: Dictionary = item.duplicate(true)
+				player["ovr"] = clampi(int(player.get("ovr", 70)) + OPPONENT_OVR_BONUS, 1, 99)
+				boosted.append(player)
+			else:
+				boosted.append(item)
+		rival["players"] = boosted
+	return rival
 
 func extra_match_opponent() -> Dictionary:
 	if extra_queue.is_empty():
@@ -4449,7 +4471,8 @@ func official_rival(team: Dictionary) -> Dictionary:
 		"city": str(team.get("city", "")),
 		"team_id": str(team.get("id", "")),
 		"league": str(team.get("league", "")),
-}
+		"players": team.get("players", []).duplicate(true),
+	}
 
 func fictional_team_name(team_id: String, fallback: String = "對手") -> String:
 	return str(FICTIONAL_TEAM_NAMES.get(team_id, fallback))
@@ -6031,10 +6054,12 @@ func opponent_club(opponent: Dictionary) -> Dictionary:
 	return national_team_by_id(tid)
 
 func opponent_starting_five(opponent: Dictionary) -> Array[Dictionary]:
-	var team := opponent_club(opponent)
-	var source_players: Array = team.get("players", [])
-	if source_players.is_empty() and opponent.get("players") is Array:
-		source_players = opponent.players
+	# 優先使用本場對手複本，讓難度加成後的 OVR 顯示在陣容與比賽中；
+	# 沒有名單時才回退到聯盟原始球隊資料。
+	var source_players: Array = opponent.get("players", [])
+	if source_players.is_empty():
+		var team := opponent_club(opponent)
+		source_players = team.get("players", [])
 	var pool: Array[Dictionary] = []
 	for item in source_players:
 		if item is Dictionary:
@@ -8596,6 +8621,7 @@ func show_game_guide() -> void:
 	grid.add_child(hub_tile("球探", "只用球探點挖掘", "", ORANGE, func(): show_guide_sheet("球探", guide_topic_body("scout"), ORANGE), {}))
 	grid.add_child(hub_tile("交易與市場", "可多換一／自由簽約", "", GOLD, func(): show_guide_sheet("交易與市場", guide_topic_body("trade"), GOLD), {}))
 	grid.add_child(hub_tile("比賽怎麼打", "回合模擬 · 平手延長賽", "", CYAN, func(): show_guide_sheet("比賽怎麼打", guide_topic_body("match"), CYAN), {}))
+	grid.add_child(hub_tile("對手難度", "對手球員 OVR +5", "", RED, func(): show_guide_sheet("對手難度", guide_topic_body("difficulty"), RED), {}))
 	grid.add_child(hub_tile("黃金與球探點", "兩套貨幣不要混", "", GOLD, func(): show_guide_sheet("黃金與球探點", guide_topic_body("gold"), GOLD), {}))
 	grid.add_child(hub_tile("分享球員卡", "系統分享面板", "", GREEN, func(): show_guide_sheet("分享球員卡", guide_topic_body("share"), GREEN), {}))
 	grid.add_child(hub_tile("額外比賽", "東超／瓊斯盃／資格賽", "", RED, func(): show_guide_sheet("額外比賽", guide_topic_body("extra"), RED), {}))
@@ -8696,6 +8722,8 @@ func guide_topic_body(topic: String) -> String:
 			return "SBL：外援 1 人、場上最多 1 人、薪資帽 3000 萬。PLG：外援註冊 3 人、每節最多 2 人次，遊戲場上同時最多 2 人、帽 8000 萬。TPBL：外援註冊 4 人、場上同時最多 2 人，帽 8000 萬。外籍生三聯盟都最多 2、不佔洋將。職業前二才能買額外比賽通行證。"
 		"match":
 			return "雙方使用相同的回合模擬規則，投籃、失誤與進攻籃板共同形成比分，沒有固定分數區間。四節平手會進入延長賽，直到分出勝負。技能只由當節上場且已解鎖的球員觸發；一般卡須特訓 +5，紫卡、黃金卡與鑽石卡維持原規則。單張技能效果約控制在最多 6 個勝率百分點，全隊技能合計約最多 12 個百分點，不會取代 OVR。半場落後時可調整一次攻防戰術。系列賽對手輸球後可能調整防守，可在賽前查看。勝負看陣容、輪替、戰術對位與技能，也保留比賽的不確定性。"
+		"difficulty":
+			return "為了讓長期遊玩仍有挑戰，例行賽、季後賽與額外比賽的對手球員在本場複本中固定 OVR +5，隊伍評分同步提高。這項加成不會改動原始球員資料、玩家名單或存檔；同一場重複開啟畫面也不會再次累加。賽季難度等級原本的每級 +2 仍會保留，最高 +12。"
 		"gold":
 			return "資金用於簽約費、交易費與養成特訓（每次 20 萬＋1 特訓點，不使用黃金）。黃金用於商店卡包（80 黃金）與球探更換下一批（20 黃金）。球探點只用於購買球探卡片。薪資是名單已用年薪／上限，不是資金；簽約同時檢查資金和薪資帽。點上方資源即可查看明細或前往對應功能。"
 		"share":
@@ -12759,7 +12787,7 @@ func start_match() -> void:
 		return
 	extra_match = false
 	ensure_legacy_playoffs()
-	last_opponent = league_match_opponent().duplicate(true)
+	last_opponent = current_match_opponent()
 	match_event_log.clear()
 	current_skill_modifiers.clear()
 	var rng_seed := season_games * 104729 + chemistry * 7919 + opponent_index * 313 + (1 if is_home_game else 0) + Time.get_ticks_msec()
