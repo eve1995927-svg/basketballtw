@@ -13898,7 +13898,7 @@ func restore_match_state(data: Dictionary) -> void:
 	if not (state is Dictionary) or state.is_empty():
 		return # Version 3 did not persist a resumable match.
 	if state.get("opponent") is Dictionary:
-		last_opponent = state.opponent.duplicate(true)
+	last_opponent = apply_opponent_ovr_bonus(state.opponent.duplicate(true))
 	if state.get("rotation") is Array:
 		last_match_oncourt = state.rotation.duplicate(true)
 	if state.get("stories") is Array:
