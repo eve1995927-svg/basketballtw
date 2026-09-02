@@ -134,7 +134,7 @@ on conflict (platform) do nothing;
 -- One-time, non-destructive backfill from the existing authoritative save.
 -- It only creates a missing account row; it never overwrites a server ledger.
 create or replace function tb_economy_private.safe_int(v text, fallback integer)
-returns integer language plpgsql immutable as $$
+returns integer language plpgsql immutable security definer set search_path = '' as $$
 begin
   if v is null or v !~ '^-?[0-9]+$' then return fallback; end if;
   return greatest(-2147483648, least(2147483647, v::numeric::integer));
