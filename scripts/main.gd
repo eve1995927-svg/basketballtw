@@ -14362,6 +14362,15 @@ func request_server_match_settlement() -> void:
 	})
 	cloud_send("settle_match", "%s/rest/v1/rpc/godot_match_settle" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, body)
 
+func show_settlement_retry_notice(message: String) -> void:
+	# Never leave a signed-in match on the presentation screen with no action
+	# after a timeout or malformed response. The match id is retained so retrying
+	# remains idempotent and cannot grant rewards twice.
+	show_guide_sheet("結算需要重試", message + "\n比賽結果已保留，獎勵在伺服器確認前不會重複發放。", GOLD, "重試結算", func():
+		close_guide_modal()
+		request_server_match_settlement()
+	)
+
 func request_server_economy_spend(action: String, delta_budget: int, delta_gold: int, delta_scout: int, delta_training: int, callback: Callable) -> void:
 	if auth_access.is_empty() or server_spend_inflight:
 		return
@@ -14951,13 +14960,13 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 		server_settlement_inflight = false
 		if code < 200 or code >= 300:
 			server_settlement_balance.clear()
-			flash_notice("伺服器尚未確認比賽結果，獎勵尚未發放；請保持網路後重試。")
+			show_settlement_retry_notice("伺服器尚未確認比賽結果，請保持網路後重試。")
 			return
 		var settled: Variant = JSON.parse_string(payload)
 		if settled is Array and not settled.is_empty():
 			settled = settled[0]
 		if not (settled is Dictionary) or not (settled.get("balance", {}) is Dictionary):
-			flash_notice("結算回應格式錯誤，獎勵尚未發放；請稍後重試。")
+			show_settlement_retry_notice("結算回應格式錯誤，請稍後重試。")
 			return
 		server_settlement_balance = settled.get("balance", {}).duplicate(true)
 		server_settlement_ready = true
