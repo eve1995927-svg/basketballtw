@@ -8265,7 +8265,7 @@ func prediction_odds(opponent: Dictionary) -> Array[float]:
 	return [clampf(1.55 + edge, 1.10, 2.20), clampf(1.55 - edge, 1.10, 2.20)]
 
 func prediction_panel() -> Control:
-	return callout("Pick'em 勝負預測 · 待開放", "正式賽程公布後開放，目前不接受下注。", GOLD)
+	return callout("Pick'em 勝負預測", "目前沒有可預測賽事；官方賽程資料更新後會顯示在這裡。", GOLD)
 
 func resolve_prediction(won: bool) -> void:
 	if prediction_match_key.is_empty() or prediction_pick.is_empty() or prediction_stake <= 0:
