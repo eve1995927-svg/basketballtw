@@ -10,6 +10,8 @@ import re, sys
 
 p = Path(__file__).resolve().parents[1] / "supabase" / "security_economy.sql"
 s = p.read_text(encoding="utf-8")
+client = p.parent.parent / "scripts" / "main.gd"
+client_source = client.read_text(encoding="utf-8")
 checks = {
     "no deprecated auth.role": "auth.role()" not in s,
     "jwt service role check": "auth.jwt()->>'role'" in s,
@@ -26,6 +28,8 @@ checks = {
     "server owned signing": "godot_sign_player" in s and "sign_player" in s and "PLAYER_NOT_IN_CATALOG" in s,
     "server owned trade fee": "godot_trade_fee" in s and "trade_fee" in s and "PLAYER_NOT_IN_CATALOG" in s,
     "authenticated market grants": bool(re.search(r"grant execute on function public\.godot_sign_player[\s\S]*?to authenticated", s)) and bool(re.search(r"grant execute on function public\.godot_trade_fee[\s\S]*?to authenticated", s)),
+    "release config table": "godot_release_config" in s,
+    "client release gate": all(token in client_source for token in ["request_release_gate", "version_at_least", "release_gate_blocked", "finish_auth_enter()"]),
 }
 failed = [name for name, ok in checks.items() if not ok]
 print("SECURITY_ECONOMY_AUDIT " + " ".join(f"{name}={'ok' if ok else 'FAIL'}" for name, ok in checks.items()))

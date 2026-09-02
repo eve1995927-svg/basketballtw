@@ -419,6 +419,9 @@ var server_spend_authorized := false
 var server_spend_balance: Dictionary = {}
 var server_spend_request_id := ""
 var server_spend_callback: Callable
+var release_gate_pending := false
+var release_gate_checked := false
+var release_gate_blocked := false
 var notice_node: Control
 var training_modal: Control
 var guide_modal: Control
@@ -5623,7 +5626,7 @@ func dock_tab(caption: String, selected: bool, action: Callable, icon_path := ""
 func team_switch_chip() -> Button:
 	var button := Button.new()
 	button.text = "主隊 %d/2" % (active_team_index + 1)
-	button.tooltip_text = "切換第一／第二隊；第三隊保留，尚未開放"
+	button.tooltip_text = "切換第一／第二隊"
 	button.custom_minimum_size = touch_minimum(Vector2(72 if is_handheld() else 82, 34))
 	button.add_theme_font_override("font", FONT_BOLD)
 	button.add_theme_font_size_override("font_size", 12 if is_handheld() else 13)
@@ -8151,20 +8154,19 @@ func show_activity_hub() -> void:
 	var filters := HBoxContainer.new()
 	filters.add_theme_constant_override("separation", 6)
 	content.add_child(filters)
-	for caption in ["全部", "TPBL", "PLG", "SBL", "3x3", "國際賽"]:
+	for caption in ["全部", "TPBL", "PLG", "SBL", "國際賽"]:
 		var league_filter: String = caption
 		var selected := activity_league_filter == league_filter
 		filters.add_child(action_button(league_filter, TAIWAN_BLUE if selected else Color("254e6b"), func():
 			activity_league_filter = league_filter
 			show_activity_hub()
 		, Vector2(0, 40)))
-	content.add_child(callout("Pick'em 勝負預測 · 待開放", "正式賽程公布後開放勝負與勝分差預測。目前不接受下注，不以遊戲內模擬比賽代替真實賽事。", GOLD))
+	content.add_child(callout("Pick'em 勝負預測", "目前沒有可預測賽事；官方賽程資料更新後會顯示在這裡。", GOLD))
 	var schedule_panel := activity_schedule_panel()
 	schedule_panel.name = "ActivitySchedule"
 	content.add_child(schedule_panel)
 	content.add_child(callout("多人積分賽 · 場次不限", "真人先發快照配對，離線也可對戰。LP 升降、賽季排行榜與前三名中華隊資格，由伺服器結算；2026/12/1 台灣時間截止。", ORANGE))
 	content.add_child(action_button("進入多人賽季", ORANGE, func(): show_async_season(), Vector2(0, 44)))
-	content.add_child(callout("3v3 比賽", "全新半場模式，尚未開放。", MUTED))
 	var leaderboard_panel := activity_leaderboard_panel()
 	leaderboard_panel.name = "ActivityLeaderboard"
 	content.add_child(leaderboard_panel)
@@ -8184,7 +8186,7 @@ func refresh_activity_cloud_panel(kind: String) -> void:
 	parent.move_child(updated, index)
 
 func activity_leaderboard_panel() -> Control:
-	var text := "尚無正式排行資料；真實賽程與伺服器結算開放後更新。"
+	var text := "目前尚無排行資料；完成有效預測後會在這裡顯示。"
 	if not activity_cloud_leaderboard.is_empty():
 		var rows := PackedStringArray()
 		for i in mini(5, activity_cloud_leaderboard.size()):
@@ -10416,7 +10418,10 @@ func show_login() -> void:
 	page.add_child(padded(body, 20))
 	if is_logged_in():
 		body.add_child(label(auth_email if not auth_email.is_empty() else "已登入", 13, GREEN, true, HORIZONTAL_ALIGNMENT_CENTER))
-		body.add_child(bind_account_button("進入球場", GOLD, Color("1a1200"), func(): continue_after_login()))
+		# Re-run the release gate even when a session is already present.  This
+		# prevents the remembered-session shortcut from bypassing maintenance or
+		# a required minimum version.
+		body.add_child(bind_account_button("進入球場", GOLD, Color("1a1200"), func(): enter_after_release_gate()))
 		body.add_child(bind_account_button("登出", Color("3a2428"), TEXT, func(): logout_account()))
 	else:
 		var offline := bind_account_button("先離線遊玩（不需登入）", GOLD, Color("1a1200"), func(): continue_after_login())
@@ -10802,6 +10807,10 @@ func continue_after_login() -> void:
 		open_save_slot(active_save_slot)
 		return
 	show_save_slots()
+
+func enter_after_release_gate() -> void:
+	pending_enter_after_auth = true
+	finish_auth_enter()
 
 func show_welcome_back() -> void:
 	welcome_open = true
@@ -12449,7 +12458,7 @@ func apply_player_training(index: int, reopen_modal := true) -> void:
 	var player: Dictionary = team_players[index]
 	var sessions := int(player.get("training_sessions", 0))
 	if sessions >= TRAINING_MAX_SESSIONS:
-		flash_notice("%s 已完成 5 次特訓；達成突破條件，技能目前尚未開放。" % player.get("name", "球員"))
+		flash_notice("%s 已完成 5 次特訓，專屬技能已解鎖並套用到比賽。" % player.get("name", "球員"))
 		return
 	var appearances := int(player.get("match_appearances", 0))
 	if appearances < 3:
@@ -12504,7 +12513,7 @@ func apply_player_training(index: int, reopen_modal := true) -> void:
 		note = "組織更清楚"
 	elif skill == "veteran_leadership":
 		note = "領導更穩"
-	var next_text := " · 突破條件已達成，技能目前尚未開放" if int(player.get("training_sessions", 0)) >= TRAINING_MAX_SESSIONS else ""
+	var next_text := " · 專屬技能已解鎖並套用到比賽" if int(player.get("training_sessions", 0)) >= TRAINING_MAX_SESSIONS else ""
 	last_training_note = "%s 練完：%s（OVR %d · 特訓 +%d · 年薪 $%d 萬）%s" % [player.get("name", "球員"), note, player.get("ovr", 70), int(player.get("training_sessions", 0)), int(float(player.get("salary_million", 0))), next_text]
 	last_event = last_training_note
 	last_news = last_event
@@ -14441,6 +14450,13 @@ func cancel_cloud_requests() -> void:
 	cloud_retry_at_ms = 0
 	cloud_retry_count = 0
 	cloud_status = "已暫停雲端同步，本機存檔保留"
+	# A canceled request must not leave a spend callback locked forever (for
+	# example after an expired token or a manually canceled network request).
+	server_spend_inflight = false
+	server_spend_authorized = false
+	server_spend_balance.clear()
+	server_spend_request_id = ""
+	server_spend_callback = Callable()
 
 func retry_cloud_read() -> void:
 	if not cloud_pending.is_empty() or cloud_failed.is_empty():
@@ -14733,6 +14749,9 @@ func refresh_auth_session() -> void:
 
 func logout_account() -> void:
 	cancel_cloud_requests()
+	release_gate_pending = false
+	release_gate_checked = false
+	release_gate_blocked = false
 	sync_owner = ""
 	sync_state.clear()
 	sync_seen.clear()
@@ -14824,6 +14843,37 @@ func cloud_pull() -> void:
 func import_cloud_slot(slot: int, data: Dictionary, revision := 1) -> Error:
 	return CloudSync.ingest(self,slot,data,revision)
 
+func request_release_gate() -> void:
+	if release_gate_pending or release_gate_checked:
+		return
+	release_gate_pending = true
+	cloud_send("release_config", "%s/rest/v1/godot_release_config?select=platform,minimum_version,maintenance,message" % SUPABASE_URL, supabase_headers())
+
+func version_at_least(current: String, minimum: String) -> bool:
+	var current_parts := current.split(".")
+	var minimum_parts := minimum.split(".")
+	for i in 3:
+		var cv := 0
+		var mv := 0
+		if i < current_parts.size() and str(current_parts[i]).is_valid_int():
+			cv = int(current_parts[i])
+		if i < minimum_parts.size() and str(minimum_parts[i]).is_valid_int():
+			mv = int(minimum_parts[i])
+		if cv != mv:
+			return cv > mv
+	return true
+
+func show_release_block(title_text: String, message: String) -> void:
+	pending_enter_after_auth = false
+	release_gate_blocked = true
+	var content := begin_screen(title_text, "請更新後再進入球場", 0, false)
+	content.add_child(callout("版本狀態", message, ORANGE))
+	content.add_child(action_button("回到登入畫面", Color("254e6b"), func():
+		release_gate_checked = false
+		release_gate_blocked = false
+		show_login()
+	, Vector2(0, 48)))
+
 func _on_cloud_http(result: int, code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
 	if cloud_pending.is_empty():
 		return # A canceled account must never receive a late response.
@@ -14912,6 +14962,45 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 		server_settlement_balance = settled.get("balance", {}).duplicate(true)
 		server_settlement_ready = true
 		call_deferred("show_post_match")
+		return
+	if kind == "release_config":
+		release_gate_pending = false
+		release_gate_checked = true
+		if code < 200 or code >= 300:
+			cloud_status = "版本服務暫時無法讀取，先保留目前版本；離線遊玩不受影響。"
+			finish_auth_enter()
+			return
+		var config_rows: Variant = JSON.parse_string(payload)
+		if config_rows is Dictionary:
+			config_rows = [config_rows]
+		if not (config_rows is Array):
+			cloud_status = "版本資訊格式不完整，先保留目前版本。"
+			finish_auth_enter()
+			return
+		var selected_config: Dictionary = {}
+		var fallback_config: Dictionary = {}
+		var platform := analytics_platform()
+		for item in config_rows:
+			if not (item is Dictionary):
+				continue
+			var row: Dictionary = item
+			if str(row.get("platform", "")) == "all":
+				fallback_config = row
+			elif str(row.get("platform", "")) == platform:
+				selected_config = row
+		if selected_config.is_empty():
+			selected_config = fallback_config
+		if not selected_config.is_empty():
+			var minimum := str(selected_config.get("minimum_version", "0.0.0"))
+			var maintenance := bool(selected_config.get("maintenance", false))
+			var message := str(selected_config.get("message", ""))
+			if maintenance:
+				show_release_block("服務維護中", message if not message.is_empty() else "伺服器正在維護，請稍後再試。")
+				return
+			if not version_at_least(APP_VERSION, minimum):
+				show_release_block("需要更新", message if not message.is_empty() else "目前版本已過期，請從官方下載最新版本。")
+				return
+		finish_auth_enter()
 		return
 	if kind == "economy_bootstrap":
 		if code < 200 or code >= 300:
@@ -15142,6 +15231,14 @@ func notify_cloud_save_offline() -> void:
 	flash_notice("本機已存檔。雲端暫時連不上，離線也能玩。")
 
 func finish_auth_enter() -> void:
+	# Check the public release switch before entering the lobby. A failed or
+	# malformed config is fail-open so players can still play offline; only an
+	# explicit maintenance flag or minimum-version rule blocks online entry.
+	if not release_gate_checked:
+		request_release_gate()
+		return
+	if release_gate_blocked:
+		return
 	if not analytics_session_sent and not auth_user_id.is_empty():
 		analytics_session_sent = true
 		track_event("session_start", {"league": current_league})
