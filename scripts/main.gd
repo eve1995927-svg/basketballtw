@@ -96,7 +96,7 @@ const SALARY_CAP_SBL := 3000
 const SALARY_CAP_PRO := 8000
 const PLAYER_SALARY_MIN := 100
 const PLAYER_SALARY_MAX := 3000
-const WIN_CAP_GAIN := 50
+const WIN_CAP_GAIN := 20
 const ECONOMY_VERSION := 1
 const ECONOMY_COMPENSATION := 1000
 const STARTING_BUDGET_MILLION := 300
@@ -2537,7 +2537,7 @@ func match_budget_reward(won: bool) -> int:
 func show_finance_sheet() -> void:
 	var content := begin_screen("資金明細", "資金可支出 · 薪資帽是名單年薪上限 · 兩者分開計算", 4)
 	content.add_child(callout("可用資金", "$%d 萬" % budget_million, GREEN))
-	content.add_child(callout("收入", "新俱樂部初始資金 300 萬、黃金 100、球探點 20。每場結算勝場 +%d 萬、敗場 +%d 萬（含額外比賽）。比賽與任務獎勵沿用原規則。" % [match_budget_reward(true), match_budget_reward(false)], CYAN))
+	content.add_child(callout("收入", "新俱樂部初始資金 300 萬、黃金 100、球探點 20。每場結算勝場 +%d 萬、敗場 +%d 萬（含額外比賽）。勝利黃金 5～10；球探點依連勝加成。" % [match_budget_reward(true), match_budget_reward(false)], CYAN))
 	content.add_child(callout("支出", "自由簽約：年薪 × 1.2（最低 45 萬）；交易費依對象另計；養成特訓每次消耗 1 特訓點＋20 萬資金，完全不使用黃金。簽約後年薪另外計入薪資帽。球探購買只扣球探點，換下一批只扣 20 黃金。", GOLD))
 
 func show_salary_sheet() -> void:
@@ -8717,7 +8717,7 @@ func guide_topic_body(topic: String) -> String:
 		"extra":
 			return "額外比賽要先在 PLG 或 TPBL 例行賽打進前二。東超／BCL NT$100，瓊斯盃 NT$60，世界盃資格賽 NT$100。所有賽事先以預告表格呈現，你用原隊伍取代原本代表名額出賽：世界盃取代中華台北，瓊斯盃取代中華藍 A。拿到冠軍才送卡；冠軍卡不能交易、不能刪除。"
 		"reward":
-			return "每場結算資金：勝 +%d 萬、敗 +%d 萬（含額外比賽）。國內聯賽仍只有贏球才給黃金 20–50、球探點 1–3、薪資帽 +50 萬與特訓點；連勝加成維持原設定。SBL 薪資帽起始 3000 萬，PLG／TPBL 8000 萬。一般 SBL 卡年薪 50–300 萬，其他聯盟與特殊卡沿用原定價。" % [match_budget_reward(true), match_budget_reward(false)]
+			return "每場結算資金：勝 +%d 萬、敗 +%d 萬（含額外比賽）。勝利黃金 5–10、球探點 1–3；勝利薪資帽 +20 萬與特訓 +1，連勝加成維持原設定。失敗仍有資金但不給黃金、球探點或特訓。SBL 薪資帽起始 3000 萬，PLG／TPBL 8000 萬。一般 SBL 卡年薪 50–300 萬，其他聯盟與特殊卡沿用原定價。" % [match_budget_reward(true), match_budget_reward(false)]
 		"league":
 			return "SBL：外援 1 人、場上最多 1 人、薪資帽 3000 萬。PLG：外援註冊 3 人、每節最多 2 人次，遊戲場上同時最多 2 人、帽 8000 萬。TPBL：外援註冊 4 人、場上同時最多 2 人，帽 8000 萬。外籍生三聯盟都最多 2、不佔洋將。職業前二才能買額外比賽通行證。"
 		"match":
@@ -13381,7 +13381,7 @@ func show_post_match() -> void:
 		if won:
 			season_wins += 1
 			win_streak += 1
-			var gold_gain := apply_win_streak(randi_range(20, 50))
+			var gold_gain := apply_win_streak(randi_range(5, 10))
 			var scout_gain := apply_win_streak(randi_range(1, 3))
 			var cap_gain := apply_win_streak(WIN_CAP_GAIN)
 			salary_cap_bonus += cap_gain

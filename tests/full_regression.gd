@@ -521,11 +521,11 @@ func test_economy_update() -> void:
 		game.last_score.assign([100, 80] if won else [80, 100])
 		game.reveal_quarter = 4
 		game.show_post_match()
-		var reward: int = 100 if won else 50
+		var reward: int = 20 if won else 10
 		check(game.budget_million == balance + reward, "regular match pays the configured win/loss cash")
 		check(game.last_match_gain.budget == reward and game.last_gain_body().contains("資金"), "result reports the cash actually awarded")
 		if won:
-			check(game.gold - gold_before >= 20 and game.gold - gold_before <= 50 and game.scout_points - scout_before >= 1 and game.scout_points - scout_before <= 3, "win gold and scouting rewards are unchanged")
+			check(game.gold - gold_before >= 5 and game.gold - gold_before <= 10 and game.scout_points - scout_before >= 1 and game.scout_points - scout_before <= 3, "win gold and scouting rewards follow the current reward table")
 		else:
 			check(game.gold == gold_before and game.scout_points == scout_before, "loss still gives no gold or scouting points")
 		game.show_post_match()
@@ -541,7 +541,7 @@ func test_economy_update() -> void:
 		var gold_before: int = game.gold
 		var scout_before: int = game.scout_points
 		await settle_extra_fixture(won)
-		var reward: int = 100 if won else 50
+		var reward: int = 20 if won else 10
 		check(game.budget_million == balance + reward, "extra match pays win/loss cash")
 		check(game.gold == gold_before and game.scout_points == scout_before, "extra-match gold/scout rules remain unchanged")
 		game.load_game(false)

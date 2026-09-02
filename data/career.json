@@ -8,8 +8,8 @@
   "starter_gold": 100,
   "starter_scout_points": 20,
   "starter_budget_million": 300,
-  "match_budget_win_million": 100,
-  "match_budget_loss_million": 50,
+  "match_budget_win_million": 20,
+  "match_budget_loss_million": 10,
   "golden_generation": [
     {
       "name": "陳信安",
