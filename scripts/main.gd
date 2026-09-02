@@ -7019,6 +7019,9 @@ func close_trade_modal() -> void:
 	trade_modal = null
 
 func open_trade_offer(player: Dictionary) -> void:
+	if team_has_player(player):
+		flash_notice("這名球員已在你的名單或保管箱，不能重複交易。")
+		return
 	trade_incoming = player.duplicate(true)
 	trade_out_indices.clear()
 	show_trade_offer_modal("")
@@ -7129,6 +7132,14 @@ func show_trade_offer_modal(error_text := "") -> void:
 		mine.add_child(card)
 	if mine.get_child_count() == 0:
 		body.add_child(label("目前沒有可交易的我方球員。", 13, MUTED))
+	if not trade_out_indices.is_empty():
+		var live_block := ""
+		if trade_outgoing_salary() < incoming_salary:
+			live_block = "我方合計年薪仍低於換入年薪，請再選我方球員。"
+		else:
+			live_block = can_replace_trade_player(incoming, trade_out_indices)
+		if not live_block.is_empty():
+			body.add_child(callout("目前無法交易", live_block, RED))
 	if not error_text.is_empty():
 		body.add_child(callout("錯誤", error_text, RED))
 	var actions := HBoxContainer.new()
