@@ -19,6 +19,8 @@ checks = {
     "canonical win scout range": "reward_scout := 1 + mod" in s,
     "canonical training reward": "reward_training := 1" in s,
     "settlement stores derived rewards": "values(uid,p_match_id,p_won,p_league,reward_budget,reward_gold,reward_scout,reward_training)" in s,
+    "training fixed cost": "p_delta_budget <> -20" in s and "p_delta_training <> -1" in s,
+    "scout refresh fixed cost": "p_delta_gold <> -20" in s and "INVALID_SCOUT_REFRESH_COST" in s,
     "authenticated settle grant": bool(re.search(r"grant execute on function public\.godot_match_settle[\s\S]*?to authenticated", s)),
 }
 failed = [name for name, ok in checks.items() if not ok]

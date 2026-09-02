@@ -70,6 +70,14 @@ begin
     ) then
     raise exception 'CLIENT_REWARD_FORBIDDEN';
   end if;
+  -- These two client actions have fixed prices.  Enforce the complete
+  -- envelope server-side so callers cannot underpay or charge another wallet.
+  if p_action = 'training' and (p_delta_budget <> -20 or p_delta_gold <> 0 or p_delta_scout <> 0 or p_delta_training <> -1) then
+    raise exception 'INVALID_TRAINING_COST';
+  end if;
+  if p_action = 'scout_refresh' and (p_delta_budget <> 0 or p_delta_gold <> -20 or p_delta_scout <> 0 or p_delta_training <> 0) then
+    raise exception 'INVALID_SCOUT_REFRESH_COST';
+  end if;
   perform pg_advisory_xact_lock(hashtextextended(uid::text || ':economy', 0));
   select * into prior from tb_economy_private.ledger where owner_id = uid and request_id = p_request_id;
   if found then return jsonb_build_object('ok', true, 'replayed', true, 'balance', prior.balance_after); end if;
