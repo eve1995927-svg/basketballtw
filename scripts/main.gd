@@ -413,6 +413,11 @@ var server_settlement_inflight := false
 var server_settlement_ready := false
 var server_settlement_balance: Dictionary = {}
 var server_settlement_match_id := ""
+var server_spend_inflight := false
+var server_spend_authorized := false
+var server_spend_balance: Dictionary = {}
+var server_spend_request_id := ""
+var server_spend_callback: Callable
 var notice_node: Control
 var training_modal: Control
 var guide_modal: Control
@@ -12412,8 +12417,19 @@ func apply_player_training(index: int, reopen_modal := true) -> void:
 		flash_notice("養成後年薪 $%d 萬會超過薪資帽，請先調整名單；尚未扣點或資金。" % new_salary)
 		return
 	var success_rate: float = [1.0, 0.9, 0.8, 0.7, 0.5][sessions]
-	training_points -= 1
-	budget_million -= 20
+	var server_authorized := server_spend_authorized
+	if not auth_access.is_empty() and not server_authorized:
+		if not server_spend_inflight:
+			request_server_economy_spend("training", -20, 0, 0, -1, func(ok: bool):
+				if not ok:
+					return
+				call_deferred("apply_player_training", index, reopen_modal)
+			)
+		return
+	server_spend_authorized = false
+	if not server_authorized:
+		training_points -= 1
+		budget_million -= 20
 	if randf() > success_rate:
 		player["training_attempts"] = int(player.get("training_attempts", 0)) + 1
 		last_training_note = "%s 特訓未突破（成功率 %d%%）；特訓點與資金已使用。" % [player.get("name", "球員"), int(success_rate * 100.0)]
@@ -14288,6 +14304,22 @@ func request_server_match_settlement() -> void:
 	})
 	cloud_send("settle_match", "%s/rest/v1/rpc/godot_match_settle" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, body)
 
+func request_server_economy_spend(action: String, delta_budget: int, delta_gold: int, delta_scout: int, delta_training: int, callback: Callable) -> void:
+	if auth_access.is_empty() or server_spend_inflight:
+		return
+	server_spend_inflight = true
+	server_spend_callback = callback
+	server_spend_request_id = RankedRules.request_id()
+	var body := JSON.stringify({
+		"p_action": action,
+		"p_request_id": server_spend_request_id,
+		"p_delta_budget": delta_budget,
+		"p_delta_gold": delta_gold,
+		"p_delta_scout": delta_scout,
+		"p_delta_training": delta_training,
+	})
+	cloud_send("economy_spend", "%s/rest/v1/rpc/godot_economy_apply" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, body)
+
 func cloud_send(kind: String, url: String, headers: PackedStringArray, method: int = HTTPClient.METHOD_GET, body: String = "") -> void:
 	ensure_cloud()
 	# Reopening a screen must not queue identical reads behind a slow request.
@@ -14326,7 +14358,7 @@ func _cloud_request_active() -> void:
 func cloud_can_retry(result: int, code: int) -> bool:
 	# Settlement is idempotent by (owner_id, match_id), so retrying it is safe
 	# even when the response was lost after the server committed the ledger row.
-	var safe := int(cloud_active.get("method", -1)) == HTTPClient.METHOD_GET or cloud_pending.begins_with("sync_save_") or cloud_pending in ["push", "push_account", "push_legacy", "ranked_status", "ranked_play", "ranked_join", "ranked_leave", "install_ping", "settle_match"]
+	var safe := int(cloud_active.get("method", -1)) == HTTPClient.METHOD_GET or cloud_pending.begins_with("sync_save_") or cloud_pending in ["push", "push_account", "push_legacy", "ranked_status", "ranked_play", "ranked_join", "ranked_leave", "install_ping", "settle_match", "economy_spend"]
 	return safe and cloud_retry_count < CLOUD_MAX_RETRIES and (result != HTTPRequest.RESULT_SUCCESS or code in [408, 429, 500, 502, 503, 504])
 
 func cancel_cloud_requests() -> void:
@@ -14834,6 +14866,28 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 		save_game()
 		flash_notice("已同步雲端資源")
 		finish_auth_enter()
+		return
+	if kind == "economy_spend":
+		server_spend_inflight = false
+		var ok := code >= 200 and code < 300
+		var spent: Variant = JSON.parse_string(payload) if ok else {}
+		if spent is Array and not spent.is_empty():
+			spent = spent[0]
+		if ok and spent is Dictionary and spent.get("balance", {}) is Dictionary:
+			server_spend_balance = spent.get("balance", {}).duplicate(true)
+			budget_million = int(server_spend_balance.get("budget_million", budget_million))
+			gold = int(server_spend_balance.get("gold", gold))
+			scout_points = int(server_spend_balance.get("scout_points", scout_points))
+			training_points = int(server_spend_balance.get("training_points", training_points))
+			server_spend_authorized = true
+		else:
+			server_spend_balance.clear()
+			server_spend_authorized = false
+			flash_notice("雲端扣款未確認，資源未變更；請保持網路後重試。")
+		if server_spend_callback.is_valid():
+			var cb := server_spend_callback
+			server_spend_callback = Callable()
+			cb.call(ok and server_spend_authorized)
 		return
 	if kind.begins_with("ranked_"):
 		RankedFlow.complete(self,kind,code,payload)
