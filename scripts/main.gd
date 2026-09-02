@@ -7961,8 +7961,18 @@ func claim_scout_choice(index: int, expected_player := "", expected_offer := "")
 	if scout_points < cost:
 		flash_notice("球探點不足：%s 年薪 $%d 萬要 %d 點，現在只有 %d。贏球會再補。" % [str(preview.get("name", "球員")), published_salary(preview), cost, scout_points])
 		return
+	var server_authorized := server_spend_authorized
+	if not auth_access.is_empty() and not server_authorized:
+		if not server_spend_inflight:
+			request_server_scout_purchase(str(preview.get("id", "")), func(ok: bool):
+				if ok:
+					call_deferred("claim_scout_choice", index, expected_player, expected_offer)
+			)
+		return
+	server_spend_authorized = false
 	var chosen: Dictionary = preview.duplicate(true)
-	scout_points -= cost
+	if not server_authorized:
+		scout_points -= cost
 	gacha_candidates.remove_at(index)
 	var duplicate := team_has_player(chosen)
 	if duplicate:
@@ -14329,6 +14339,14 @@ func request_server_economy_spend(action: String, delta_budget: int, delta_gold:
 	})
 	cloud_send("economy_spend", "%s/rest/v1/rpc/godot_economy_apply" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, body)
 
+func request_server_scout_purchase(player_id: String, callback: Callable) -> void:
+	if auth_access.is_empty() or server_spend_inflight:
+		return
+	server_spend_inflight = true
+	server_spend_callback = callback
+	server_spend_request_id = RankedRules.request_id()
+	cloud_send("scout_purchase", "%s/rest/v1/rpc/godot_scout_purchase" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, JSON.stringify({"p_request_id": server_spend_request_id, "p_player_id": player_id}))
+
 func cloud_send(kind: String, url: String, headers: PackedStringArray, method: int = HTTPClient.METHOD_GET, body: String = "") -> void:
 	ensure_cloud()
 	# Reopening a screen must not queue identical reads behind a slow request.
@@ -14367,7 +14385,7 @@ func _cloud_request_active() -> void:
 func cloud_can_retry(result: int, code: int) -> bool:
 	# Settlement is idempotent by (owner_id, match_id), so retrying it is safe
 	# even when the response was lost after the server committed the ledger row.
-	var safe := int(cloud_active.get("method", -1)) == HTTPClient.METHOD_GET or cloud_pending.begins_with("sync_save_") or cloud_pending in ["push", "push_account", "push_legacy", "ranked_status", "ranked_play", "ranked_join", "ranked_leave", "install_ping", "settle_match", "economy_spend"]
+	var safe := int(cloud_active.get("method", -1)) == HTTPClient.METHOD_GET or cloud_pending.begins_with("sync_save_") or cloud_pending in ["push", "push_account", "push_legacy", "ranked_status", "ranked_play", "ranked_join", "ranked_leave", "install_ping", "settle_match", "economy_spend", "scout_purchase"]
 	return safe and cloud_retry_count < CLOUD_MAX_RETRIES and (result != HTTPRequest.RESULT_SUCCESS or code in [408, 429, 500, 502, 503, 504])
 
 func cancel_cloud_requests() -> void:
@@ -14876,7 +14894,7 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 		flash_notice("已同步雲端資源")
 		finish_auth_enter()
 		return
-	if kind == "economy_spend":
+	if kind in ["economy_spend", "scout_purchase"]:
 		server_spend_inflight = false
 		var ok := code >= 200 and code < 300
 		var spent: Variant = JSON.parse_string(payload) if ok else {}

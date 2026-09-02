@@ -243,3 +243,19 @@ end;
 $$;
 revoke all on function public.godot_match_settle(uuid,boolean,text,integer,integer,integer,integer) from public, anon;
 grant execute on function public.godot_match_settle(uuid,boolean,text,integer,integer,integer,integer) to authenticated;
+
+-- Server-owned scout pricing. The client sends only a catalog id; OVR and
+-- price are read from the public catalog and the wallet is debited atomically.
+create or replace function public.godot_scout_purchase(p_request_id uuid, p_player_id text)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare row public.godot_player_catalog; cost integer;
+begin
+  if auth.uid() is null then raise exception 'LOGIN_REQUIRED' using errcode='28000'; end if;
+  if p_player_id is null or length(p_player_id) > 120 then raise exception 'INVALID_PLAYER'; end if;
+  select * into row from public.godot_player_catalog where id=p_player_id;
+  if not found then raise exception 'PLAYER_NOT_IN_CATALOG'; end if;
+  cost := case when row.ovr >= 86 then 5 when row.ovr >= 81 then 4 when row.ovr >= 76 then 3 when row.ovr >= 71 then 2 else 1 end;
+  return tb_economy_private.apply_transaction('scout_purchase',p_request_id,0,0,-cost,0);
+end; $$;
+revoke all on function public.godot_scout_purchase(uuid,text) from public, anon;
+grant execute on function public.godot_scout_purchase(uuid,text) to authenticated;
