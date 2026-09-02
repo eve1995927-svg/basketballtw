@@ -422,6 +422,23 @@
         "roster_checked_at": "2026-08-31",
         "rating_basis": "game_balance_not_official",
         "skill_name": "節奏大師"
+      },
+      {
+        "id": "pilots_hernandez_20260902",
+        "name": "赫南德茲",
+        "english_name": "Dewan Hernandez",
+        "position": "PF/C",
+        "identity": "foreign",
+        "ovr": 84,
+        "potential": 88,
+        "salary_million": 440.0,
+        "photo": "",
+        "origin_team_id": "pilots",
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位",
+        "roster_source": "美聯社／球團公告",
+        "roster_checked_at": "2026-09-02",
+        "rating_basis": "game_balance_not_official"
       }
     ]
   },
@@ -874,6 +891,23 @@
         "roster_checked_at": "2026-08-31",
         "rating_basis": "game_balance_not_official",
         "skill_name": "雙向側翼"
+      },
+      {
+        "id": "yankey_morris_20260902",
+        "name": "莫里斯",
+        "english_name": "Morris Udeze",
+        "position": "C",
+        "identity": "foreign",
+        "ovr": 82,
+        "potential": 87,
+        "salary_million": 430.0,
+        "photo": "",
+        "origin_team_id": "yankey",
+        "skill_id": "screen_hub",
+        "skill_name": "高位策應",
+        "roster_source": "ARKNews",
+        "roster_checked_at": "2026-09-02",
+        "rating_basis": "game_balance_not_official"
       }
     ]
   },
