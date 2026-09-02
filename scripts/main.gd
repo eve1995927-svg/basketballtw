@@ -329,6 +329,7 @@ var prediction_badges: Array[String] = []
 var equipped_badges: Array[String] = []
 var activity_cloud_schedule: Array[Dictionary] = []
 var activity_cloud_leaderboard: Array[Dictionary] = []
+var activity_league_filter := "全部"
 var async_season_active := false
 var async_season_game := 0
 var async_season_wins := 0
@@ -7285,6 +7286,15 @@ func complete_trade(raw: Dictionary) -> void:
 	if budget_million < cost:
 		trade_fail("交易費不足：需要約 $%d 萬。年薪對照通過也不能用這筆代替。" % cost)
 		return
+	var server_authorized := server_spend_authorized
+	if not auth_access.is_empty() and not server_authorized:
+		if not server_spend_inflight:
+			request_server_market_fee("trade_fee", str(incoming.get("id", "")), func(ok: bool):
+				if ok:
+					call_deferred("complete_trade", incoming)
+			)
+		return
+	server_spend_authorized = false
 	var gone := "、".join(trade_outgoing_names())
 	var keep := 0
 	var idxs := trade_out_indices.duplicate()
@@ -7292,7 +7302,8 @@ func complete_trade(raw: Dictionary) -> void:
 	keep = int(idxs[0])
 	for i in range(idxs.size() - 1, 0, -1):
 		team_players.remove_at(int(idxs[i]))
-	budget_million -= cost
+	if not server_authorized:
+		budget_million -= cost
 	chemistry = clampi(chemistry - 2, 0, 100)
 	team_players[keep] = incoming
 	apply_combo_label()
@@ -7336,7 +7347,17 @@ func sign_free_agent(raw: Dictionary) -> void:
 		flash_notice(block)
 		return
 	var cost := free_agent_signing_fee(incoming)
-	budget_million -= cost
+	var server_authorized := server_spend_authorized
+	if not auth_access.is_empty() and not server_authorized:
+		if not server_spend_inflight:
+			request_server_market_fee("sign_player", str(incoming.get("id", "")), func(ok: bool):
+				if ok:
+					call_deferred("sign_free_agent", incoming)
+			)
+		return
+	server_spend_authorized = false
+	if not server_authorized:
+		budget_million -= cost
 	team_players.append(incoming)
 	apply_combo_label()
 	chemistry = clampi(chemistry - 1, 0, 100)
@@ -8131,8 +8152,11 @@ func show_activity_hub() -> void:
 	filters.add_theme_constant_override("separation", 6)
 	content.add_child(filters)
 	for caption in ["全部", "TPBL", "PLG", "SBL", "3x3", "國際賽"]:
-		filters.add_child(action_button(caption, TAIWAN_BLUE if caption == "全部" else Color("254e6b"), func():
-			flash_notice("%s 活動即將開放" % caption)
+		var league_filter: String = caption
+		var selected := activity_league_filter == league_filter
+		filters.add_child(action_button(league_filter, TAIWAN_BLUE if selected else Color("254e6b"), func():
+			activity_league_filter = league_filter
+			show_activity_hub()
 		, Vector2(0, 40)))
 	content.add_child(callout("Pick'em 勝負預測 · 待開放", "正式賽程公布後開放勝負與勝分差預測。目前不接受下注，不以遊戲內模擬比賽代替真實賽事。", GOLD))
 	var schedule_panel := activity_schedule_panel()
@@ -8172,14 +8196,20 @@ func activity_leaderboard_panel() -> Control:
 	return callout("預測排行榜", text, GOLD)
 
 func activity_schedule_panel() -> Control:
-	if activity_cloud_schedule.is_empty():
-		return callout("雲端賽程", "正式賽程尚未公布，暫不開放預測。", MUTED)
+	var schedule: Array[Dictionary] = []
+	for item in activity_cloud_schedule:
+		var league := str(item.get("league", item.get("competition", ""))).to_upper()
+		if activity_league_filter == "全部" or league == activity_league_filter.to_upper():
+			schedule.append(item)
+	if schedule.is_empty():
+		var filter_note := "全部聯盟" if activity_league_filter == "全部" else activity_league_filter
+		return callout("雲端賽程 · %s" % filter_note, "目前沒有符合篩選的正式賽程；賽程公布後會在這裡顯示。" if not activity_cloud_schedule.is_empty() else "正式賽程尚未公布，預測功能會在賽程確認後開放。", MUTED)
 	var rows := PackedStringArray()
-	for i in mini(8, activity_cloud_schedule.size()):
-		var item := activity_cloud_schedule[i]
+	for i in mini(8, schedule.size()):
+		var item := schedule[i]
 		var start := str(item.get("starts_at", "時間待補")).replace("T", " ").replace("+00:00", " UTC")
 		rows.append("%s　%s vs %s" % [start, str(item.get("home_name", "主隊")), str(item.get("away_name", "客隊"))])
-	return callout("雲端賽程（前 8 場）", "\n".join(rows), CYAN)
+	return callout("雲端賽程 · %s（前 8 場）" % activity_league_filter, "\n".join(rows), CYAN)
 
 func async_rank_label(lp: int) -> String:
 	return RankedRules.rank_label(lp)
@@ -14347,6 +14377,15 @@ func request_server_scout_purchase(player_id: String, callback: Callable) -> voi
 	server_spend_request_id = RankedRules.request_id()
 	cloud_send("scout_purchase", "%s/rest/v1/rpc/godot_scout_purchase" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, JSON.stringify({"p_request_id": server_spend_request_id, "p_player_id": player_id}))
 
+func request_server_market_fee(kind: String, player_id: String, callback: Callable) -> void:
+	if auth_access.is_empty() or server_spend_inflight:
+		return
+	server_spend_inflight = true
+	server_spend_callback = callback
+	server_spend_request_id = RankedRules.request_id()
+	var rpc := "godot_sign_player" if kind == "sign_player" else "godot_trade_fee"
+	cloud_send(kind, "%s/rest/v1/rpc/%s" % [SUPABASE_URL, rpc], supabase_headers(true), HTTPClient.METHOD_POST, JSON.stringify({"p_request_id": server_spend_request_id, "p_player_id": player_id}))
+
 func cloud_send(kind: String, url: String, headers: PackedStringArray, method: int = HTTPClient.METHOD_GET, body: String = "") -> void:
 	ensure_cloud()
 	# Reopening a screen must not queue identical reads behind a slow request.
@@ -14385,7 +14424,7 @@ func _cloud_request_active() -> void:
 func cloud_can_retry(result: int, code: int) -> bool:
 	# Settlement is idempotent by (owner_id, match_id), so retrying it is safe
 	# even when the response was lost after the server committed the ledger row.
-	var safe := int(cloud_active.get("method", -1)) == HTTPClient.METHOD_GET or cloud_pending.begins_with("sync_save_") or cloud_pending in ["push", "push_account", "push_legacy", "ranked_status", "ranked_play", "ranked_join", "ranked_leave", "install_ping", "settle_match", "economy_spend", "scout_purchase"]
+	var safe := int(cloud_active.get("method", -1)) == HTTPClient.METHOD_GET or cloud_pending.begins_with("sync_save_") or cloud_pending in ["push", "push_account", "push_legacy", "ranked_status", "ranked_play", "ranked_join", "ranked_leave", "install_ping", "settle_match", "economy_spend", "scout_purchase", "sign_player", "trade_fee"]
 	return safe and cloud_retry_count < CLOUD_MAX_RETRIES and (result != HTTPRequest.RESULT_SUCCESS or code in [408, 429, 500, 502, 503, 504])
 
 func cancel_cloud_requests() -> void:
@@ -14894,7 +14933,7 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 		flash_notice("已同步雲端資源")
 		finish_auth_enter()
 		return
-	if kind in ["economy_spend", "scout_purchase"]:
+	if kind in ["economy_spend", "scout_purchase", "sign_player", "trade_fee"]:
 		server_spend_inflight = false
 		var ok := code >= 200 and code < 300
 		var spent: Variant = JSON.parse_string(payload) if ok else {}

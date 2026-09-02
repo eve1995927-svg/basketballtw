@@ -23,6 +23,9 @@ checks = {
     "scout refresh fixed cost": "p_delta_gold <> -20" in s and "INVALID_SCOUT_REFRESH_COST" in s,
     "authenticated settle grant": bool(re.search(r"grant execute on function public\.godot_match_settle[\s\S]*?to authenticated", s)),
     "server owned scout purchase": "godot_scout_purchase" in s and "PLAYER_NOT_IN_CATALOG" in s,
+    "server owned signing": "godot_sign_player" in s and "sign_player" in s and "PLAYER_NOT_IN_CATALOG" in s,
+    "server owned trade fee": "godot_trade_fee" in s and "trade_fee" in s and "PLAYER_NOT_IN_CATALOG" in s,
+    "authenticated market grants": bool(re.search(r"grant execute on function public\.godot_sign_player[\s\S]*?to authenticated", s)) and bool(re.search(r"grant execute on function public\.godot_trade_fee[\s\S]*?to authenticated", s)),
 }
 failed = [name for name, ok in checks.items() if not ok]
 print("SECURITY_ECONOMY_AUDIT " + " ".join(f"{name}={'ok' if ok else 'FAIL'}" for name, ok in checks.items()))

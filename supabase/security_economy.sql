@@ -259,3 +259,34 @@ begin
 end; $$;
 revoke all on function public.godot_scout_purchase(uuid,text) from public, anon;
 grant execute on function public.godot_scout_purchase(uuid,text) to authenticated;
+
+-- Server-owned free-agent pricing. The client submits only a catalog id.
+create or replace function public.godot_sign_player(p_request_id uuid, p_player_id text)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare row public.godot_player_catalog; salary integer; fee integer;
+begin
+  if auth.uid() is null then raise exception 'LOGIN_REQUIRED' using errcode='28000'; end if;
+  if p_player_id is null or length(p_player_id) > 120 then raise exception 'INVALID_PLAYER'; end if;
+  select * into row from public.godot_player_catalog where id=p_player_id;
+  if not found then raise exception 'PLAYER_NOT_IN_CATALOG'; end if;
+  salary := case when row.ovr >= 86 then 300 + (row.ovr - 86) * 25 when row.ovr >= 81 then 220 + (row.ovr - 81) * 16 when row.ovr >= 76 then 150 + (row.ovr - 76) * 14 when row.ovr >= 71 then 90 + (row.ovr - 71) * 12 else 50 + greatest(0,row.ovr - 65) * 8 end;
+  fee := greatest(45, round(salary * 1.2));
+  return tb_economy_private.apply_transaction('sign_player',p_request_id,-fee,0,0,0);
+end; $$;
+revoke all on function public.godot_sign_player(uuid,text) from public, anon;
+grant execute on function public.godot_sign_player(uuid,text) to authenticated;
+
+create or replace function public.godot_trade_fee(p_request_id uuid, p_player_id text)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare row public.godot_player_catalog; salary integer; fee integer;
+begin
+  if auth.uid() is null then raise exception 'LOGIN_REQUIRED' using errcode='28000'; end if;
+  if p_player_id is null or length(p_player_id) > 120 then raise exception 'INVALID_PLAYER'; end if;
+  select * into row from public.godot_player_catalog where id=p_player_id;
+  if not found then raise exception 'PLAYER_NOT_IN_CATALOG'; end if;
+  salary := case when row.ovr >= 86 then 300 + (row.ovr - 86) * 25 when row.ovr >= 81 then 220 + (row.ovr - 81) * 16 when row.ovr >= 76 then 150 + (row.ovr - 76) * 14 when row.ovr >= 71 then 90 + (row.ovr - 71) * 12 else 50 + greatest(0,row.ovr - 65) * 8 end;
+  fee := greatest(70, round(salary * 0.35));
+  return tb_economy_private.apply_transaction('trade_fee',p_request_id,-fee,0,0,0);
+end; $$;
+revoke all on function public.godot_trade_fee(uuid,text) from public, anon;
+grant execute on function public.godot_trade_fee(uuid,text) to authenticated;
