@@ -8051,6 +8051,17 @@ func taiwan_date_key(utc_seconds: int) -> String:
 	var now := Time.get_datetime_dict_from_unix_time(utc_seconds + 8 * 60 * 60)
 	return "%04d-%02d-%02d" % [int(now.get("year", 0)), int(now.get("month", 0)), int(now.get("day", 0))]
 
+func monthly_pass_claimable_days(today: String) -> int:
+	if not monthly_pass_active or monthly_pass_claimed_days >= 30:
+		return 0
+	if monthly_pass_claimed_date.is_empty():
+		return 1
+	var from_ts := Time.get_unix_time_from_datetime_string(monthly_pass_claimed_date + "T00:00:00")
+	var to_ts := Time.get_unix_time_from_datetime_string(today + "T00:00:00")
+	if from_ts < 0 or to_ts < 0:
+		return 1
+	return clampi(int((to_ts - from_ts) / 86400.0), 0, 30 - monthly_pass_claimed_days)
+
 func show_activity_hub() -> void:
 	track_event("screen_activity")
 	active_menu = "activity"
@@ -8252,18 +8263,20 @@ func show_daily_tasks() -> void:
 	claim.disabled = claimed
 	content.add_child(claim)
 	if monthly_pass_active:
-		var pass_claimed := monthly_pass_claimed_date == today
+		var pending_pass_days := monthly_pass_claimable_days(today)
+		var pass_claimed := pending_pass_days <= 0
 		content.add_child(callout("主場應援月卡 · 30 天簽到", "每日資金 +100 萬 · 黃金 +20 · 球探點 +5\n已領 %d／30 天；漏領資源可累積。\n專屬球員卡框與看板可到設定切換。" % monthly_pass_claimed_days, GOLD if not pass_claimed else GREEN))
 		var pass_button := action_button("月卡今日已領取" if pass_claimed else "領取月卡今日資源", GOLD if not pass_claimed else Color("254e6b"), func():
-			if monthly_pass_claimed_date == taiwan_today_key():
+			var claim_days := monthly_pass_claimable_days(taiwan_today_key())
+			if claim_days <= 0:
 				flash_notice("月卡今日已領取")
 				return
 			monthly_pass_claimed_date = taiwan_today_key()
-			monthly_pass_claimed_days = mini(30, monthly_pass_claimed_days + 1)
-			budget_million += 100
-			gold += 20
-			scout_points += 5
-			last_event = "月卡簽到完成：資金 +100 萬、黃金 +20、球探點 +5。"
+			monthly_pass_claimed_days = mini(30, monthly_pass_claimed_days + claim_days)
+			budget_million += 100 * claim_days
+			gold += 20 * claim_days
+			scout_points += 5 * claim_days
+			last_event = "月卡簽到完成 %d 天：資金 +%d 萬、黃金 +%d、球探點 +%d。" % [claim_days, 100 * claim_days, 20 * claim_days, 5 * claim_days]
 			save_game()
 			show_daily_tasks()
 		, Vector2(0, 48))
