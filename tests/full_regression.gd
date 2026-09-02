@@ -240,11 +240,12 @@ func test_catalog() -> void:
 	var market_pool: Array[Dictionary] = game.market_player_pool()
 	var market_expected := 0
 	for raw in game.all_league_players():
-		if game.player_tier_key(game.to_game_player(raw)) not in ["gold", "diamond"]:
+		var converted: Dictionary = game.to_game_player(raw)
+		if game.player_tier_key(converted) not in ["gold", "diamond"] and int(converted.get("ovr", 70)) < 80:
 			market_expected += 1
-	check(market_pool.size() == market_expected, "trade and free-agent markets expose every non-gold/non-diamond league player")
+	check(market_pool.size() == market_expected, "trade and free-agent markets expose non-gold/non-diamond players below OVR 80")
 	for card in market_pool:
-		check(game.player_tier_key(card) not in ["gold", "diamond"], "market excludes gold and diamond only")
+		check(game.player_tier_key(card) not in ["gold", "diamond"] and int(card.get("ovr", 70)) < 80, "market excludes premium and OVR 80+ cards")
 	for who in ["熊祥泰", "林彥廷", "喬納森"]:
 		check(market_pool.any(func(p): return p.name == who), "requested Kings player is obtainable in market: " + who)
 	for event_id in ["easl", "bcl", "jones", "wcq"]:
@@ -692,8 +693,9 @@ func test_draft_and_acquisition() -> void:
 	game.scout_floor_game = game.season_games # Isolate price from the existing once-per-game point floor.
 	game.gold = game.SCOUT_REFRESH_GOLD
 	game.scout_points = 17
+	game.scout_free_refresh_date = ""
 	game.refresh_scout_board()
-	check(game.gold == 0 and game.scout_points == 17 and game.gacha_candidates.size() == 6, "scout refresh costs 20 gold and never scout points")
+	check(game.gold == game.SCOUT_REFRESH_GOLD and game.scout_points == 17 and game.gacha_candidates.size() == 6, "first daily scout refresh is free and never spends scout points")
 	var board: Array = game.gacha_candidates.duplicate(true)
 	game.gold = 0
 	game.refresh_scout_board()

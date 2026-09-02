@@ -309,6 +309,10 @@ var mission_alert := false
 var daily_checkin_date := ""
 var daily_checkin_streak := 0
 var daily_checkin_days := 0
+var monthly_pass_active := false
+var monthly_pass_claimed_date := ""
+var monthly_pass_claimed_days := 0
+var scout_free_refresh_date := ""
 var prediction_match_key := ""
 var prediction_pick := ""
 var prediction_margin := ""
@@ -3808,6 +3812,8 @@ func try_purchase_twd(sku: String) -> void:
 	show_iap_sheet(sku)
 
 func iap_product(sku: String) -> Dictionary:
+	if sku == "monthly_pass":
+		return {"title": "主場應援月卡", "price": "NT$190", "store_id": "tb_monthly_pass", "note": "30 天每日資金 100 萬、黃金 20、球探點 5；漏領可累積，最多 30 天。附專屬球員卡框與主場看板。"}
 	if sku == "extra_save":
 		return {"title": "再加一格存檔", "price": "NT$100", "store_id": "tb_extra_save", "note": "一次買一格，帳號最多 10 格。現在 %d／10。" % max_save_slots()}
 	if sku == "easl":
@@ -3874,6 +3880,8 @@ func restore_iap() -> void:
 		easl_pass = true
 	if bool(iap_receipts.get("jones", false)):
 		jones_pass = true
+	if bool(iap_receipts.get("monthly_pass", false)):
+		monthly_pass_active = true
 	save_account()
 	flash_notice("已依本機／雲端憑證恢復購買")
 	show_store_hub()
@@ -3900,6 +3908,15 @@ func poll_native_iap() -> void:
 				flash_notice("購買未完成，沒有新增付費內容")
 
 func complete_purchase(sku: String) -> void:
+	if sku == "monthly_pass":
+		monthly_pass_active = true
+		iap_receipts["monthly_pass"] = true
+		iap_pending_sku = ""
+		save_account()
+		save_game()
+		flash_notice("主場應援月卡已開通")
+		show_daily_tasks()
+		return
 	if sku == "extra_save":
 		if extra_slots_left() <= 0:
 			flash_notice("存檔格已經 10 格")
@@ -3944,7 +3961,7 @@ func complete_purchase(sku: String) -> void:
 
 func show_store_hub() -> void:
 	active_menu = "store"
-	var content := begin_screen("商店", "上面是付費解鎖（三加二）。黃金卡包在下面，跟球探點分開。", 4)
+	var content := begin_screen("商店", "功能道具與外觀在這裡；球員卡統一前往市場取得。", 4)
 	var grid := GridContainer.new()
 	grid.columns = 3
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -3985,7 +4002,12 @@ func show_store_hub() -> void:
 	var nat_note := "本存檔已解鎖" if national_unlocked else ("需職業前二" if not pro_top2 else "世界盃資格賽")
 	grid.add_child(store_square("中華隊", "NT$100", nat_note, RED, func(): try_open_extra("wcq"), "national"))
 	grid.add_child(store_square("主場主題", "NT$90", "賽博龐克系列 · 純外觀", Color("d94cff"), func(): show_supporter_club(), "arena"))
-	content.add_child(hub_tile("黃金卡包", "80 黃金抽一張，進保管箱或名單", "不用球探點 · 重複卡換成黃金", GOLD, func(): gold_scout_pull(), {}, true, "collection"))
+	content.add_child(store_square("主場應援月卡", "NT$190", "每日資源 · 卡框 · 看板" if not monthly_pass_active else "已開通 · 前往任務領取", GOLD, func():
+		if monthly_pass_active:
+			show_daily_tasks()
+		else:
+			show_iap_sheet("monthly_pass")
+	, "arena"))
 	var actions := HBoxContainer.new()
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	actions.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
@@ -6718,6 +6740,10 @@ func market_player_pool() -> Array[Dictionary]:
 		# Show the complete 200-player catalog. Only gold and diamond cards stay out.
 		if player_tier_key(player) in ["gold", "diamond"]:
 			continue
+		# OVR 80+ cards are scout exclusives; they never leak into free agency
+		# or trade listings.
+		if int(player.get("ovr", 70)) >= 80:
+			continue
 		seen[key] = true
 		result.append(player)
 	result.sort_custom(func(a: Dictionary, b: Dictionary):
@@ -6931,7 +6957,7 @@ func show_free_agent_market(expand := false) -> void:
 	else:
 		fa_list_shown = 12
 	var content := begin_screen("自由市場", "可用資金 $%d 萬 · 簽約費與年薪分開計算" % budget_million, 4)
-	content.add_child(callout("自由市場規則", "簽約費從資金扣除；年薪計入薪資帽，不扣黃金或球探點。仍須符合 12 人與外援限制；黃金卡、鑽石卡不開放簽約。", GREEN))
+	content.add_child(callout("自由市場規則", "簽約費從資金扣除；年薪計入薪資帽，不扣黃金或球探點。OVR 80 以上球員只會在球探出現；黃金卡、鑽石卡也不開放簽約。", GREEN))
 	var pool := market_player_pool()
 	content.add_child(market_filter_bar(pool, func(): show_free_agent_market()))
 	var filtered: Array[Dictionary] = []
@@ -7831,14 +7857,20 @@ func scout_board_has_player(raw: Dictionary) -> bool:
 	return false
 
 func refresh_scout_board() -> void:
-	if gold < SCOUT_REFRESH_GOLD:
-		flash_notice("更換下一批需要 %d 黃金；購買球員才使用球探點。" % SCOUT_REFRESH_GOLD)
+	var today := taiwan_today_key()
+	var free_today := scout_free_refresh_date != today
+	if not free_today and gold < SCOUT_REFRESH_GOLD:
+		flash_notice("今日免費刷新已使用；更換下一批需要 %d 黃金。購買球員才使用球探點。" % SCOUT_REFRESH_GOLD)
 		return
 	if not generate_scout_candidates():
 		flash_notice("卡池資料不完整，未更換卡片、未扣球探點")
 		return
-	gold -= SCOUT_REFRESH_GOLD
-	last_progress_event = "球探桌已換一批，花費 %d 黃金。" % SCOUT_REFRESH_GOLD
+	if free_today:
+		scout_free_refresh_date = today
+		last_progress_event = "球探桌今日免費刷新完成。"
+	else:
+		gold -= SCOUT_REFRESH_GOLD
+		last_progress_event = "球探桌已換一批，花費 %d 黃金。" % SCOUT_REFRESH_GOLD
 	save_game()
 	show_gacha_market()
 
@@ -7852,7 +7884,7 @@ func scout_rarity(player: Dictionary) -> Dictionary:
 	return {"id": key, "name": "不在球探卡池", "color": MUTED, "percent": 0}
 
 func scout_rules_text() -> String:
-	return "點卡片查看資料，再按卡片下方的購買鍵；買球員只扣球探點。\n每張新上架卡片的出現機率：%s；合計 100%%，不含鑽石卡。\n先抽卡色，再從該色抽球員；每張獨立抽取，不是每批固定比例。已擁有球員仍可能再次取得，重複卡會保留在保管箱並提示。\n超帽或名單已滿時放入保管箱。更換下一批固定花費 20 黃金，不扣球探點。" % scout_probability_text()
+	return "點卡片查看資料，再按卡片下方的購買鍵；買球員只扣球探點。\nOVR 80 以上球員只會出現在球探卡池，不會出現在自由市場或交易。\n每張新上架卡片的出現機率：%s；合計 100%%，不含鑽石卡。\n每天第一次更換下一批免費，之後每批花費 20 黃金；刷新不扣球探點。" % scout_probability_text()
 
 func scout_probability_text(compact := false) -> String:
 	var parts := PackedStringArray()
@@ -8195,7 +8227,7 @@ func show_daily_tasks() -> void:
 	var today := taiwan_today_key()
 	var claimed := daily_checkin_date == today
 	var day_text := "%d／30 天" % daily_checkin_days
-	content.add_child(callout("每日打卡", "今天完成：資金 +30 萬\n累積進度：%s\n第 30 天額外獎勵：黃金 +100、球探點 +20" % day_text, GOLD if not claimed else GREEN))
+	content.add_child(callout("每日打卡", "今天完成：資金 +30 萬\n累積進度：%s\n每日 00:00（台灣時間）刷新" % day_text, GOLD if not claimed else GREEN))
 	var claim := action_button("今日打卡已完成" if claimed else "領取今日資金 +30 萬", GREEN if not claimed else Color("254e6b"), func():
 		if daily_checkin_date == taiwan_today_key():
 			flash_notice("今天已領取，明天 00:00 後刷新")
@@ -8216,8 +8248,27 @@ func show_daily_tasks() -> void:
 		save_game()
 		show_daily_tasks()
 	, Vector2(0, 48))
+	claim.text = "今日打卡已完成" if claimed else "領取今日資金 +30 萬"
 	claim.disabled = claimed
 	content.add_child(claim)
+	if monthly_pass_active:
+		var pass_claimed := monthly_pass_claimed_date == today
+		content.add_child(callout("主場應援月卡 · 30 天簽到", "每日資金 +100 萬 · 黃金 +20 · 球探點 +5\n已領 %d／30 天；漏領資源可累積。\n專屬球員卡框與看板可到設定切換。" % monthly_pass_claimed_days, GOLD if not pass_claimed else GREEN))
+		var pass_button := action_button("月卡今日已領取" if pass_claimed else "領取月卡今日資源", GOLD if not pass_claimed else Color("254e6b"), func():
+			if monthly_pass_claimed_date == taiwan_today_key():
+				flash_notice("月卡今日已領取")
+				return
+			monthly_pass_claimed_date = taiwan_today_key()
+			monthly_pass_claimed_days = mini(30, monthly_pass_claimed_days + 1)
+			budget_million += 100
+			gold += 20
+			scout_points += 5
+			last_event = "月卡簽到完成：資金 +100 萬、黃金 +20、球探點 +5。"
+			save_game()
+			show_daily_tasks()
+		, Vector2(0, 48))
+		pass_button.disabled = pass_claimed or monthly_pass_claimed_days >= 30
+		content.add_child(pass_button)
 	content.add_child(action_button("查看長期挑戰", Color("254e6b"), func(): show_challenge_hub(), Vector2(0, 44)))
 
 func show_challenge_hub() -> void:
@@ -10448,6 +10499,10 @@ func reset_club_state() -> void:
 	daily_checkin_date = ""
 	daily_checkin_streak = 0
 	daily_checkin_days = 0
+	monthly_pass_active = false
+	monthly_pass_claimed_date = ""
+	monthly_pass_claimed_days = 0
+	scout_free_refresh_date = ""
 	prediction_match_key = ""
 	prediction_pick = ""
 	prediction_margin = ""
@@ -14043,6 +14098,10 @@ func collect_save_data() -> Dictionary:
 		"daily_checkin_date": daily_checkin_date,
 		"daily_checkin_streak": daily_checkin_streak,
 		"daily_checkin_days": daily_checkin_days,
+		"monthly_pass_active": monthly_pass_active,
+		"monthly_pass_claimed_date": monthly_pass_claimed_date,
+		"monthly_pass_claimed_days": monthly_pass_claimed_days,
+		"scout_free_refresh_date": scout_free_refresh_date,
 		"prediction_match_key": prediction_match_key,
 		"prediction_pick": prediction_pick,
 		"prediction_margin": prediction_margin,
@@ -14923,6 +14982,10 @@ func load_game(then_show := true) -> void:
 	daily_checkin_date = str(data.get("daily_checkin_date", ""))
 	daily_checkin_streak = int(data.get("daily_checkin_streak", 0))
 	daily_checkin_days = int(data.get("daily_checkin_days", 0))
+	monthly_pass_active = bool(data.get("monthly_pass_active", false)) or bool(iap_receipts.get("monthly_pass", false))
+	monthly_pass_claimed_date = str(data.get("monthly_pass_claimed_date", ""))
+	monthly_pass_claimed_days = clampi(int(data.get("monthly_pass_claimed_days", 0)), 0, 30)
+	scout_free_refresh_date = str(data.get("scout_free_refresh_date", ""))
 	prediction_match_key = str(data.get("prediction_match_key", ""))
 	prediction_pick = str(data.get("prediction_pick", ""))
 	prediction_margin = str(data.get("prediction_margin", ""))
