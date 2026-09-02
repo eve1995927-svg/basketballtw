@@ -35,7 +35,7 @@ const LEGAL_NOTICE_TITLE := "遊戲聲明與權利說明"
 const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官方聯盟或球隊產品。\n\n遊戲中部分隊名、球員名稱與賽事名稱參考真實籃球資訊，並非全部虛構。球員能力、卡片稀有度、遊戲薪資、交易、陣容及比賽結果屬於遊戲模擬設定，不代表真實人物的實際表現、合約、行為或官方評價。\n\n本遊戲與任何真實職業籃球聯盟、球隊或球員無官方授權、合作、贊助或背書關係。\n\n遊戲所涉及的名稱、商標、隊徽、照片、肖像及其他素材之相關權利，仍屬各該權利人。本聲明不構成素材使用授權，也不表示相關使用當然合法或免除依法應負的責任。\n\n本說明不要求使用者放棄依法享有的權利。\n\n更新日期：2026 年 8 月 31 日"
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
-const APP_VERSION := "0.9.3"
+const APP_VERSION := "0.9.4"
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const STYLIZED_ART := [
 	"res://assets/art/hero_pg.png",
