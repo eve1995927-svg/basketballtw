@@ -409,6 +409,10 @@ var last_event := "球隊就緒。去大廳打第一場吧。"
 var last_match_played := false
 var match_rewards_pending := false
 var match_play_id := 0
+var server_settlement_inflight := false
+var server_settlement_ready := false
+var server_settlement_balance: Dictionary = {}
+var server_settlement_match_id := ""
 var notice_node: Control
 var training_modal: Control
 var guide_modal: Control
@@ -9436,6 +9440,10 @@ func start_extra_match() -> void:
 	last_score = [0, 0]
 	reveal_quarter = 0
 	match_rewards_pending = true
+	server_settlement_inflight = false
+	server_settlement_ready = false
+	server_settlement_balance.clear()
+	server_settlement_match_id = ""
 	save_game()
 	play_sfx("whistle")
 	show_match_presentation()
@@ -12975,6 +12983,10 @@ func start_match() -> void:
 	last_score = [0, 0]
 	reveal_quarter = 0
 	match_rewards_pending = true
+	server_settlement_inflight = false
+	server_settlement_ready = false
+	server_settlement_balance.clear()
+	server_settlement_match_id = ""
 	save_game()
 	play_sfx("whistle")
 	show_match_presentation()
@@ -13520,6 +13532,14 @@ func show_post_match() -> void:
 	if match_rewards_pending and reveal_quarter < match_period_count():
 		skip_match_presentation()
 		return
+	# Signed-in players must receive the authoritative economy result before the
+	# local result screen applies any rewards. Offline play keeps its existing
+	# local path, but never mixes a local grant into a cloud account.
+	if match_rewards_pending and not server_settlement_ready and not auth_access.is_empty():
+		if not server_settlement_inflight:
+			request_server_match_settlement()
+		return
+	server_settlement_ready = false
 	active_menu = "result"
 	var won := last_score[0] > last_score[1]
 	var extra_just := extra_match if match_rewards_pending else bool(last_match_gain.get("extra", false))
@@ -13597,6 +13617,13 @@ func show_post_match() -> void:
 		last_match_played = true
 		track_event("match_completed", {"won": won, "league": current_league, "score_for": int(last_score[0]), "score_against": int(last_score[1]), "extra": extra_just})
 		match_rewards_pending = false
+	if settling and not server_settlement_balance.is_empty():
+		# The server balance is authoritative. Local match stats and presentation
+		# remain local, while all four economy values are replaced atomically.
+		budget_million = int(server_settlement_balance.get("budget_million", budget_million))
+		gold = int(server_settlement_balance.get("gold", gold))
+		scout_points = int(server_settlement_balance.get("scout_points", scout_points))
+		training_points = int(server_settlement_balance.get("training_points", training_points))
 	_settling_match = false
 	if settling:
 		save_game()
@@ -14242,6 +14269,25 @@ func _on_cloud_http_for_generation(result: int, code: int, headers: PackedString
 func cloud_is_busy() -> bool:
 	return is_instance_valid(cloud_http) and cloud_http.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED
 
+func request_server_match_settlement() -> void:
+	if auth_access.is_empty() or not match_rewards_pending:
+		return
+	server_settlement_inflight = true
+	if server_settlement_match_id.is_empty():
+		server_settlement_match_id = RankedRules.request_id()
+	var body := JSON.stringify({
+		"p_match_id": server_settlement_match_id,
+		"p_won": last_score[0] > last_score[1],
+		"p_league": "extra" if extra_match else current_league,
+		# Kept for RPC backwards compatibility; the server deliberately ignores
+		# these client supplied reward fields.
+		"p_budget": 0,
+		"p_gold": 0,
+		"p_scout": 0,
+		"p_training": 0,
+	})
+	cloud_send("settle_match", "%s/rest/v1/rpc/godot_match_settle" % SUPABASE_URL, supabase_headers(true), HTTPClient.METHOD_POST, body)
+
 func cloud_send(kind: String, url: String, headers: PackedStringArray, method: int = HTTPClient.METHOD_GET, body: String = "") -> void:
 	ensure_cloud()
 	# Reopening a screen must not queue identical reads behind a slow request.
@@ -14278,7 +14324,9 @@ func _cloud_request_active() -> void:
 		_on_cloud_http(HTTPRequest.RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray())
 
 func cloud_can_retry(result: int, code: int) -> bool:
-	var safe := int(cloud_active.get("method", -1)) == HTTPClient.METHOD_GET or cloud_pending.begins_with("sync_save_") or cloud_pending in ["push", "push_account", "push_legacy", "ranked_status", "ranked_play", "ranked_join", "ranked_leave", "install_ping"]
+	# Settlement is idempotent by (owner_id, match_id), so retrying it is safe
+	# even when the response was lost after the server committed the ledger row.
+	var safe := int(cloud_active.get("method", -1)) == HTTPClient.METHOD_GET or cloud_pending.begins_with("sync_save_") or cloud_pending in ["push", "push_account", "push_legacy", "ranked_status", "ranked_play", "ranked_join", "ranked_leave", "install_ping", "settle_match"]
 	return safe and cloud_retry_count < CLOUD_MAX_RETRIES and (result != HTTPRequest.RESULT_SUCCESS or code in [408, 429, 500, 502, 503, 504])
 
 func cancel_cloud_requests() -> void:
@@ -14750,6 +14798,22 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 		return
 	if kind.begins_with("sync_save_"):
 		CloudSync.complete(self,kind,code,payload)
+		return
+	if kind == "settle_match":
+		server_settlement_inflight = false
+		if code < 200 or code >= 300:
+			server_settlement_balance.clear()
+			flash_notice("伺服器尚未確認比賽結果，獎勵尚未發放；請保持網路後重試。")
+			return
+		var settled: Variant = JSON.parse_string(payload)
+		if settled is Array and not settled.is_empty():
+			settled = settled[0]
+		if not (settled is Dictionary) or not (settled.get("balance", {}) is Dictionary):
+			flash_notice("結算回應格式錯誤，獎勵尚未發放；請稍後重試。")
+			return
+		server_settlement_balance = settled.get("balance", {}).duplicate(true)
+		server_settlement_ready = true
+		call_deferred("show_post_match")
 		return
 	if kind.begins_with("ranked_"):
 		RankedFlow.complete(self,kind,code,payload)
