@@ -7888,10 +7888,19 @@ func refresh_scout_board() -> void:
 	if not generate_scout_candidates():
 		flash_notice("卡池資料不完整，未更換卡片、未扣球探點")
 		return
+	var server_authorized := server_spend_authorized
+	if not free_today and not auth_access.is_empty() and not server_authorized:
+		if not server_spend_inflight:
+			request_server_economy_spend("scout_refresh", 0, -SCOUT_REFRESH_GOLD, 0, 0, func(ok: bool):
+				if ok:
+					call_deferred("refresh_scout_board")
+			)
+		return
+	server_spend_authorized = false
 	if free_today:
 		scout_free_refresh_date = today
 		last_progress_event = "球探桌今日免費刷新完成。"
-	else:
+	elif not server_authorized:
 		gold -= SCOUT_REFRESH_GOLD
 		last_progress_event = "球探桌已換一批，花費 %d 黃金。" % SCOUT_REFRESH_GOLD
 	save_game()
