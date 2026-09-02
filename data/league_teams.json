@@ -439,6 +439,19 @@
         "roster_source": "美聯社／球團公告",
         "roster_checked_at": "2026-09-02",
         "rating_basis": "game_balance_not_official"
+      },
+      {
+        "id": "pilots_陳昱瑞",
+        "name": "陳昱瑞",
+        "position": "SG",
+        "identity": "local",
+        "ovr": 74,
+        "potential": 93,
+        "salary_million": 296.4,
+        "photo": "res://assets/images/teams/yankey/players/yankey_4.jpg",
+        "origin_team_id": "pilots",
+        "skill_id": "three_and_d",
+        "skill_name": "定點砲台"
       }
     ]
   },
@@ -599,6 +612,19 @@
         "roster_checked_at": "2026-08-31",
         "rating_basis": "game_balance_not_official",
         "skill_name": "高位策應"
+      },
+      {
+        "id": "ghosthawks_高國豪",
+        "name": "高國豪",
+        "position": "PG",
+        "identity": "local",
+        "ovr": 84,
+        "potential": 91,
+        "salary_million": 296.4,
+        "photo": "res://assets/images/teams/lioneers/players/lioneers_2.jpg",
+        "origin_team_id": "ghosthawks",
+        "skill_id": "floor_general",
+        "skill_name": "節奏大師"
       }
     ]
   },
@@ -659,19 +685,6 @@
         "potential": 82,
         "salary_million": 230.0,
         "photo": "",
-        "origin_team_id": "yankey",
-        "skill_id": "three_and_d",
-        "skill_name": "定點砲台"
-      },
-      {
-        "id": "yankey_4",
-        "name": "陳昱瑞",
-        "position": "SG",
-        "identity": "local",
-        "ovr": 74,
-        "potential": 93,
-        "salary_million": 296.4,
-        "photo": "res://assets/images/teams/yankey/players/yankey_4.jpg",
         "origin_team_id": "yankey",
         "skill_id": "three_and_d",
         "skill_name": "定點砲台"
@@ -1183,19 +1196,6 @@
         "potential": 76,
         "salary_million": 205.8,
         "photo": "",
-        "origin_team_id": "lioneers",
-        "skill_id": "floor_general",
-        "skill_name": "節奏大師"
-      },
-      {
-        "id": "lioneers_2",
-        "name": "高國豪",
-        "position": "PG",
-        "identity": "local",
-        "ovr": 84,
-        "potential": 91,
-        "salary_million": 296.4,
-        "photo": "res://assets/images/teams/lioneers/players/lioneers_2.jpg",
         "origin_team_id": "lioneers",
         "skill_id": "floor_general",
         "skill_name": "節奏大師"

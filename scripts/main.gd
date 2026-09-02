@@ -222,6 +222,12 @@ const TEAM_SHORT := {
 	"dreamers": "寶島追逐者",
 	"kings": "新北皇家",
 }
+# Roster moves are applied to old cloud/local saves by name as well as to the
+# catalog, so an existing card follows the player's current club immediately.
+const PLAYER_TEAM_OVERRIDES := {
+	"高國豪": "ghosthawks",
+	"陳昱瑞": "pilots",
+}
 
 const BG := Color("07111c")
 const SURFACE := Color("0d1b2a")
@@ -4598,6 +4604,10 @@ func player_skill_id_for(raw: Dictionary) -> String:
 
 func to_game_player(raw: Dictionary, image_override := "") -> Dictionary:
 	var player := merge_public_stats(raw.duplicate(true))
+	var moved_team := str(PLAYER_TEAM_OVERRIDES.get(str(player.get("name", "")), ""))
+	if not moved_team.is_empty():
+		player["origin_team_id"] = moved_team
+		player["team"] = str(FICTIONAL_TEAM_NAMES.get(moved_team, player.get("team", "")))
 	player = apply_veteran_card(player)
 	var skill_id := player_skill_id_for(player)
 	var ovr := clampi(int(player.get("ovr", public_player_ovr(player))), 65, 90)
