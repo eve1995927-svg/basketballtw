@@ -160,6 +160,17 @@
 
   <footer><a class="brand footer-brand" href="#top"><span class="brand-mark">TW</span><span>台籃模擬器</span></a><p>非官方體育模擬器，無聯盟或球隊官方授權。<br><a href="legal.html" style="text-decoration: underline; text-underline-offset: 4px;">遊戲聲明與權利說明</a></p><p>© 2026 台籃模擬器 · 測試版本 · 遊戲能力、薪資及賽果不代表官方資料</p></footer>
   <dialog class="lightbox" aria-label="遊戲截圖預覽"><button class="lightbox-close" aria-label="關閉圖片">×</button><img alt="放大的遊戲畫面"></dialog>
+  <script>
+    // Supabase may fall back to the project Site URL when the callback URL is
+    // not yet in its allowlist. Forward the OAuth hash into the actual game so
+    // the Godot client can consume the access token instead of showing home.
+    (() => {
+      const hash = window.location.hash;
+      if (hash && (hash.includes('access_token=') || hash.includes('code='))) {
+        window.location.replace('game/index.html' + hash);
+      }
+    })();
+  </script>
   <script src="script.js"></script>
 </body>
 </html>

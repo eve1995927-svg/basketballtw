@@ -14306,10 +14306,13 @@ func start_oauth(provider: String) -> void:
 			flash_notice("網頁版目前提供 Google 或信箱驗證碼登入。")
 			return
 		web_auth_consumed = false
+		# Always return to the standalone game page.  Using top.location matters
+		# when the game is opened inside play.html's iframe; otherwise OAuth can
+		# finish in the iframe and appear to send the player back to the homepage.
 		var web_redirect := "https://eve1995927-svg.github.io/basketballtw/game/index.html"
 		var url := "%s/auth/v1/authorize?provider=google&redirect_to=%s&response_type=token" % [SUPABASE_URL, web_redirect.uri_encode()]
 		flash_notice("正在開啟 Google 登入…")
-		JavaScriptBridge.eval("window.location.href=" + JSON.stringify(url))
+		JavaScriptBridge.eval("(window.top || window).location.href=" + JSON.stringify(url))
 		return
 	start_auth_listener()
 	if auth_server == null:

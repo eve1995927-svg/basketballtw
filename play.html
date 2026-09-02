@@ -50,6 +50,14 @@
     </div>
   </section>
   <script>
+    // Handle OAuth providers that return to the marketing page instead of the
+    // game callback. Keep the token fragment intact for Godot's web handler.
+    (() => {
+      const hash = window.location.hash;
+      if (hash && (hash.includes('access_token=') || hash.includes('code='))) {
+        window.location.replace('game/index.html' + hash);
+      }
+    })();
     (() => {
       const panel = document.getElementById('tools-panel');
       const toggle = document.getElementById('tools-toggle');
