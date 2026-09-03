@@ -61,8 +61,8 @@ const LEGAL_NOTICE_TITLE := "遊戲聲明與權利說明"
 const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官方聯盟或球隊產品。\n\n遊戲中部分隊名、球員名稱與賽事名稱參考真實籃球資訊，並非全部虛構。球員能力、卡片稀有度、遊戲薪資、交易、陣容及比賽結果屬於遊戲模擬設定，不代表真實人物的實際表現、合約、行為或官方評價。\n\n本遊戲與任何真實職業籃球聯盟、球隊或球員無官方授權、合作、贊助或背書關係。\n\n遊戲所涉及的名稱、商標、隊徽、照片、肖像及其他素材之相關權利，仍屬各該權利人。本聲明不構成素材使用授權，也不表示相關使用當然合法或免除依法應負的責任。\n\n本說明不要求使用者放棄依法享有的權利。\n\n更新日期：2026 年 8 月 31 日"
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
-const APP_VERSION := "0.9.12"
-const APP_BUILD := 149
+const APP_VERSION := "0.9.13"
+const APP_BUILD := 150
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const STYLIZED_ART := [
 	"res://assets/art/hero_pg.png",
@@ -6072,12 +6072,17 @@ func dock_tab(caption: String, selected: bool, action: Callable, icon_path := ""
 	hit.add_theme_stylebox_override("normal", style)
 	hit.add_theme_stylebox_override("hover", hover)
 	hit.add_theme_stylebox_override("pressed", style)
-	var col: BoxContainer = VBoxContainer.new()
-	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	col.alignment = BoxContainer.ALIGNMENT_CENTER
-	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	col.add_theme_constant_override("separation", 0 if is_handheld() else 2)
-	hit.add_child(col)
+	# A horizontal icon/text row stays optically centered inside the short mobile
+	# dock. The previous vertical stack exceeded the button height and touched the
+	# gold frame on several iPhone aspect ratios.
+	var tab_row := HBoxContainer.new()
+	tab_row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	tab_row.offset_left = 7 if is_handheld() else 9
+	tab_row.offset_right = -7 if is_handheld() else -9
+	tab_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	tab_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tab_row.add_theme_constant_override("separation", 6 if is_handheld() else 8)
+	hit.add_child(tab_row)
 	var resolved_icon_path := icon_path
 	if active_menu == "dashboard":
 		resolved_icon_path = {
@@ -6091,18 +6096,20 @@ func dock_tab(caption: String, selected: bool, action: Callable, icon_path := ""
 	if icon_tex != null:
 		var glyph := TextureRect.new()
 		glyph.texture = icon_tex
-		glyph.custom_minimum_size = Vector2(23 if active_menu == "dashboard" else 32, 23 if active_menu == "dashboard" else 32) if is_handheld() else (Vector2(30, 30) if active_menu == "dashboard" else Vector2(24, 24))
+		var glyph_side := 21 if is_handheld() else 23
+		glyph.custom_minimum_size = Vector2(glyph_side, glyph_side)
 		glyph.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		glyph.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		glyph.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		glyph.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		col.add_child(glyph)
-	var caption_label := plain_label(caption, 9 if active_menu == "dashboard" else 12, GOLD if selected else Color(0.82, 0.86, 0.91, 0.92), true, HORIZONTAL_ALIGNMENT_CENTER)
+		tab_row.add_child(glyph)
+	var caption_label := plain_label(caption, 9 if active_menu == "dashboard" else 11, GOLD if selected else Color(0.82, 0.86, 0.91, 0.92), true, HORIZONTAL_ALIGNMENT_LEFT)
+	caption_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	caption_label.add_theme_color_override("font_shadow_color", Color("000000ee"))
 	caption_label.add_theme_constant_override("shadow_offset_x", 1)
 	caption_label.add_theme_constant_override("shadow_offset_y", 2)
-	col.add_child(caption_label)
+	tab_row.add_child(caption_label)
 	hit.pressed.connect(func():
 		play_sfx("tap")
 		action.call()
@@ -17491,11 +17498,20 @@ func bust_texture(player: Dictionary) -> Texture2D:
 	return bust_from_tex(data.get("tex"), str(data.get("path", "")), salt)
 
 func generated_portrait_for(player: Dictionary) -> Texture2D:
-	# Registration identity is authoritative. Never infer a real player's appearance
-	# from a Chinese name, nationality, team, or roster order. Until a foreign
-	# player's visual profile has been checked against an official source, show the
-	# same faceless/no-skin-tone silhouette instead of guessing Black or White.
+	# Registration identity is authoritative. Official player-specific photos still
+	# win in blended_card_portrait(); only missing foreign photos use this reviewed,
+	# diverse illustration pool. Assignment is stable and makes no ethnicity claim.
 	if is_foreigner(player) or is_foreign_student(player):
+		var foreign_variants: Array[int] = [2, 3, 5, 8, 9, 11, 13, 15, 16, 18]
+		if is_foreign_student(player):
+			foreign_variants = [9, 13, 16]
+		var foreign_key := player_identity_key(player)
+		if foreign_key.is_empty():
+			foreign_key = str(player.get("name", player.get("id", "foreign")))
+		var foreign_number := foreign_variants[absi(foreign_key.hash()) % foreign_variants.size()]
+		var foreign_path := "res://assets/art/player_portraits/prospect_%02d.png" % foreign_number
+		if resource_exists(foreign_path):
+			return load_png_tex(foreign_path)
 		return load_png_tex("res://assets/art/player_portraits/foreign_unverified_silhouette_v1.png")
 	var pool: Array[String] = []
 	for i in range(1, 21):

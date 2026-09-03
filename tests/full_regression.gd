@@ -276,6 +276,10 @@ func test_catalog() -> void:
 			check(not game.player_pos_list(p).is_empty(), "listed player has game position")
 			check(p.ovr >= 60 and p.ovr <= 90 and p.salary_million > 0, "valid game values")
 			check(ResourceLoader.exists(game.unique_portrait_path(p)), "assigned illustration exists")
+			if game.is_foreigner(p) or game.is_foreign_student(p):
+				var foreign_portrait: Texture2D = game.generated_portrait_for(p)
+				var silhouette: Texture2D = game.load_png_tex("res://assets/art/player_portraits/foreign_unverified_silhouette_v1.png")
+				check(foreign_portrait != null and (silhouette == null or foreign_portrait.get_rid() != silhouette.get_rid()), "missing foreign photo receives a reviewed portrait: " + str(p.name))
 			check(game.card_frame_for(game.player_tier_key(p)) != null, "card tier has frame")
 			count += 1
 		check(purple_count <= 5, "at most five base purple cards per team: " + str(team.id))
