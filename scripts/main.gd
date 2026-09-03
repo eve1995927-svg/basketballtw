@@ -61,8 +61,8 @@ const LEGAL_NOTICE_TITLE := "遊戲聲明與權利說明"
 const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官方聯盟或球隊產品。\n\n遊戲中部分隊名、球員名稱與賽事名稱參考真實籃球資訊，並非全部虛構。球員能力、卡片稀有度、遊戲薪資、交易、陣容及比賽結果屬於遊戲模擬設定，不代表真實人物的實際表現、合約、行為或官方評價。\n\n本遊戲與任何真實職業籃球聯盟、球隊或球員無官方授權、合作、贊助或背書關係。\n\n遊戲所涉及的名稱、商標、隊徽、照片、肖像及其他素材之相關權利，仍屬各該權利人。本聲明不構成素材使用授權，也不表示相關使用當然合法或免除依法應負的責任。\n\n本說明不要求使用者放棄依法享有的權利。\n\n更新日期：2026 年 8 月 31 日"
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
-const APP_VERSION := "0.9.11"
-const APP_BUILD := 148
+const APP_VERSION := "0.9.12"
+const APP_BUILD := 149
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const STYLIZED_ART := [
 	"res://assets/art/hero_pg.png",
@@ -342,6 +342,8 @@ var store_category := "精選"
 var store_selected_product := "arena_taipei"
 var home_environment_mode := "arena"
 var home_schedule_preview_offset := 0
+var home_schedule_touch_index := -1
+var home_schedule_drag_total := 0.0
 var locker_room_theme := "標準更衣室"
 var vault_capacity_bonus := 0
 var second_team_unlocked := false
@@ -5687,6 +5689,33 @@ func _unhandled_input(event: InputEvent) -> void:
 			show_news_center()
 		KEY_S:
 			show_save_slots()
+
+func _input(event: InputEvent) -> void:
+	# Read native touch events before GUI controls consume them. This is more
+	# reliable on iOS than a transparent Control layered above the carousel.
+	if active_menu != "dashboard":
+		home_schedule_touch_index = -1
+		home_schedule_drag_total = 0.0
+		return
+	var schedule := find_child("HomeScheduleCarousel", true, false) as Control
+	if schedule == null or not schedule.is_visible_in_tree():
+		return
+	if event is InputEventScreenTouch:
+		if event.pressed and schedule.get_global_rect().has_point(event.position):
+			home_schedule_touch_index = event.index
+			home_schedule_drag_total = 0.0
+		elif not event.pressed and event.index == home_schedule_touch_index:
+			var travel := home_schedule_drag_total
+			home_schedule_touch_index = -1
+			home_schedule_drag_total = 0.0
+			if absf(travel) >= 24.0:
+				get_viewport().set_input_as_handled()
+				play_sfx("tap")
+				shift_home_schedule_preview(1 if travel < 0.0 else -1)
+	elif event is InputEventScreenDrag and event.index == home_schedule_touch_index:
+		home_schedule_drag_total += event.relative.x
+		if absf(home_schedule_drag_total) >= 8.0:
+			get_viewport().set_input_as_handled()
 
 func compact_phone() -> bool:
 	# Compact layout follows the logical canvas; touch targets use is_handheld().
@@ -11793,52 +11822,61 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 		action.call()
 	)
 	shell.add_child(whole_hit)
-	var row := HBoxContainer.new()
-	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	row.offset_left = 4 if compact else 7
-	row.offset_right = -4 if compact else -6
-	row.offset_top = 3
-	row.offset_bottom = -3
-	row.add_theme_constant_override("separation", 2 if compact else 6)
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	shell.add_child(row)
+	var fixed_content := Control.new()
+	fixed_content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	fixed_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shell.add_child(fixed_content)
 	var icon := TextureRect.new()
 	icon.texture = load_png_tex(icon_path)
-	icon.custom_minimum_size = Vector2(10 if compact else 22, 18 if compact else 30)
+	icon.anchor_top = 0.16
+	icon.anchor_bottom = 0.84
+	icon.offset_left = 4 if compact else 7
+	icon.offset_right = 14 if compact else 25
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(icon)
-	var words := VBoxContainer.new()
-	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	words.alignment = BoxContainer.ALIGNMENT_CENTER
-	words.add_theme_constant_override("separation", -2 if compact else -3)
+	fixed_content.add_child(icon)
+	var plus_width := 16 if compact else 27
+	var words := Control.new()
+	words.anchor_right = 1.0
+	words.anchor_bottom = 1.0
+	words.offset_left = 16 if compact else 29
+	words.offset_right = -(plus_width + (5 if compact else 8))
 	words.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(words)
-	var caption_label := fit_label(caption, 5 if compact else 7, Color("c5b98f"), true)
+	fixed_content.add_child(words)
+	var caption_label := fit_label(caption, 5 if compact else 6, Color("c5b98f"), true)
+	caption_label.anchor_right = 1.0
+	caption_label.anchor_bottom = 0.48
+	caption_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	words.add_child(caption_label)
-	var value_font := 7 if compact else 9
+	var value_font := 6 if compact else 7
 	if shown_value.length() >= 14:
-		value_font = 5 if compact else 6
+		value_font = 4 if compact else 5
 	elif shown_value.length() >= 10:
-		value_font = 6 if compact else 7
-	else:
-		value_font = 7 if compact else 9
-	words.add_child(fit_label(shown_value, value_font, Color("fff2c2"), true))
+		value_font = 5 if compact else 6
+	var value_label := fit_label(shown_value, value_font, Color("fff2c2"), true)
+	value_label.anchor_right = 1.0
+	value_label.anchor_top = 0.48
+	value_label.anchor_bottom = 1.0
+	value_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	words.add_child(value_label)
 	# The complete pill is already a generous touch target. Keep the visible plus
 	# compact so mobile's 44 px button minimum cannot steal space from balances.
 	var plus_shell := PanelContainer.new()
 	plus_shell.name = "%sAddButton" % caption
-	plus_shell.custom_minimum_size = Vector2(16 if compact else 28, 26 if compact else 34)
-	plus_shell.size_flags_horizontal = Control.SIZE_SHRINK_END
-	plus_shell.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	plus_shell.anchor_left = 1.0
+	plus_shell.anchor_right = 1.0
+	plus_shell.anchor_top = 0.16
+	plus_shell.anchor_bottom = 0.84
+	plus_shell.offset_left = -(plus_width + 4)
+	plus_shell.offset_right = -4
 	plus_shell.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	plus_shell.add_theme_stylebox_override("panel", panel_style(Color("101722e8"), Color("b79643aa"), 7, 1))
 	var plus_glyph := plain_label("+", 10 if compact else 15, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
 	plus_glyph.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	plus_glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	plus_shell.add_child(plus_glyph)
-	row.add_child(plus_shell)
+	fixed_content.add_child(plus_shell)
 	return shell
 
 func home_resource_number(value: int) -> String:
@@ -11967,44 +12005,6 @@ func dashboard_schedule_hotspot(delta: int, tip: String) -> Control:
 	)
 	return hotspot
 
-func dashboard_schedule_swipe_surface() -> Control:
-	var surface := Control.new()
-	surface.name = "ScheduleSwipeSurface"
-	surface.mouse_filter = Control.MOUSE_FILTER_STOP
-	surface.mouse_default_cursor_shape = Control.CURSOR_DRAG
-	surface.tooltip_text = "左右滑動切換賽程"
-	var dragging := false
-	var drag_total := 0.0
-	surface.gui_input.connect(func(event: InputEvent):
-		if event is InputEventScreenTouch:
-			if event.pressed:
-				dragging = true
-				drag_total = 0.0
-			else:
-				if dragging and absf(drag_total) >= 28.0:
-					surface.accept_event()
-					play_sfx("tap")
-					shift_home_schedule_preview(1 if drag_total < 0.0 else -1)
-				dragging = false
-		elif event is InputEventScreenDrag and dragging:
-			drag_total += event.relative.x
-			surface.accept_event()
-		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				dragging = true
-				drag_total = 0.0
-			else:
-				if dragging and absf(drag_total) >= 28.0:
-					surface.accept_event()
-					play_sfx("tap")
-					shift_home_schedule_preview(1 if drag_total < 0.0 else -1)
-				dragging = false
-		elif event is InputEventMouseMotion and dragging:
-			drag_total += event.relative.x
-			surface.accept_event()
-	)
-	return surface
-
 func dashboard_schedule_card_content(entry: Dictionary, highlighted: bool, left: float, right: float) -> Control:
 	var compact := compact_phone()
 	var team: Dictionary = entry.get("team", {})
@@ -12115,14 +12115,6 @@ func home_schedule_carousel(opponent: Dictionary) -> Control:
 	rival_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	rival_label.tooltip_text = rival_name
 	matchup_row.add_child(rival_label)
-	# The broad center area is the primary mobile control. Edge arrows remain
-	# available, but players no longer need to hit their narrow targets.
-	var swipe_surface := dashboard_schedule_swipe_surface()
-	swipe_surface.anchor_left = 0.07
-	swipe_surface.anchor_right = 0.93
-	swipe_surface.anchor_top = 0.03
-	swipe_surface.anchor_bottom = 0.75
-	shell.add_child(swipe_surface)
 	return shell
 
 func show_dashboard_more_menu() -> void:
