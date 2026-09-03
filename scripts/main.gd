@@ -11661,7 +11661,7 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	var shown_value := home_resource_number(raw_number) if value.is_valid_int() else value
 	var button := action_button("", Color("00000000"), action, Vector2(60 if compact else 142, 44 if compact else 48))
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.size_flags_stretch_ratio = 1.65 if caption == "薪資空間" else 1.0
+	button.size_flags_stretch_ratio = 1.75 if caption == "薪資空間" else 1.0
 	button.add_theme_stylebox_override("normal", invisible_style())
 	button.add_theme_stylebox_override("hover", panel_style(Color("ffffff0b"), GOLD, 10, 1))
 	button.add_theme_stylebox_override("pressed", panel_style(Color("ffffff14"), GOLD, 10, 1))
@@ -11678,23 +11678,23 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	button.add_child(icon)
 	# Two short rows remain readable on iPhone and leave the full width for long
 	# balances. The previous single-line caption/value shrank to four pixels.
-	var caption_label := fit_label(caption, 5 if compact else 7, Color("c5b98f"), true, HORIZONTAL_ALIGNMENT_LEFT)
+	var caption_label := fit_label(caption, 5 if compact else 6, Color("c5b98f"), true, HORIZONTAL_ALIGNMENT_LEFT)
 	caption_label.anchor_left = 0.24
 	caption_label.anchor_right = 0.83
-	caption_label.anchor_top = 0.08
-	caption_label.anchor_bottom = 0.43
+	caption_label.anchor_top = 0.04
+	caption_label.anchor_bottom = 0.36
 	caption_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	caption_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(caption_label)
-	var balance := fit_label(shown_value, 7 if compact else 11, Color("fff2c2"), true, HORIZONTAL_ALIGNMENT_LEFT)
+	var balance := fit_label(shown_value, 7 if compact else 9, Color("fff2c2"), true, HORIZONTAL_ALIGNMENT_LEFT)
 	balance.anchor_left = 0.24
 	balance.anchor_right = 0.95 if caption in ["資金", "薪資空間"] else 0.83
-	balance.anchor_top = 0.39
-	balance.anchor_bottom = 0.92
+	balance.anchor_top = 0.46
+	balance.anchor_bottom = 0.96
 	balance.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	balance.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(balance)
-	var plus := plain_label("＋", 10 if compact else 16, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
+	var plus := plain_label("＋", 9 if compact else 13, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
 	plus.anchor_left = 0.84
 	plus.anchor_right = 0.96
 	plus.anchor_top = 0.1
@@ -11979,7 +11979,7 @@ func build_dashboard_screen(opponent: Dictionary) -> void:
 	var header := PanelContainer.new()
 	header.name = "DashboardClubHeader"
 	header.anchor_left = 0.01
-	header.anchor_right = 0.295
+	header.anchor_right = 0.32
 	header.anchor_top = 0.015
 	header.anchor_bottom = 0.015
 	header.offset_bottom = 46 if compact else 58
@@ -11991,29 +11991,29 @@ func build_dashboard_screen(opponent: Dictionary) -> void:
 	var header_content := Control.new()
 	header_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	header.add_child(header_content)
-	var club_mark := club_logo_button(30 if compact else 42, show_club_logo_picker)
-	club_mark.position = Vector2(6 if compact else 8, 7 if compact else 8)
-	club_mark.size = Vector2(30 if compact else 42, 30 if compact else 42)
+	var club_mark := club_logo_button(24 if compact else 34, show_club_logo_picker)
+	club_mark.position = Vector2(7 if compact else 10, 10 if compact else 11)
+	club_mark.size = Vector2(24 if compact else 34, 24 if compact else 34)
 	club_mark.mouse_filter = Control.MOUSE_FILTER_STOP
 	header_content.add_child(club_mark)
-	var club_title := fit_label(club_display_name(), 8 if compact else 14, TEXT, true)
+	var club_title := fit_label(club_display_name(), 7 if compact else 13, TEXT, true)
 	club_title.tooltip_text = club_display_name()
 	club_title.anchor_right = 1.0
-	club_title.offset_left = 42 if compact else 58
+	club_title.offset_left = 48 if compact else 64
 	club_title.offset_right = -10
-	club_title.offset_top = 5 if compact else 7
-	club_title.offset_bottom = 23 if compact else 29
+	club_title.offset_top = 2 if compact else 3
+	club_title.offset_bottom = 20 if compact else 27
 	header_content.add_child(club_title)
-	var club_record := fit_label("%s · %d勝 %d敗" % [current_league, season_wins, season_losses], 6 if compact else 9, GOLD, true)
+	var club_record := fit_label("%s · %d勝 %d敗" % [current_league, season_wins, season_losses], 5 if compact else 8, GOLD, true)
 	club_record.anchor_right = 1.0
-	club_record.offset_left = 42 if compact else 58
+	club_record.offset_left = 48 if compact else 64
 	club_record.offset_right = -10
-	club_record.offset_top = 24 if compact else 30
-	club_record.offset_bottom = 40 if compact else 49
+	club_record.offset_top = 25 if compact else 30
+	club_record.offset_bottom = 43 if compact else 54
 	header_content.add_child(club_record)
 	var resource_row := HBoxContainer.new()
 	resource_row.name = "DashboardResources"
-	resource_row.anchor_left = 0.31
+	resource_row.anchor_left = 0.33
 	resource_row.anchor_right = 0.99
 	resource_row.anchor_top = 0.02
 	resource_row.anchor_bottom = 0.02
