@@ -799,6 +799,13 @@ func run_iphone_fitshot() -> void:
 		if not live_choices.is_empty():
 			choose_live_player(0)
 			await get_tree().create_timer(0.55).timeout
+	# Stress the real header with long, exact balances and a long user-created
+	# club name. This prevents abbreviated test data from hiding iPhone clips.
+	club_name = "台北烈焰菁英籃球俱樂部"
+	gold = 98765
+	scout_points = 12345
+	budget_million = 12345
+	salary_cap = 8000
 	show_dashboard()
 	await get_tree().create_timer(0.55).timeout
 	await dump_fitshot("01_hub_%dx%d" % [fit_size.x, fit_size.y])
@@ -811,6 +818,7 @@ func run_iphone_fitshot() -> void:
 	for resource_kind in ["scout", "funds", "salary"]:
 		show_resource_acquisition(resource_kind)
 		await get_tree().process_frame
+		await dump_fitshot("01c_resource_%s_%dx%d" % [resource_kind, fit_size.x, fit_size.y])
 		close_guide_modal()
 	show_roster()
 	await get_tree().create_timer(0.45).timeout
@@ -9406,6 +9414,8 @@ func resource_acquisition_row(title: String, detail: String, icon_path: String, 
 	shell.add_child(padded(row, 7))
 	var icon := TextureRect.new()
 	icon.texture = load_png_tex(icon_path)
+	if icon.texture == null:
+		icon.texture = load_png_tex("res://assets/ui/icons/guide.png")
 	icon.custom_minimum_size = Vector2(34 if compact_phone() else 40, 34 if compact_phone() else 40)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -9440,29 +9450,29 @@ func show_resource_acquisition(resource_kind: String) -> void:
 	match resource_kind:
 		"gold":
 			title_text = "黃金取得方式"
-			summary = "黃金可透過儀值、月卡、勝場與挑戰取得。儲值匯率固定為 NT$1＝10 黃金。"
+			summary = "黃金可透過儲值、月卡、勝場與挑戰取得。儲值匯率固定為 NT$1＝10 黃金。"
 			sources = [
 				["儲值與主場應援月卡", "黃金商品、30 日月卡與限定球場", "res://assets/ui/hud/gold_coin.png", show_gold_acquisition_store],
-				["每日任務", "打卡、月卡簽到與當日進度", "res://assets/ui/icons/nav_tasks.svg", show_daily_tasks],
-				["比賽與長期挑戰", "贏球可獲得黃金，挑戰另有里程碑", "res://assets/ui/icons/match.png", show_challenge_hub],
+				["每日任務", "打卡、月卡簽到與當日進度", "res://assets/ui/hud/gold_coin.png", show_daily_tasks],
+				["比賽與長期挑戰", "贏球可獲得黃金，挑戰另有里程碑", "res://assets/ui/hud/start_basketball_gold_v2.png", show_challenge_hub],
 			]
 		"scout":
 			title_text = "球探點取得方式"
 			summary = "球探點只用於挖掘球員，不與黃金或資金混用。"
 			accent = CYAN
 			sources = [
-				["每日與長期任務", "完成目標、累積活躍進度", "res://assets/ui/icons/nav_tasks.svg", show_challenge_hub],
-				["聯盟比賽", "勝場與連勝可獲得球探點", "res://assets/ui/icons/match.png", show_match_prep],
-				["賽事活動", "查看限時任務與活動進度", "res://assets/ui/icons/nav_activity.svg", show_activity_hub],
+				["每日與長期任務", "完成目標、累積活躍進度", "res://assets/ui/hud/scout.png", show_challenge_hub],
+				["聯盟比賽", "勝場與連勝可獲得球探點", "res://assets/ui/hud/start_basketball_gold_v2.png", show_match_prep],
+				["賽事活動", "查看限時任務與活動進度", "res://assets/ui/hud/scout.png", show_activity_hub],
 			]
 		"funds":
 			title_text = "資金取得方式"
 			summary = "資金用於簽約、交易與特訓，不會扣黃金。"
 			accent = GREEN
 			sources = [
-				["每日打卡", "每日可領取俱樂部資金", "res://assets/ui/icons/nav_tasks.svg", show_daily_tasks],
-				["完成比賽", "勝敗都有比賽收入，勝場較高", "res://assets/ui/icons/match.png", show_match_prep],
-				["額外賽事與季後獎金", "解鎖賽事並爭取高額獎勵", "res://assets/ui/icons/nav_activity.svg", show_extra_events],
+				["每日打卡", "每日可領取俱樂部資金", "res://assets/ui/hud/budget.png", show_daily_tasks],
+				["完成比賽", "勝敗都有比賽收入，勝場較高", "res://assets/ui/hud/start_basketball_gold_v2.png", show_match_prep],
+				["額外賽事與季後獎金", "解鎖賽事並爭取高額獎勵", "res://assets/ui/hud/budget.png", show_extra_events],
 			]
 		"salary":
 			title_text = "釋放薪資空間"
@@ -9470,8 +9480,8 @@ func show_resource_acquisition(resource_kind: String) -> void:
 			accent = ORANGE
 			sources = [
 				["薪資明細", "查看每位球員年薪與剩餘空間", "res://assets/ui/hud/budget.png", show_salary_sheet],
-				["編輯名單／釋出球員", "釋出年薪過高或不適合陳容的球員", "res://assets/ui/icons/roster.png", show_roster],
-				["交易市場", "用符合薪資條件的交易重整陳容", "res://assets/ui/icons/market.png", show_trade_market],
+				["編輯名單／釋出球員", "釋出年薪過高或不適合陣容的球員", "res://assets/ui/hud/empty_bench.png", show_roster],
+				["交易市場", "用符合薪資條件的交易重整陣容", "res://assets/ui/icons/market.png", show_trade_market],
 			]
 	show_guide_sheet(title_text, summary, accent)
 	var body := guide_modal.find_child("GuideSheetBody", true, false) if is_instance_valid(guide_modal) else null
@@ -11780,9 +11790,14 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	caption_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	caption_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(caption_label)
-	var balance := fit_label(shown_value, 7 if compact else 9, Color("fff2c2"), true, HORIZONTAL_ALIGNMENT_LEFT)
+	var value_font := 7 if compact else 9
+	if shown_value.length() >= 14:
+		value_font = 5 if compact else 7
+	elif shown_value.length() >= 10:
+		value_font = 6 if compact else 8
+	var balance := fit_label(shown_value, value_font, Color("fff2c2"), true, HORIZONTAL_ALIGNMENT_LEFT)
 	balance.anchor_left = 0.24
-	balance.anchor_right = 0.95 if caption in ["資金", "薪資空間"] else 0.83
+	balance.anchor_right = 0.825
 	balance.anchor_top = 0.46
 	balance.anchor_bottom = 0.96
 	balance.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -11803,14 +11818,13 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	return button
 
 func home_resource_number(value: int) -> String:
-	var amount := maxi(value, 0)
-	if amount >= 100000000:
-		return ("%.1f億" % (float(amount) / 100000000.0)).replace(".0億", "億")
-	if amount >= 10000000:
-		return "%d萬" % int(round(float(amount) / 10000.0))
-	if amount >= 10000:
-		return ("%.1f萬" % (float(amount) / 10000.0)).replace(".0萬", "萬")
-	return str(amount)
+	var digits := str(maxi(value, 0))
+	var groups: Array[String] = []
+	while digits.length() > 3:
+		groups.push_front(digits.right(3))
+		digits = digits.left(digits.length() - 3)
+	groups.push_front(digits)
+	return ",".join(groups)
 
 func dashboard_scene_shortcut(caption: String, action: Callable, left: float, right: float, top: float) -> Button:
 	var button := action_button(caption, Color("0a1019dd"), action, Vector2(64 if compact_phone() else 135, 38 if compact_phone() else 44))
@@ -11988,20 +12002,42 @@ func home_schedule_carousel(opponent: Dictionary) -> Control:
 	shell.add_child(dashboard_schedule_card_content(dashboard_schedule_entry(home_schedule_preview_offset + 1, opponent), false, 0.64, 0.875))
 	var center_entry := dashboard_schedule_entry(home_schedule_preview_offset, opponent)
 	var rival: Dictionary = center_entry.get("team", opponent)
-	var matchup_row := HBoxContainer.new()
-	matchup_row.anchor_left = 0.15
-	matchup_row.anchor_right = 0.85
+	var matchup_row := Control.new()
+	matchup_row.anchor_left = 0.08
+	matchup_row.anchor_right = 0.92
 	matchup_row.anchor_top = 0.785
 	matchup_row.anchor_bottom = 0.935
-	matchup_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	matchup_row.add_theme_constant_override("separation", 2 if compact else 6)
-	matchup_row.add_child(team_logo_rect(ensure_club_logo_id(), 17 if compact else 22, club_display_name()))
-	matchup_row.add_child(fit_label(club_display_name(), 6 if compact else 8, TEXT, true, HORIZONTAL_ALIGNMENT_RIGHT))
-	matchup_row.add_child(plain_label("VS", 8 if compact else 11, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
+	var mine_logo := team_logo_rect(ensure_club_logo_id(), 17 if compact else 22, club_name)
+	mine_logo.anchor_right = 0.10
+	mine_logo.anchor_bottom = 1.0
+	matchup_row.add_child(mine_logo)
+	var mine_name := fit_label(club_name, 6 if compact else 7, TEXT, true, HORIZONTAL_ALIGNMENT_RIGHT)
+	mine_name.anchor_left = 0.11
+	mine_name.anchor_right = 0.41
+	mine_name.anchor_bottom = 1.0
+	mine_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	mine_name.tooltip_text = club_name
+	matchup_row.add_child(mine_name)
+	var versus := plain_label("VS", 8 if compact else 10, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
+	versus.anchor_left = 0.43
+	versus.anchor_right = 0.53
+	versus.anchor_bottom = 1.0
+	versus.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	matchup_row.add_child(versus)
 	var rival_id := str(rival.get("team_id", rival.get("id", "")))
 	var rival_name := str(rival.get("name", "待定對手"))
-	matchup_row.add_child(team_logo_rect(rival_id, 17 if compact else 22, rival_name))
-	matchup_row.add_child(fit_label(rival_name, 6 if compact else 8, TEXT, true))
+	var rival_logo := team_logo_rect(rival_id, 17 if compact else 22, rival_name)
+	rival_logo.anchor_left = 0.55
+	rival_logo.anchor_right = 0.65
+	rival_logo.anchor_bottom = 1.0
+	matchup_row.add_child(rival_logo)
+	var rival_label := fit_label(rival_name, 6 if compact else 7, TEXT, true)
+	rival_label.anchor_left = 0.66
+	rival_label.anchor_right = 1.0
+	rival_label.anchor_bottom = 1.0
+	rival_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	rival_label.tooltip_text = rival_name
+	matchup_row.add_child(rival_label)
 	shell.add_child(matchup_row)
 	return shell
 
@@ -12072,38 +12108,42 @@ func build_dashboard_screen(opponent: Dictionary) -> void:
 	stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	safe.add_child(stage)
 
-	var header := PanelContainer.new()
+	# Brand is split into two sibling regions: an independent crest and a text
+	# card. The dashboard deliberately shows only the club name; appending the
+	# current combo/team label made user-created names collide on real iPhones.
+	var header := Control.new()
 	header.name = "DashboardClubHeader"
 	header.anchor_left = 0.01
 	header.anchor_right = 0.32
 	header.anchor_top = 0.015
 	header.anchor_bottom = 0.015
 	header.offset_bottom = 46 if compact else 58
-	header.add_theme_stylebox_override("panel", invisible_style())
 	stage.add_child(header)
-	header.add_child(dashboard_skin("res://assets/ui/home/club_header_skin_trim_v1.png"))
-	# Use explicit, non-overlapping regions inside the decorative header. HBox
-	# minimum sizes previously pushed the crest into the title on narrow devices.
+	var club_mark := club_logo_button(32 if compact else 46, show_club_logo_picker)
+	club_mark.position = Vector2(0, 7 if compact else 6)
+	club_mark.size = Vector2(32 if compact else 46, 32 if compact else 46)
+	header.add_child(club_mark)
+	var info := PanelContainer.new()
+	info.anchor_right = 1.0
+	info.anchor_bottom = 1.0
+	info.offset_left = 42 if compact else 58
+	info.add_theme_stylebox_override("panel", panel_style(Color("09111bdc"), Color("c6a64f99"), 10, 1))
+	header.add_child(info)
 	var header_content := Control.new()
 	header_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	header.add_child(header_content)
-	var club_mark := club_logo_button(24 if compact else 34, show_club_logo_picker)
-	club_mark.position = Vector2(7 if compact else 10, 10 if compact else 11)
-	club_mark.size = Vector2(24 if compact else 34, 24 if compact else 34)
-	club_mark.mouse_filter = Control.MOUSE_FILTER_STOP
-	header_content.add_child(club_mark)
-	var club_title := fit_label(club_display_name(), 7 if compact else 13, TEXT, true)
-	club_title.tooltip_text = club_display_name()
+	info.add_child(header_content)
+	var club_title := fit_label(club_name, 7 if compact else 13, TEXT, true)
+	club_title.tooltip_text = club_name
 	club_title.anchor_right = 1.0
-	club_title.offset_left = 48 if compact else 64
-	club_title.offset_right = -10
+	club_title.offset_left = 10 if compact else 13
+	club_title.offset_right = -8
 	club_title.offset_top = 2 if compact else 3
 	club_title.offset_bottom = 20 if compact else 27
 	header_content.add_child(club_title)
 	var club_record := fit_label("%s · %d勝 %d敗" % [current_league, season_wins, season_losses], 5 if compact else 8, GOLD, true)
 	club_record.anchor_right = 1.0
-	club_record.offset_left = 48 if compact else 64
-	club_record.offset_right = -10
+	club_record.offset_left = 10 if compact else 13
+	club_record.offset_right = -8
 	club_record.offset_top = 25 if compact else 30
 	club_record.offset_bottom = 43 if compact else 54
 	header_content.add_child(club_record)
@@ -12119,8 +12159,8 @@ func build_dashboard_screen(opponent: Dictionary) -> void:
 	stage.add_child(resource_row)
 	resource_row.add_child(home_header_resource("黃金", str(gold), "res://assets/ui/hud/gold_coin.png", func(): show_resource_acquisition("gold")))
 	resource_row.add_child(home_header_resource("球探點", str(scout_points), "res://assets/ui/hud/scout.png", func(): show_resource_acquisition("scout")))
-	resource_row.add_child(home_header_resource("資金", resource_display_number(budget_million, "萬"), "res://assets/ui/hud/budget.png", func(): show_resource_acquisition("funds")))
-	var salary_space_text := "%s/%s萬" % [resource_display_number(roster_salary()), resource_display_number(salary_cap)]
+	resource_row.add_child(home_header_resource("資金", "%s萬" % home_resource_number(budget_million), "res://assets/ui/hud/budget.png", func(): show_resource_acquisition("funds")))
+	var salary_space_text := "%s/%s萬" % [home_resource_number(roster_salary()), home_resource_number(salary_cap)]
 	resource_row.add_child(home_header_resource("薪資空間", salary_space_text, "res://assets/ui/hud/budget.png", func(): show_resource_acquisition("salary")))
 	var menu := action_button("☰", Color("111722ee"), show_dashboard_more_menu, Vector2(40 if compact else 54, 40 if compact else 46))
 	menu.add_theme_font_size_override("font_size", 18 if compact else 25)
@@ -12129,10 +12169,10 @@ func build_dashboard_screen(opponent: Dictionary) -> void:
 	resource_row.add_child(menu)
 
 	var schedule := home_schedule_carousel(opponent)
-	schedule.anchor_left = 0.66
-	schedule.anchor_right = 0.985
-	schedule.anchor_top = 0.16
-	schedule.anchor_bottom = 0.485
+	schedule.anchor_left = 0.615
+	schedule.anchor_right = 0.99
+	schedule.anchor_top = 0.145
+	schedule.anchor_bottom = 0.505
 	stage.add_child(schedule)
 
 	stage.add_child(dashboard_scene_shortcut("我的球館", func(): set_home_environment_mode("arena"), 0.025, 0.145, 0.16))

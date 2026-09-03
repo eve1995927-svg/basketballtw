@@ -62,9 +62,9 @@ func test_no_headline_selection() -> void:
 
 func test_store_cosmetics() -> void:
 	await fresh_game()
-	check(game.home_resource_number(39392857) == "3939萬", "home HUD abbreviates eight-digit balances without clipping")
-	check(game.home_resource_number(123456789) == "1.2億", "home HUD abbreviates hundred-million balances")
-	check(game.home_resource_number(1280) == "1280", "home HUD keeps short balances exact")
+	check(game.home_resource_number(39392857) == "39,392,857", "home HUD keeps eight-digit balances exact")
+	check(game.home_resource_number(123456789) == "123,456,789", "home HUD keeps hundred-million balances exact")
+	check(game.home_resource_number(1280) == "1,280", "home HUD groups short balances without rounding")
 	var product_ids: Array = game.store_products().map(func(product: Dictionary): return str(product.id))
 	check(not product_ids.has("pack_rookie") and not product_ids.has("training_glow"), "store does not sell card packs, training glow, or reveal animation")
 	for city_id in ["arena_taipei", "arena_new_taipei", "arena_taichung", "arena_tainan", "arena_kaohsiung", "arena_hualien"]:
