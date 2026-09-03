@@ -35,8 +35,9 @@ class CourtSparkles extends Control:
 	func _process(delta: float) -> void:
 		elapsed += delta
 		redraw_elapsed += delta
-		# Twenty redraws per second is enough for a gentle twinkle at card size.
-		if redraw_elapsed >= 0.05:
+		# Card grids can contain many premium cards. Eight redraws per second keeps
+		# the subtle twinkle while avoiding hundreds of canvas redraws each second.
+		if redraw_elapsed >= 0.125:
 			redraw_elapsed = 0.0
 			queue_redraw()
 
@@ -106,8 +107,11 @@ class StatBadge extends Control:
 		style.shadow_size = 1
 		style.shadow_offset = Vector2(0, 1)
 		draw_style_box(style, Rect2(Vector2.ZERO, size))
-		for y in range(3, int(size.y) - 3):
-			draw_line(Vector2(3, y), Vector2(size.x - 3, y), Color(0.8, 0.9, 1, 0.055 * (1.0 - float(y) / size.y)), 1)
+		# Four soft highlights replace the old line-per-pixel fill. The visual is
+		# effectively identical at card size and much cheaper in a 12-card grid.
+		for y in [3.0, 5.0, 8.0, 12.0]:
+			if y < size.y - 3.0:
+				draw_line(Vector2(3, y), Vector2(size.x - 3, y), Color(0.8, 0.9, 1, 0.045), 1)
 		draw_line(Vector2(6, 3), Vector2(size.x - 6, 3), Color("eadbc055"), 0.6, true)
 
 func label(parent: Control, node_name: String, text_value: String, rect: Rect2, font: Font, font_px: int, color := INK) -> Label:

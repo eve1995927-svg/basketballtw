@@ -61,8 +61,8 @@ const LEGAL_NOTICE_TITLE := "遊戲聲明與權利說明"
 const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官方聯盟或球隊產品。\n\n遊戲中部分隊名、球員名稱與賽事名稱參考真實籃球資訊，並非全部虛構。球員能力、卡片稀有度、遊戲薪資、交易、陣容及比賽結果屬於遊戲模擬設定，不代表真實人物的實際表現、合約、行為或官方評價。\n\n本遊戲與任何真實職業籃球聯盟、球隊或球員無官方授權、合作、贊助或背書關係。\n\n遊戲所涉及的名稱、商標、隊徽、照片、肖像及其他素材之相關權利，仍屬各該權利人。本聲明不構成素材使用授權，也不表示相關使用當然合法或免除依法應負的責任。\n\n本說明不要求使用者放棄依法享有的權利。\n\n更新日期：2026 年 8 月 31 日"
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
-const APP_VERSION := "0.9.14"
-const APP_BUILD := 151
+const APP_VERSION := "0.9.15"
+const APP_BUILD := 152
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const STYLIZED_ART := [
 	"res://assets/art/hero_pg.png",
@@ -805,7 +805,7 @@ func run_iphone_fitshot() -> void:
 	# Stress the real header with long, exact balances and a long user-created
 	# club name. This prevents abbreviated test data from hiding iPhone clips.
 	club_name = "台北烈焰菁英籃球俱樂部"
-	gold = 98765
+	gold = 123456789
 	scout_points = 12345
 	budget_million = 12345
 	salary_cap = 8000
@@ -2503,7 +2503,8 @@ func hud_economy_row(_compact := true) -> Control:
 		var chip := Button.new()
 		chip.name = "Resource_" + key
 		if is_handheld():
-			chip.custom_minimum_size = Vector2(UI_RESOURCE_CHIP_WIDTH_PHONE_SALARY if key == "salary" else UI_RESOURCE_CHIP_WIDTH_PHONE, UI_RESOURCE_CHIP_HEIGHT_PHONE)
+			var phone_width := UI_RESOURCE_CHIP_WIDTH_PHONE_SALARY if key == "salary" else (104 if key in ["gold", "budget"] else UI_RESOURCE_CHIP_WIDTH_PHONE)
+			chip.custom_minimum_size = Vector2(phone_width, UI_RESOURCE_CHIP_HEIGHT_PHONE)
 		else:
 			chip.custom_minimum_size = Vector2(UI_RESOURCE_CHIP_WIDTH_DESKTOP_SALARY if key == "salary" else UI_RESOURCE_CHIP_WIDTH_DESKTOP, UI_RESOURCE_CHIP_HEIGHT_DESKTOP)
 		chip.add_theme_stylebox_override("normal", panel_style(Color("0b1522ee"), accent.darkened(0.55), 10, 1))
@@ -3935,13 +3936,11 @@ func show_iap_sheet(sku: String) -> void:
 	var price := str(product.get("price", "NT$100"))
 	if iap_store_ready():
 		content.add_child(action_button("前往購買 %s" % price, ORANGE, func(): start_native_iap(sku), Vector2(0, 52)))
-		content.add_child(action_button("恢復購買", CYAN, func(): restore_iap(), Vector2(0, 48)))
 	elif OS.has_feature("editor") or OS.get_environment("TB_PLAYTEST") == "1" or OS.get_environment("TB_IAP_SANDBOX") == "1":
 		content.add_child(label("編輯器／沙盒：確認後寫入本機憑證，方便你測流程。", 12, MUTED))
 		content.add_child(action_button("沙盒完成 %s" % price, ORANGE, func(): complete_purchase(sku), Vector2(0, 52)))
 	else:
 		content.add_child(label("平台商店尚未連線，本次不會扣款。請先完成 StoreKit／Google Play Billing 商品與外掛設定。", 13, MUTED))
-		content.add_child(action_button("恢復已買憑證", CYAN, func(): restore_iap(), Vector2(0, 48)))
 	content.add_child(action_button("取消", Color("254e6b"), func():
 		pending_enter_league = ""
 		if sku in ["national", "jones", "easl"]:
@@ -5670,7 +5669,23 @@ func clear_screen() -> void:
 		# button that triggered this screen change is still valid this frame.
 		remove_child(child)
 		child.queue_free()
+	# Portraits are the largest texture group. Release old, off-screen cache
+	# entries after navigation so a long session does not retain every player the
+	# user has ever viewed. Controls on the active page keep their own references.
+	call_deferred("trim_card_texture_caches")
 	modulate.a = 1.0
+
+func trim_card_texture_caches() -> void:
+	var portrait_keys: Array = []
+	for key in _tex_cache.keys():
+		var path := str(key)
+		if path.begins_with("res://") and (path.contains("/players/") or path.contains("/portraits/") or path.contains("/player_portraits/")):
+			portrait_keys.append(key)
+	while portrait_keys.size() > 48:
+		_tex_cache.erase(portrait_keys.pop_front())
+	var bust_keys := _bust_cache.keys()
+	while bust_keys.size() > 48:
+		_bust_cache.erase(bust_keys.pop_front())
 
 func _process(delta: float) -> void:
 	if _app_suspended:

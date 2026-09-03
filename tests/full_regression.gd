@@ -107,6 +107,9 @@ func test_store_cosmetics() -> void:
 	check(int(game.iap_product("gold_9900").gold_amount) == 12000, "largest gold bundle includes its advertised bonus")
 	check(str(game.store_product_by_id("gold_300").badge) == "10 折", "base gold bundle states its full-price rate")
 	check(str(game.store_product_by_id("gold_9900").badge) == "最佳回饋 · 8.3 折", "largest gold bundle states its effective discount")
+	game.show_iap_sheet("gold_300")
+	for button in game.find_children("*", "Button", true, false):
+		check(not str(button.text).contains("恢復購買") and not str(button.text).contains("恢復已買"), "purchase sheets do not show a restore-purchase action")
 
 func test_veteran_and_training_rules() -> void:
 	await fresh_game()
