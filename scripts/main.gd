@@ -133,10 +133,12 @@ const LEGAL_NOTICE_TITLE := "遊戲聲明與權利說明"
 const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官方聯盟或球隊產品。\n\n遊戲中部分隊名、球員名稱與賽事名稱參考真實籃球資訊，並非全部虛構。球員能力、卡片稀有度、遊戲薪資、交易、陣容及比賽結果屬於遊戲模擬設定，不代表真實人物的實際表現、合約、行為或官方評價。\n\n本遊戲與任何真實職業籃球聯盟、球隊或球員無官方授權、合作、贊助或背書關係。\n\n遊戲所涉及的名稱、商標、隊徽、照片、肖像及其他素材之相關權利，仍屬各該權利人。本聲明不構成素材使用授權，也不表示相關使用當然合法或免除依法應負的責任。\n\n本說明不要求使用者放棄依法享有的權利。\n\n更新日期：2026 年 8 月 31 日"
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
-const APP_VERSION := "0.9.17"
-const APP_BUILD := 154
+const APP_VERSION := "0.9.18"
+const APP_BUILD := 155
 const ONLINE_ONLY := true
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
+const MOBILE_AUTH_REDIRECT := "taiwanbasketballgm://auth/callback"
+const APPLE_OAUTH_ENABLED := false
 const STYLIZED_ART := [
 	"res://assets/art/hero_pg.png",
 	"res://assets/art/hero_sg.png",
@@ -677,6 +679,7 @@ var iap_pending_sku := ""
 var oauth_code_verifier := ""
 var web_auth_consumed := false
 var auth_redirect := AUTH_REDIRECT
+var mobile_deeplink: Object
 var auth_listen_port := 8765
 var analytics_session_sent := false
 var analytics_install_id := ""
@@ -760,6 +763,7 @@ func _ready() -> void:
 	ensure_cloud()
 	_ping_anonymous_install()
 	restore_auth_session()
+	setup_mobile_auth_deeplink()
 	start_auth_listener()
 	load_cached_web_news()
 	lock_editor_canvas()
@@ -11361,7 +11365,8 @@ func show_login() -> void:
 		body.add_child(wrap_label("本遊戲為線上帳號制，需要網路連線並登入才能進入球場。", 14, GOLD))
 		body.add_child(bind_account_button("使用 Google 登入", Color("f4f4f4"), Color("111111"), func(): start_oauth("google"), "res://assets/ui/logos/google.svg"))
 		if not OS.has_feature("web"):
-			body.add_child(bind_account_button("使用 Apple 登入", Color("111111"), Color("f4f4f4"), func(): start_oauth("apple")))
+			var apple_caption := "使用 Apple 登入" if APPLE_OAUTH_ENABLED else "Apple 登入（尚未開通）"
+			body.add_child(bind_account_button(apple_caption, Color("111111"), Color("f4f4f4"), func(): start_oauth("apple"), "res://assets/ui/logos/apple.svg"))
 		else:
 			body.add_child(wrap_label("網頁版會使用安全的 HTTPS 回呼；若瀏覽器阻擋，請改用信箱驗證碼。", 18, MUTED))
 		body.add_child(wrap_label("球隊、球員、資源與賽季進度以雲端帳號為準。", 14, MUTED))
@@ -16147,8 +16152,11 @@ func _looks_like_uuid(value: String) -> bool:
 	return value.length() == 36 and value.count("-") == 4
 
 func start_auth_listener() -> void:
-	# Browsers cannot host a TCP callback server. Do not resize or treat them as native windows.
-	if OS.has_feature("web"):
+	# Browsers and phones cannot use a localhost callback. Mobile OAuth returns
+	# through the app's registered custom URL scheme instead.
+	if OS.has_feature("web") or OS.has_feature("mobile"):
+		if OS.has_feature("mobile"):
+			auth_redirect = MOBILE_AUTH_REDIRECT
 		return
 	if auth_server != null and auth_server.is_listening():
 		auth_redirect = "http://127.0.0.1:%d/callback" % auth_listen_port
@@ -16161,6 +16169,53 @@ func start_auth_listener() -> void:
 			return
 	auth_server = null
 	flash_notice("本機登入回呼埠被占用，請先關掉舊的遊戲視窗")
+
+func setup_mobile_auth_deeplink() -> void:
+	if not OS.has_feature("mobile"):
+		return
+	auth_redirect = MOBILE_AUTH_REDIRECT
+	if not Engine.has_singleton("DeeplinkPlugin"):
+		push_warning("DeeplinkPlugin is unavailable; mobile OAuth callback cannot be received.")
+		return
+	mobile_deeplink = Engine.get_singleton("DeeplinkPlugin")
+	if mobile_deeplink.has_signal("deeplink_received") and not mobile_deeplink.is_connected("deeplink_received", _on_mobile_auth_deeplink):
+		mobile_deeplink.connect("deeplink_received", _on_mobile_auth_deeplink)
+	mobile_deeplink.call("initialize")
+	var initial_url := str(mobile_deeplink.call("get_url"))
+	if not initial_url.is_empty():
+		call_deferred("_consume_mobile_auth_url", initial_url)
+
+func _on_mobile_auth_deeplink(_data: Dictionary) -> void:
+	if mobile_deeplink == null:
+		return
+	_consume_mobile_auth_url(str(mobile_deeplink.call("get_url")))
+
+func _consume_mobile_auth_url(url: String) -> void:
+	if url != MOBILE_AUTH_REDIRECT and not url.begins_with(MOBILE_AUTH_REDIRECT + "?") and not url.begins_with(MOBILE_AUTH_REDIRECT + "#"):
+		return
+	if mobile_deeplink != null:
+		mobile_deeplink.call("clear_data")
+	var params := ""
+	if url.contains("?"):
+		params = url.get_slice("?", 1).get_slice("#", 0)
+	if url.contains("#"):
+		var fragment := url.get_slice("#", 1)
+		params += ("&" if not params.is_empty() else "") + fragment
+	var error := _query_value(params, "error_description")
+	if error.is_empty():
+		error = _query_value(params, "error")
+	if not error.is_empty():
+		flash_notice("登入失敗：%s" % error)
+		return
+	var code := _query_value(params, "code")
+	if code.is_empty():
+		flash_notice("登入回傳資料不完整，請重新登入")
+		return
+	if oauth_code_verifier.is_empty():
+		flash_notice("登入已逾時，請重新按一次登入")
+		return
+	show_entering("正在完成安全登入…")
+	exchange_auth_code(code)
 
 func poll_auth_server() -> void:
 	if auth_server == null or not auth_server.is_listening():
@@ -16225,6 +16280,9 @@ func pkce_challenge(verifier: String) -> String:
 	return Marshalls.raw_to_base64(ctx.finish()).replace("+", "-").replace("/", "_").replace("=", "")
 
 func start_oauth(provider: String) -> void:
+	if provider == "apple" and not APPLE_OAUTH_ENABLED:
+		flash_notice("Apple 登入尚未在伺服器啟用；目前請使用 Google 或信箱驗證碼。")
+		return
 	if OS.has_feature("web"):
 		if provider != "google":
 			flash_notice("網頁版目前提供 Google 或信箱驗證碼登入。")
@@ -16238,9 +16296,15 @@ func start_oauth(provider: String) -> void:
 		flash_notice("正在開啟 Google 登入…")
 		JavaScriptBridge.eval("(window.top || window).location.href=" + JSON.stringify(url))
 		return
-	start_auth_listener()
-	if auth_server == null:
-		return
+	if OS.has_feature("mobile"):
+		if mobile_deeplink == null:
+			flash_notice("此版本缺少手機登入回呼，請更新遊戲。")
+			return
+		auth_redirect = MOBILE_AUTH_REDIRECT
+	else:
+		start_auth_listener()
+		if auth_server == null:
+			return
 	oauth_code_verifier = pkce_verifier()
 	var challenge := pkce_challenge(oauth_code_verifier)
 	var url := "%s/auth/v1/authorize?provider=%s&redirect_to=%s&code_challenge=%s&code_challenge_method=S256" % [
