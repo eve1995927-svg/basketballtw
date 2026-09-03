@@ -11764,13 +11764,19 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	var raw_number := int(value) if value.is_valid_int() else 0
 	var shown_value := home_resource_number(raw_number) if value.is_valid_int() else value
 	var shell := Control.new()
-	var compact_width := 82 if caption == "薪資空間" else (62 if caption == "資金" else 55)
+	var compact_width := 115 if caption == "薪資空間" else (60 if caption == "資金" else 50)
 	var regular_width := 220 if caption == "薪資空間" else (155 if caption == "資金" else 136)
 	shell.custom_minimum_size = Vector2(compact_width if compact else regular_width, 44 if compact else 50)
 	shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	shell.size_flags_stretch_ratio = 1.8 if caption == "薪資空間" else (1.25 if caption == "資金" else 1.0)
 	shell.clip_contents = true
-	shell.add_child(dashboard_skin("res://assets/ui/home/resource_pill_skin_trim_v1.png"))
+	# Use one native frame. The old bitmap already contained a drawn plus slot,
+	# which became a double box after adding the real acquisition control.
+	var resource_frame := PanelContainer.new()
+	resource_frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	resource_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	resource_frame.add_theme_stylebox_override("panel", panel_style(Color("08111ce8"), Color("b79643bb"), 9, 1))
+	shell.add_child(resource_frame)
 	var whole_hit := Button.new()
 	whole_hit.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	whole_hit.flat = true
@@ -11785,16 +11791,16 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	shell.add_child(whole_hit)
 	var row := HBoxContainer.new()
 	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	row.offset_left = 5 if compact else 7
+	row.offset_left = 4 if compact else 7
 	row.offset_right = -4 if compact else -6
 	row.offset_top = 3
 	row.offset_bottom = -3
-	row.add_theme_constant_override("separation", 3 if compact else 6)
+	row.add_theme_constant_override("separation", 2 if compact else 6)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	shell.add_child(row)
 	var icon := TextureRect.new()
 	icon.texture = load_png_tex(icon_path)
-	icon.custom_minimum_size = Vector2(14 if compact else 22, 20 if compact else 30)
+	icon.custom_minimum_size = Vector2(10 if compact else 22, 18 if compact else 30)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -11819,7 +11825,7 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	# compact so mobile's 44 px button minimum cannot steal space from balances.
 	var plus_shell := PanelContainer.new()
 	plus_shell.name = "%sAddButton" % caption
-	plus_shell.custom_minimum_size = Vector2(18 if compact else 28, 28 if compact else 34)
+	plus_shell.custom_minimum_size = Vector2(16 if compact else 28, 26 if compact else 34)
 	plus_shell.size_flags_horizontal = Control.SIZE_SHRINK_END
 	plus_shell.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	plus_shell.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -11957,6 +11963,44 @@ func dashboard_schedule_hotspot(delta: int, tip: String) -> Control:
 	)
 	return hotspot
 
+func dashboard_schedule_swipe_surface() -> Control:
+	var surface := Control.new()
+	surface.name = "ScheduleSwipeSurface"
+	surface.mouse_filter = Control.MOUSE_FILTER_STOP
+	surface.mouse_default_cursor_shape = Control.CURSOR_DRAG
+	surface.tooltip_text = "左右滑動切換賽程"
+	var dragging := false
+	var drag_total := 0.0
+	surface.gui_input.connect(func(event: InputEvent):
+		if event is InputEventScreenTouch:
+			if event.pressed:
+				dragging = true
+				drag_total = 0.0
+			else:
+				if dragging and absf(drag_total) >= 28.0:
+					surface.accept_event()
+					play_sfx("tap")
+					shift_home_schedule_preview(1 if drag_total < 0.0 else -1)
+				dragging = false
+		elif event is InputEventScreenDrag and dragging:
+			drag_total += event.relative.x
+			surface.accept_event()
+		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				dragging = true
+				drag_total = 0.0
+			else:
+				if dragging and absf(drag_total) >= 28.0:
+					surface.accept_event()
+					play_sfx("tap")
+					shift_home_schedule_preview(1 if drag_total < 0.0 else -1)
+				dragging = false
+		elif event is InputEventMouseMotion and dragging:
+			drag_total += event.relative.x
+			surface.accept_event()
+	)
+	return surface
+
 func dashboard_schedule_card_content(entry: Dictionary, highlighted: bool, left: float, right: float) -> Control:
 	var compact := compact_phone()
 	var team: Dictionary = entry.get("team", {})
@@ -12067,6 +12111,14 @@ func home_schedule_carousel(opponent: Dictionary) -> Control:
 	rival_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	rival_label.tooltip_text = rival_name
 	matchup_row.add_child(rival_label)
+	# The broad center area is the primary mobile control. Edge arrows remain
+	# available, but players no longer need to hit their narrow targets.
+	var swipe_surface := dashboard_schedule_swipe_surface()
+	swipe_surface.anchor_left = 0.07
+	swipe_surface.anchor_right = 0.93
+	swipe_surface.anchor_top = 0.03
+	swipe_surface.anchor_bottom = 0.75
+	shell.add_child(swipe_surface)
 	return shell
 
 func show_dashboard_more_menu() -> void:
