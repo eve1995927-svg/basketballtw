@@ -120,21 +120,21 @@ func test_buttons_and_nested_scrollers() -> void:
 	var before_roster: Array = game.team_players.duplicate(true)
 	var outer := game.find_child("ContentScroll", true, false) as ScrollContainer
 	var origin_pick: int = game.swap_pick
-	var board := game.find_child("PhoneRosterBoard", true, false) as Control
-	check(is_instance_valid(board) and game.find_child("BenchScroll", true, false) == null, "complete starters and bench use one page without a nested horizontal scroller")
+	var board := game.find_child("ReferenceRosterBoard", true, false) as Control
+	check(is_instance_valid(board) and game.find_child("ReferenceVaultScroll", true, false) != null, "editing stays in the split workspace with its own candidate scroller")
 	check(game.team_players == before_roster and game.swap_pick == origin_pick, "rendering the complete bench never swaps or selects a player")
 	await save_shot("bench_all_visible")
-	# Filters may make the page taller; its single outer scroller must remain touchable.
+	# Filters stay inside the right candidate panel and must not replace the page.
 	game.roster_filters_visible = true
 	game.show_roster(true)
 	await settle()
 	outer = game.find_child("ContentScroll", true, false)
-	board = game.find_child("PhoneRosterBoard", true, false)
+	board = game.find_child("ReferenceRosterBoard", true, false)
 	var visible := board.get_global_rect().intersection(outer.get_global_rect()) if is_instance_valid(board) else outer.get_global_rect()
 	if visible.size.y > 20:
 		var outer_overflow := outer.get_v_scroll_bar().max_value - outer.get_v_scroll_bar().page
 		await swipe(visible.get_center(), Vector2(0, -130))
-		check(outer.scroll_vertical > 20 if outer_overflow > 20 else outer.scroll_vertical == 0, "single roster page scrolls vertically only when filters create overflow")
+		check(outer.scroll_vertical > 20 if outer_overflow > 20 else outer.scroll_vertical == 0, "roster workspace remains touchable when the outer page overflows")
 	game.roster_filters_visible = false
 	game.team_players.assign(old_roster)
 

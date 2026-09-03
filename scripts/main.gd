@@ -134,8 +134,8 @@ const LEGAL_NOTICE_TITLE := "遊戲聲明與權利說明"
 const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官方聯盟或球隊產品。\n\n遊戲中部分隊名、球員名稱與賽事名稱參考真實籃球資訊，並非全部虛構。球員能力、卡片稀有度、遊戲薪資、交易、陣容及比賽結果屬於遊戲模擬設定，不代表真實人物的實際表現、合約、行為或官方評價。\n\n本遊戲與任何真實職業籃球聯盟、球隊或球員無官方授權、合作、贊助或背書關係。\n\n遊戲所涉及的名稱、商標、隊徽、照片、肖像及其他素材之相關權利，仍屬各該權利人。本聲明不構成素材使用授權，也不表示相關使用當然合法或免除依法應負的責任。\n\n本說明不要求使用者放棄依法享有的權利。\n\n更新日期：2026 年 8 月 31 日"
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
-const APP_VERSION := "0.9.19"
-const APP_BUILD := 157
+const APP_VERSION := "0.9.20"
+const APP_BUILD := 158
 const ONLINE_ONLY := true
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const MOBILE_AUTH_REDIRECT := "taiwanbasketballgm://auth/callback"
@@ -511,6 +511,7 @@ var budget_million := 300
 var economy_version := ECONOMY_VERSION
 var scout_points := 20
 var phone_bench_scroll := 0
+var reference_vault_scroll := 0
 var resource_hud_elapsed := 0.0
 var resource_hud_labels: Dictionary = {}
 var resource_hud_snapshot: Array = []
@@ -817,7 +818,7 @@ func _boot_watchdog() -> void:
 		card_inventory.clear()
 		for i in mini(15, samples.size()):
 			card_inventory.append(samples[i].duplicate(true))
-		show_roster(false)
+		show_roster(OS.get_environment("TB_ROSTER_EDIT_SHOT") == "1")
 		await get_tree().create_timer(1.2).timeout
 		await RenderingServer.frame_post_draw
 		var roster_shot := get_viewport().get_texture().get_image()
@@ -2623,7 +2624,7 @@ func hud_economy_row(_compact := true) -> Control:
 	resource_hud_snapshot.clear()
 	# Keep the same reading order as the home screen. This also puts the two
 	# currencies players act on most often first.
-	for spec in [["gold", "黃金", GOLD, "res://assets/ui/hud/gold_coin.png", show_store_hub], ["scout", "球探點", CYAN, "res://assets/ui/hud/scout.png", show_gacha_market], ["budget", "資金", GREEN, "res://assets/ui/hud/budget.png", show_finance_sheet], ["salary", "薪資空間", GREEN, "res://assets/ui/hud/budget.png", show_salary_sheet]]:
+	for spec in [["gold", "黃金", GOLD, "res://assets/ui/hud/gold_coin.png", show_store_hub], ["scout", "球探點", CYAN, "res://assets/ui/hud/scout.png", show_gacha_market], ["budget", "資金", GREEN, "res://assets/ui/hud/budget.png", show_finance_sheet], ["salary", "剩餘薪資", GREEN, "res://assets/ui/hud/budget.png", show_salary_sheet]]:
 		var key: String = spec[0]
 		var accent: Color = spec[2]
 		var destination: Callable = spec[4]
@@ -2709,6 +2710,7 @@ func refresh_resource_hud() -> void:
 	if resource_hud_labels.is_empty():
 		return
 	var used := roster_salary()
+	var remaining_salary := salary_cap - used
 	var values := [budget_million, gold, used, salary_cap, scout_points]
 	if values == resource_hud_snapshot:
 		return
@@ -2716,7 +2718,7 @@ func refresh_resource_hud() -> void:
 	var text_values := {
 		"budget": "%s萬" % home_resource_number(budget_million),
 		"gold": home_resource_number(gold),
-		"salary": "%s/%s萬" % [home_resource_number(used), home_resource_number(salary_cap)],
+		"salary": "%s%s萬" % ["-" if remaining_salary < 0 else "", home_resource_number(absi(remaining_salary))],
 		"scout": home_resource_number(scout_points),
 	}
 	for key in resource_hud_labels:
@@ -2726,7 +2728,7 @@ func refresh_resource_hud() -> void:
 		node.text = text_values[key]
 		node.add_theme_font_size_override("font_size", resource_value_font_size(node.text, 11 if is_handheld() else 16))
 		if key == "salary":
-			node.add_theme_color_override("font_color", RED if used > salary_cap else GREEN)
+			node.add_theme_color_override("font_color", RED if remaining_salary < 0 else GREEN)
 
 func clickable_salary(width := 168) -> Control:
 	var holder := PanelContainer.new()
@@ -8438,13 +8440,19 @@ func show_vault_swap_picker(vault_index: int) -> void:
 func apply_vault_swap(vault_index: int, out_index: int) -> void:
 	if vault_index < 0 or vault_index >= card_inventory.size() or out_index < 0 or out_index >= team_players.size():
 		flash_notice("請重新選擇")
-		show_card_vault()
+		if roster_editing:
+			show_roster(true)
+		else:
+			show_card_vault()
 		return
 	var incoming: Dictionary = to_game_player(card_inventory[vault_index])
 	var why := can_vault_swap_with(incoming, out_index)
 	if not why.is_empty():
 		flash_notice(why)
-		show_vault_swap_picker(vault_index)
+		if roster_editing:
+			show_roster(true)
+		else:
+			show_vault_swap_picker(vault_index)
 		return
 	var outgoing: Dictionary = team_players[out_index]
 	card_inventory.remove_at(vault_index)
@@ -13188,6 +13196,7 @@ func tap_roster_slot(index: int) -> void:
 	team_players[swap_pick] = team_players[index]
 	team_players[index] = tmp
 	swap_pick = -1
+	selected_foundation = -1
 	save_game()
 	show_roster()
 	var miss := lineup_mismatch_line()
@@ -13527,18 +13536,23 @@ func roster_visual_summary() -> Control:
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_constant_override("separation", 0)
 	shell.add_child(padded(row, 8))
-	var cap := maxi(1, salary_cap)
-	var used := roster_salary()
 	var avg_ovr := 0
 	if not team_players.is_empty():
 		var total := 0
 		for i in mini(team_players.size(), 5):
 			total += effective_ovr(team_players[i], i)
 		avg_ovr = roundi(float(total) / float(mini(team_players.size(), 5)))
+	var bench_total := 0
+	var bench_count := 0
+	for i in range(5, mini(team_players.size(), roster_limit())):
+		bench_total += int(team_players[i].get("ovr", 70))
+		bench_count += 1
+	var bench_value := "%d" % roundi(float(bench_total) / float(bench_count)) if bench_count > 0 else "替補不足"
+	var bench_color := CYAN if bench_count >= maxi(1, minimum_roster_to_play() - 5) else ORANGE
 	var entries: Array = [
 		["先發平均戰力", "%d" % avg_ovr, GOLD, "res://assets/ui/icons/nav_roster.png"],
 		["登錄名單", "%d／%d" % [team_players.size(), roster_limit()], CYAN, "res://assets/ui/icons/nav_roster.png"],
-		["薪資占用", "%d／%d" % [used, cap], GREEN if used <= cap else RED, "res://assets/ui/hud/budget.png"],
+		["替補平均戰力", bench_value, bench_color, "res://assets/ui/icons/nav_roster.png"],
 		["保管箱", "%d／%d" % [card_inventory.size(), vault_capacity()], PURPLE, "res://assets/ui/icons/nav_vault.png"],
 	]
 	for i in entries.size():
@@ -13599,11 +13613,20 @@ func reference_roster_board() -> Control:
 	var lineup_title := fit_label("先發陣容", 16, GOLD, true)
 	lineup_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lineup_head.add_child(lineup_title)
-	var edit_lineup := action_button("編輯陣容", Color("254e6b"), func(): show_roster(true), Vector2(92, 32))
+	var edit_lineup := action_button("完成編輯" if roster_editing else "編輯陣容", GOLD if roster_editing else Color("254e6b"), func():
+		if roster_editing:
+			save_game()
+			show_roster(false)
+			flash_notice("陣容已儲存")
+		else:
+			selected_foundation = -1
+			swap_pick = -1
+			show_roster(true)
+	, Vector2(92, 32))
 	edit_lineup.add_theme_font_size_override("font_size", 11)
 	lineup_head.add_child(edit_lineup)
 	lineup.add_child(lineup_head)
-	lineup.tooltip_text = "五個先發位置依序為 PG／SG／SF／PF／C；點卡查看球員資料。"
+	lineup.tooltip_text = "編輯時先點左側先發，再點另一名先發、替補或保管箱球員替換。" if roster_editing else "五個先發位置依序為 PG／SG／SF／PF／C；點卡查看球員資料。"
 	var starters := HBoxContainer.new()
 	starters.name = "StarterCards"
 	starters.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -13616,13 +13639,14 @@ func reference_roster_board() -> Control:
 	for i in mini(5, team_players.size()):
 		var player: Dictionary = team_players[i]
 		var player_index := i
-		starters.add_child(lobby_player_card(player, true, player_index, false, card_w, func(): show_owned_player(player_index), card_h, str(player.get("skill_name", "即戰力")), false))
+		starters.add_child(lobby_player_card(player, true, player_index, roster_editing, card_w, Callable() if roster_editing else func(): show_owned_player(player_index), card_h, str(player.get("skill_name", "即戰力")), false))
 	if team_players.size() < 5:
 		starters.add_child(fit_label("先補滿五個先發位置", 12, ORANGE, true))
 	var strength := HBoxContainer.new()
 	strength.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	strength.add_theme_constant_override("separation", 8)
 	var auto_lineup := action_button("自動編隊", Color("254e6b"), func(): optimize_current_lineup(), Vector2(106, 34))
+	auto_lineup.name = "AutoBestLineupButton"
 	auto_lineup.add_theme_font_size_override("font_size", 12)
 	strength.add_child(auto_lineup)
 	var strength_gap := Control.new()
@@ -13649,12 +13673,17 @@ func reference_roster_board() -> Control:
 	vault.clip_contents = true
 	vault.add_theme_constant_override("separation", 4)
 	var vault_head := HBoxContainer.new()
-	vault_head.add_child(fit_label("保管箱", 16, TEXT, true))
+	vault_head.add_child(fit_label("替換候選" if roster_editing else "保管箱", 16, TEXT, true))
 	vault_head.add_spacer(false)
-	vault_head.add_child(fit_label("%d／%d" % [card_inventory.size(), vault_capacity()], 13, CYAN, true, HORIZONTAL_ALIGNMENT_RIGHT))
+	var vault_count_text := "替補 %d · 箱 %d" % [maxi(0, team_players.size() - 5), card_inventory.size()] if roster_editing else "%d／%d" % [card_inventory.size(), vault_capacity()]
+	vault_head.add_child(fit_label(vault_count_text, 13, CYAN, true, HORIZONTAL_ALIGNMENT_RIGHT))
 	vault.add_child(vault_head)
 	vault.add_child(reference_vault_filter_bar())
 	var visible_indices: Array[int] = []
+	if roster_editing:
+		for team_index in range(5, team_players.size()):
+			if vault_matches_filter(team_players[team_index]):
+				visible_indices.append(-team_index - 1)
 	for idx in sorted_vault_indices():
 		if idx < 0 or idx >= card_inventory.size() or not (card_inventory[idx] is Dictionary):
 			continue
@@ -13681,9 +13710,11 @@ func reference_roster_board() -> Control:
 		virtual_grid.name = "ReferenceVaultVirtualGrid"
 		virtual_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		virtual_grid.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		virtual_grid.configure(visible_indices, func(index: int): return reference_vault_card(index, vault_card_w), Vector2(vault_card_w + 4, 98))
+		virtual_grid.configure(visible_indices, func(index: int): return reference_candidate_card(index, vault_card_w) if roster_editing else reference_vault_card(index, vault_card_w), Vector2(vault_card_w + 4, 98))
 		vault_scroll.add_child(virtual_grid)
 		vault.add_child(vault_scroll)
+		vault_scroll.get_v_scroll_bar().value_changed.connect(func(value: float): reference_vault_scroll = roundi(value))
+		restore_reference_vault_scroll(weakref(vault_scroll), reference_vault_scroll)
 	columns.add_child(vault)
 	return board
 
@@ -13696,10 +13727,56 @@ func reference_vault_card(index: int, card_w: int) -> Control:
 		show_player_sheet(card, func(): show_roster(), func(): place_from_vault(vault_index), "登錄球隊")
 	, 92, "", false)
 
+func reference_candidate_card(encoded_index: int, card_w: int) -> Control:
+	if encoded_index < 0:
+		var team_index := -encoded_index - 1
+		if team_index < 5 or team_index >= team_players.size():
+			return Control.new()
+		var player: Dictionary = team_players[team_index]
+		return lobby_player_card(player, false, team_index, false, card_w, func(): replace_selected_starter_with_roster(team_index), 92, "", false)
+	if encoded_index >= card_inventory.size() or not (card_inventory[encoded_index] is Dictionary):
+		return Control.new()
+	var card: Dictionary = to_game_player(card_inventory[encoded_index])
+	var vault_index := encoded_index
+	return lobby_player_card(card, false, -1, false, card_w, func(): replace_selected_starter_from_vault(vault_index), 92, "", false)
+
+func replace_selected_starter_with_roster(team_index: int) -> void:
+	if selected_foundation < 0 or selected_foundation >= mini(5, team_players.size()):
+		flash_notice("先點左側一名先發球員")
+		return
+	if team_index < 5 or team_index >= team_players.size():
+		return
+	var tmp: Dictionary = team_players[selected_foundation]
+	team_players[selected_foundation] = team_players[team_index]
+	team_players[team_index] = tmp
+	selected_foundation = -1
+	swap_pick = -1
+	save_game()
+	show_roster(true)
+
+func replace_selected_starter_from_vault(vault_index: int) -> void:
+	if selected_foundation < 0 or selected_foundation >= mini(5, team_players.size()):
+		flash_notice("先點左側一名先發球員")
+		return
+	var out_index := selected_foundation
+	selected_foundation = -1
+	swap_pick = -1
+	apply_vault_swap(vault_index, out_index)
+
+func restore_reference_vault_scroll(target: WeakRef, offset: int) -> void:
+	await get_tree().process_frame
+	var scroll = target.get_ref()
+	if is_instance_valid(scroll):
+		scroll.set_deferred("scroll_vertical", offset)
+
 func show_roster(edit_mode: Variant = null) -> void:
 	active_menu = "roster"
+	var was_editing := roster_editing
 	if typeof(edit_mode) == TYPE_BOOL:
 		roster_editing = bool(edit_mode)
+	if roster_editing and not was_editing:
+		selected_foundation = -1
+		swap_pick = -1
 	if not roster_editing:
 		swap_pick = -1
 		roster_batch_mode = false
@@ -13710,109 +13787,27 @@ func show_roster(edit_mode: Variant = null) -> void:
 		if team_players[i] is Dictionary:
 			team_players[i] = refresh_stored_player(team_players[i])
 	ensure_photographed_starters()
-	var hint := "點兩張卡互換。先點人再放保管箱或釋出。" if roster_editing else "點卡看資料與養成。要換人先按編輯陣容。"
+	var hint := "先選左側先發，再選右側替補或保管箱球員替換。" if roster_editing else "點卡看資料與養成。要換人先按編輯陣容。"
 	var content := begin_screen("管理球隊", hint, 4)
 	content.add_child(roster_visual_tabs("roster"))
-	var chips := HBoxContainer.new()
-	chips.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	chips.add_theme_constant_override("separation", 6)
-	content.add_child(chips)
-	chips.visible = roster_editing and (not is_handheld() or roster_filters_visible)
-	chips.add_child(roster_count_pill("名單", "%d／%d" % [team_players.size(), roster_limit()], GOLD))
-	chips.add_child(roster_count_pill("保管箱", str(card_inventory.size()), CYAN))
-	chips.add_child(roster_count_pill("外援", "%d／%d" % [foreigner_count(), foreigner_limit()], ORANGE))
-	chips.add_child(roster_count_pill("外籍生", "%d／%d" % [foreign_student_count(), foreign_student_limit()], PURPLE))
-	if roster_editing and (not is_handheld() or roster_filters_visible):
-		content.add_child(roster_filter_bar())
-	if not roster_editing and roster_filters_clear():
-		content.add_child(reference_roster_board())
-	else:
-		content.add_child(phone_roster_board(roster_editing) if is_handheld() and roster_filters_clear() else lobby_roster_board(roster_editing))
-	if roster_editing:
-		content.add_child(roster_visual_summary())
-	if is_handheld() and not roster_filters_visible:
-		content.move_child(chips, content.get_child_count() - 1)
+	content.add_child(reference_roster_board())
 	var actions := HBoxContainer.new()
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	actions.size_flags_vertical = Control.SIZE_SHRINK_END
 	actions.add_theme_constant_override("separation", 8)
-	if is_handheld() and roster_editing:
-		var filter_btn := action_button("收起篩選" if roster_filters_visible else "篩選／名單", Color("254e6b"), func():
-			roster_filters_visible = not roster_filters_visible
-			show_roster()
-		)
-		filter_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		actions.add_child(filter_btn)
-	if roster_editing:
-		var batch_btn := action_button("退出批次" if roster_batch_mode else "批次編輯", CYAN, func():
-			roster_batch_mode = not roster_batch_mode
-			roster_batch_selected.clear()
-			show_roster(true)
-		)
-		batch_btn.name = "BatchRosterButton"
-		batch_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		actions.add_child(batch_btn)
-		if roster_batch_mode:
-			var selected_count := roster_batch_selected.size()
-			var starter_btn := gold_action_button("設為正選 (%d)" % selected_count, func(): apply_roster_batch_destination("starter"))
-			starter_btn.name = "BatchSetStarterButton"
-			starter_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			actions.add_child(starter_btn)
-			var bench_btn := action_button("設為替補 (%d)" % selected_count, CYAN, func(): apply_roster_batch_destination("bench"))
-			bench_btn.name = "BatchSetBenchButton"
-			bench_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			actions.add_child(bench_btn)
-			var clear_batch_btn := action_button("清除選取", Color("254052"), func(): clear_roster_batch())
-			clear_batch_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			actions.add_child(clear_batch_btn)
-		var auto_btn := gold_action_button("一鍵最佳", func(): optimize_current_lineup())
-		auto_btn.name = "AutoBestLineupButton"
-		auto_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		auto_btn.tooltip_text = "依 PG／SG／SF／PF／C 適性與 OVR 自動安排先發，其他球員留在替補。"
-		actions.add_child(auto_btn)
-		var done_btn := gold_action_button("⚑  儲存陣容", func():
-			save_game()
+	var summary := roster_visual_summary()
+	summary.size_flags_stretch_ratio = 3.2
+	actions.add_child(summary)
+	var save_btn := gold_action_button("完成編輯" if roster_editing else "⚑  儲存陣容", func():
+		save_game()
+		if roster_editing:
 			show_roster(false)
-			flash_notice("陣容已儲存")
-		)
-		done_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		actions.add_child(done_btn)
-	else:
-		var summary := roster_visual_summary()
-		summary.size_flags_stretch_ratio = 3.2
-		actions.add_child(summary)
-		var save_btn := gold_action_button("⚑  儲存陣容", func():
-			save_game()
-			flash_notice("陣容已儲存")
-		)
-		save_btn.name = "SaveLineupButton"
-		save_btn.custom_minimum_size = Vector2(252, 58 if is_handheld() else 66)
-		save_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
-		actions.add_child(save_btn)
-	if roster_editing:
-		var pick_name := ""
-		if selected_foundation >= 0 and selected_foundation < team_players.size():
-			pick_name = str(team_players[selected_foundation].get("name", ""))
-		var stash_txt := "放保管箱" if is_handheld() else ("放入保管箱 %s" % pick_name if not pick_name.is_empty() else "放入保管箱（先點人）")
-		var stash_btn := gold_action_button(stash_txt, func():
-			if selected_foundation < 0 or selected_foundation >= team_players.size():
-				flash_notice("先點一名球員，再放入保管箱。")
-				return
-			move_roster_to_vault(selected_foundation)
-		)
-		stash_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		stash_btn.tooltip_text = "鑽石卡也可放保管箱。箱內不算薪資帽。"
-		actions.add_child(stash_btn)
-		var release_txt := "釋出球員" if is_handheld() else ("釋出 %s" % pick_name if not pick_name.is_empty() else "釋出（先點人）")
-		var release_btn := action_button(release_txt, Color("254e6b"), func():
-			if selected_foundation < 0 or selected_foundation >= team_players.size():
-				flash_notice("先點一名球員，再按釋出。")
-				return
-			release_roster_player(selected_foundation)
-		, Vector2(0, 42))
-		release_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		release_btn.tooltip_text = "永久刪除。鑽石卡不能釋出。至少留 7 人才能開打。"
-		actions.add_child(release_btn)
+		flash_notice("陣容已儲存")
+	)
+	save_btn.name = "FinishLineupButton" if roster_editing else "SaveLineupButton"
+	save_btn.custom_minimum_size = Vector2(252, 58 if is_handheld() else 66)
+	save_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
+	actions.add_child(save_btn)
 	pin_above_dock(content, actions)
 
 func pin_above_dock(content: Control, bar: Control) -> void:
