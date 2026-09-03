@@ -128,16 +128,19 @@ const SAVE_PATH := "user://taiwan_basketball_save.json"
 const AUDIO_SETTINGS_PATH := "user://audio_settings.json"
 const ACCOUNT_PATH := "user://taiwan_basketball_account.json"
 const AUTH_PATH := "user://taiwan_basketball_auth.json"
+const OAUTH_PENDING_PATH := "user://taiwan_basketball_oauth_pending.json"
 const CAREER_PATH := "res://data/career.json"
 const LEGAL_NOTICE_TITLE := "遊戲聲明與權利說明"
 const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官方聯盟或球隊產品。\n\n遊戲中部分隊名、球員名稱與賽事名稱參考真實籃球資訊，並非全部虛構。球員能力、卡片稀有度、遊戲薪資、交易、陣容及比賽結果屬於遊戲模擬設定，不代表真實人物的實際表現、合約、行為或官方評價。\n\n本遊戲與任何真實職業籃球聯盟、球隊或球員無官方授權、合作、贊助或背書關係。\n\n遊戲所涉及的名稱、商標、隊徽、照片、肖像及其他素材之相關權利，仍屬各該權利人。本聲明不構成素材使用授權，也不表示相關使用當然合法或免除依法應負的責任。\n\n本說明不要求使用者放棄依法享有的權利。\n\n更新日期：2026 年 8 月 31 日"
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
-const APP_VERSION := "0.9.18"
-const APP_BUILD := 155
+const APP_VERSION := "0.9.19"
+const APP_BUILD := 156
 const ONLINE_ONLY := true
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const MOBILE_AUTH_REDIRECT := "taiwanbasketballgm://auth/callback"
+# Keep the client honest until the Supabase Apple provider has its Service ID,
+# key, and redirect configuration. The live project currently reports Apple=false.
 const APPLE_OAUTH_ENABLED := false
 const STYLIZED_ART := [
 	"res://assets/art/hero_pg.png",
@@ -677,6 +680,7 @@ var last_known_unlocks: Array = []
 var pending_path := ""
 var iap_pending_sku := ""
 var oauth_code_verifier := ""
+var oauth_provider := ""
 var web_auth_consumed := false
 var auth_redirect := AUTH_REDIRECT
 var mobile_deeplink: Object
@@ -11271,8 +11275,11 @@ func show_entering(message := "正在進入…") -> void:
 	sheet.add_child(padded(box, 28))
 	box.add_child(polish_title(plain_label("台籃模擬器", 24, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)))
 	box.add_child(kicker_label(message, 14, TEXT))
-	if not ONLINE_ONLY and (pending_enter_after_auth or not auth_access.is_empty()):
+	if pending_enter_after_auth or not auth_access.is_empty():
+		# Keep the online-only entry flow transparent: show a determinate phase
+		# percentage while auth, save slots and account data are read in order.
 		box.add_child(cloud_status_panel())
+	if not ONLINE_ONLY and (pending_enter_after_auth or not auth_access.is_empty()):
 		box.add_child(action_button("先使用本機存檔", MUTED, func():
 			cancel_cloud_requests()
 			cloud_restore_incomplete = true
@@ -11613,7 +11620,7 @@ func show_save_slots() -> void:
 	head.add_theme_constant_override("separation", 4)
 	page.add_child(head)
 	head.add_child(label("選擇存檔", 22, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
-	head.add_child(label("點選繼續；左右滑動查看其他存檔", 13, MUTED, false, HORIZONTAL_ALIGNMENT_CENTER))
+	head.add_child(label("選擇要繼續的球隊，或點選空白欄位開始新球季；左右滑動查看其他存檔", 13, MUTED, false, HORIZONTAL_ALIGNMENT_CENTER))
 	var scroll := ScrollContainer.new()
 	scroll.name = "SaveSlotScroll"
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -11737,18 +11744,10 @@ func open_save_slot(index: int) -> void:
 		start_new_game()
 
 func continue_after_login() -> void:
-	var occupied := occupied_save_slots()
-	if occupied.is_empty():
-		if not auth_access.is_empty() and local_profile_id == auth_user_id and not LocalProfiles.legacy_slots().is_empty():
-			LocalProfiles.show_import_offer(self)
-			return
-		start_new_game()
-		return
-	if occupied.size() == 1:
-		open_save_slot(int(occupied[0]))
-		return
-	if occupied.has(active_save_slot):
-		open_save_slot(active_save_slot)
+	# 手遊登入後固定先讓玩家選擇存檔；即使只有一個或尚未有存檔，
+	# 也不自動跳入，避免誤開錯誤球隊並讓新玩家看見完整的存檔流程。
+	if not auth_access.is_empty() and local_profile_id == auth_user_id and not LocalProfiles.legacy_slots().is_empty() and occupied_save_slots().is_empty():
+		LocalProfiles.show_import_offer(self)
 		return
 	show_save_slots()
 
@@ -16047,7 +16046,11 @@ func cloud_status_panel() -> Control:
 	progress.custom_minimum_size.y = 10
 	progress.add_theme_stylebox_override("background", panel_style(Color("132a3e"), Color("35546b"), 5, 1))
 	progress.add_theme_stylebox_override("fill", panel_style(CYAN, CYAN, 5, 0))
-	progress.show_percentage = false
+	progress.min_value = 0
+	progress.max_value = 100
+	progress.value = 0
+	progress.show_percentage = true
+	progress.add_theme_font_size_override("font_size", 11)
 	progress.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(progress)
 	var retry := action_button("重新讀取雲端", CYAN, retry_cloud_read, Vector2(0, 36))
@@ -16067,17 +16070,41 @@ func tick_cloud_status() -> void:
 			continue
 		var waiting := not cloud_pending.is_empty()
 		var progress := box.get_node("Progress") as ProgressBar
-		progress.visible = waiting
+		progress.visible = true
 		var total := cloud_http.get_body_size() if waiting and is_instance_valid(cloud_http) else -1
-		progress.indeterminate = total <= 0
-		if total > 0:
-			progress.value = minf(99.0, 100.0 * cloud_http.get_downloaded_bytes() / total)
+		progress.indeterminate = false
+		if waiting:
+			progress.value = cloud_progress_percent(str(cloud_pending), total, cloud_http.get_downloaded_bytes() if is_instance_valid(cloud_http) else 0)
+		else:
+			progress.value = 100.0
 		var message := cloud_status
 		if waiting:
 			message = "雲端回應較慢，正在重試 %d/%d" % [cloud_retry_count, CLOUD_MAX_RETRIES] if cloud_retry_count > 0 else "正在讀取／同步雲端"
 			message += " · 已等候 %d 秒" % ((now - cloud_started_at_ms) / 1000)
 		(box.get_node("Status") as Label).text = message
 		box.get_node("Retry").visible = not waiting and int(cloud_failed.get("method", -1)) == HTTPClient.METHOD_GET
+
+func cloud_progress_percent(kind: String, total := -1, downloaded := 0) -> float:
+	# Requests are intentionally serialized. These checkpoints reflect the
+	# actual online entry pipeline and avoid pretending an unknown response body
+	# has a byte-based percentage.
+	var checkpoint := 8.0
+	match kind:
+		"otp": checkpoint = 20.0
+		"verify": checkpoint = 35.0
+		"user": checkpoint = 42.0
+		"pull_slots": checkpoint = 58.0
+		"pull": checkpoint = 72.0
+		"pull_account": checkpoint = 82.0
+		"release_config": checkpoint = 92.0
+		"economy_bootstrap": checkpoint = 97.0
+		_:
+			checkpoint = 12.0
+	if total > 0:
+		# Only advance within the current phase; never show 100% before the
+		# request callback has completed.
+		return minf(checkpoint - 1.0, maxf(0.0, checkpoint - 8.0 + 8.0 * float(downloaded) / float(total)))
+	return checkpoint
 
 func _cloud_flush() -> void:
 	if cloud_queue.is_empty():
@@ -16174,6 +16201,7 @@ func setup_mobile_auth_deeplink() -> void:
 	if not OS.has_feature("mobile"):
 		return
 	auth_redirect = MOBILE_AUTH_REDIRECT
+	restore_pending_oauth()
 	if not Engine.has_singleton("DeeplinkPlugin"):
 		push_warning("DeeplinkPlugin is unavailable; mobile OAuth callback cannot be received.")
 		return
@@ -16185,10 +16213,65 @@ func setup_mobile_auth_deeplink() -> void:
 	if not initial_url.is_empty():
 		call_deferred("_consume_mobile_auth_url", initial_url)
 
-func _on_mobile_auth_deeplink(_data: Dictionary) -> void:
-	if mobile_deeplink == null:
+func _on_mobile_auth_deeplink(data: Dictionary) -> void:
+	# Consume the event payload itself. On iOS, get_url() can already be empty
+	# when the app resumes and the signal is delivered.
+	var url := mobile_auth_url_from_data(data)
+	if url.is_empty() and mobile_deeplink != null:
+		url = str(mobile_deeplink.call("get_url"))
+	_consume_mobile_auth_url(url)
+
+func mobile_auth_url_from_data(data: Dictionary) -> String:
+	var direct := str(data.get("url", ""))
+	if not direct.is_empty():
+		return direct
+	var scheme := str(data.get("scheme", ""))
+	var host := str(data.get("host", ""))
+	var path := str(data.get("path", ""))
+	var query := str(data.get("query", ""))
+	var fragment := str(data.get("fragment", ""))
+	if scheme.is_empty():
+		return ""
+	var built := scheme + "://" + host
+	if not path.is_empty():
+		built += path if path.begins_with("/") else "/" + path
+	if not query.is_empty():
+		built += query if query.begins_with("?") else "?" + query
+	if not fragment.is_empty():
+		built += fragment if fragment.begins_with("#") else "#" + fragment
+	return built
+
+func persist_pending_oauth() -> void:
+	var file := FileAccess.open(OAUTH_PENDING_PATH, FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify({
+			"provider": oauth_provider,
+			"verifier": oauth_code_verifier,
+			"created_at": int(Time.get_unix_time_from_system()),
+		}))
+
+func restore_pending_oauth() -> void:
+	if not FileAccess.file_exists(OAUTH_PENDING_PATH):
 		return
-	_consume_mobile_auth_url(str(mobile_deeplink.call("get_url")))
+	var file := FileAccess.open(OAUTH_PENDING_PATH, FileAccess.READ)
+	var pending: Variant = JSON.parse_string(file.get_as_text()) if file != null else null
+	if not (pending is Dictionary):
+		clear_pending_oauth()
+		return
+	var age := int(Time.get_unix_time_from_system()) - int(pending.get("created_at", 0))
+	if age < 0 or age > 900:
+		clear_pending_oauth()
+		return
+	oauth_provider = str(pending.get("provider", ""))
+	oauth_code_verifier = str(pending.get("verifier", ""))
+	if oauth_code_verifier.length() < 43:
+		clear_pending_oauth()
+
+func clear_pending_oauth() -> void:
+	oauth_provider = ""
+	oauth_code_verifier = ""
+	if FileAccess.file_exists(OAUTH_PENDING_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(OAUTH_PENDING_PATH))
 
 func _consume_mobile_auth_url(url: String) -> void:
 	if url != MOBILE_AUTH_REDIRECT and not url.begins_with(MOBILE_AUTH_REDIRECT + "?") and not url.begins_with(MOBILE_AUTH_REDIRECT + "#"):
@@ -16205,6 +16288,7 @@ func _consume_mobile_auth_url(url: String) -> void:
 	if error.is_empty():
 		error = _query_value(params, "error")
 	if not error.is_empty():
+		clear_pending_oauth()
 		flash_notice("登入失敗：%s" % error)
 		return
 	var code := _query_value(params, "code")
@@ -16291,7 +16375,7 @@ func start_oauth(provider: String) -> void:
 		# Always return to the standalone game page.  Using top.location matters
 		# when the game is opened inside play.html's iframe; otherwise OAuth can
 		# finish in the iframe and appear to send the player back to the homepage.
-		var web_redirect := "https://eve1995927-svg.github.io/basketballtw/game/index.html"
+		var web_redirect := "https://basketgm.tw/game/index.html"
 		var url := "%s/auth/v1/authorize?provider=google&redirect_to=%s&response_type=token" % [SUPABASE_URL, web_redirect.uri_encode()]
 		flash_notice("正在開啟 Google 登入…")
 		JavaScriptBridge.eval("(window.top || window).location.href=" + JSON.stringify(url))
@@ -16306,6 +16390,8 @@ func start_oauth(provider: String) -> void:
 		if auth_server == null:
 			return
 	oauth_code_verifier = pkce_verifier()
+	oauth_provider = provider
+	persist_pending_oauth()
 	var challenge := pkce_challenge(oauth_code_verifier)
 	var url := "%s/auth/v1/authorize?provider=%s&redirect_to=%s&code_challenge=%s&code_challenge_method=S256" % [
 		SUPABASE_URL,
@@ -16399,6 +16485,7 @@ func logout_account() -> void:
 	analytics_session_sent = false
 	login_email = remembered
 	oauth_code_verifier = ""
+	clear_pending_oauth()
 	pending_enter_after_auth = false
 	cloud_fail_notice_shown = false
 	var file := FileAccess.open(AUTH_PATH, FileAccess.WRITE)
@@ -16723,6 +16810,7 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 			return
 		if parsed.has("access_token"):
 			auth_access = str(parsed.get("access_token", auth_access))
+			clear_pending_oauth()
 			if parsed.has("refresh_token"):
 				auth_refresh = str(parsed.get("refresh_token", auth_refresh))
 			var user = parsed.get("user", {})
