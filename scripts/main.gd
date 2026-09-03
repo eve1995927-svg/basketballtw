@@ -135,7 +135,7 @@ const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官�
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
 const APP_VERSION := "0.9.19"
-const APP_BUILD := 156
+const APP_BUILD := 157
 const ONLINE_ONLY := true
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const MOBILE_AUTH_REDIRECT := "taiwanbasketballgm://auth/callback"
@@ -792,6 +792,39 @@ func _ready() -> void:
 
 func _boot_watchdog() -> void:
 	await get_tree().create_timer(1.0).timeout
+	if OS.get_environment("TB_ROSTER_SHOT") == "1":
+		pending_enter_after_auth = false
+		welcome_open = false
+		tutorial_seen = true
+		var roster_shot_size := Vector2i(1280, 720)
+		var requested_roster_size := OS.get_environment("TB_TEST_SIZES").strip_edges().to_lower()
+		var roster_dimensions := requested_roster_size.split("x")
+		if roster_dimensions.size() == 2 and roster_dimensions[0].is_valid_int() and roster_dimensions[1].is_valid_int():
+			roster_shot_size = Vector2i(maxi(568, int(roster_dimensions[0])), maxi(320, int(roster_dimensions[1])))
+		if not OS.has_feature("mobile"):
+			get_window().size = roster_shot_size
+		await get_tree().process_frame
+		await get_tree().process_frame
+		if team_players.is_empty():
+			team_players.assign([
+				{"name":"楊天佑", "pos":"PG", "ovr":78, "tier":"STAR", "salary_million":180, "skill_name":"節奏大師", "image":"res://assets/players/player_1.png"},
+				{"name":"仲俊威", "pos":"SG", "ovr":76, "tier":"RARE", "salary_million":160, "skill_name":"定點砲台", "image":"res://assets/players/player_2.png"},
+				{"name":"王晟霖", "pos":"SF", "ovr":76, "tier":"RARE", "salary_million":300, "skill_name":"雙向側翼", "image":"res://assets/players/player_3.png"},
+				{"name":"魏子雲", "pos":"PF", "ovr":72, "tier":"BASE", "salary_million":120, "skill_name":"禁區卡位", "image":"res://assets/players/player_4.png"},
+				{"name":"周士淵", "pos":"C", "ovr":74, "tier":"BASE", "salary_million":300, "skill_name":"高位策應", "image":"res://assets/players/player_5.png"},
+			])
+		var samples := scout_player_pool()
+		card_inventory.clear()
+		for i in mini(15, samples.size()):
+			card_inventory.append(samples[i].duplicate(true))
+		show_roster(false)
+		await get_tree().create_timer(1.2).timeout
+		await RenderingServer.frame_post_draw
+		var roster_shot := get_viewport().get_texture().get_image()
+		if roster_shot != null:
+			roster_shot.save_png("/tmp/godot_roster_compare_%dx%d.png" % [roster_shot_size.x, roster_shot_size.y])
+		get_tree().quit()
+		return
 	if OS.get_environment("TB_FITSHOT") == "1":
 		call_deferred("run_iphone_fitshot")
 		return
@@ -5799,7 +5832,7 @@ func _process(delta: float) -> void:
 		poll_native_iap()
 	tick_cloud_autosave(delta)
 	tick_cloud_status()
-	if is_handheld():
+	if is_handheld() and roster_editing:
 		_safe_pad_elapsed += delta
 		if _safe_pad_elapsed >= 0.5:
 			_safe_pad_elapsed = 0.0
@@ -5871,7 +5904,7 @@ func compact_phone() -> bool:
 	return get_viewport_rect().size.y < 560
 
 func is_handheld() -> bool:
-	return OS.has_feature("mobile") or (OS.has_feature("web") and DisplayServer.is_touchscreen_available()) or OS.get_environment("TB_FITSHOT") == "1" or OS.get_environment("TB_SCOUT") == "1"
+	return OS.has_feature("mobile") or (OS.has_feature("web") and DisplayServer.is_touchscreen_available()) or OS.get_environment("TB_FITSHOT") == "1" or OS.get_environment("TB_SCOUT") == "1" or OS.get_environment("TB_ROSTER_SHOT") == "1"
 
 func touch_minimum(minimum: Vector2) -> Vector2:
 	if not is_handheld():
@@ -5963,6 +5996,7 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 	current_stage = stage
 	var skin_accent: Color = supporter_accent()
 	var phone := compact_phone()
+	var team_management := active_menu in ["roster", "vault", "tactics"]
 
 	var bg := TextureRect.new()
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -5981,7 +6015,7 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 
 	var shade := ColorRect.new()
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.color = Color(0.02, 0.03, 0.05, 0.18 if active_menu == "dashboard" else (0.22 if active_menu == "store" else 0.38))
+	shade.color = Color(0.02, 0.03, 0.05, 0.18 if active_menu == "dashboard" else (0.22 if active_menu == "store" else (0.66 if team_management else 0.38)))
 	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(shade)
 
@@ -6034,7 +6068,17 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 	brand_art.offset_bottom = -2
 	brand_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	brand.add_child(brand_art)
-	if title == "商店" and stage == 4:
+	if team_management:
+		brand_art.visible = false
+		brand.text = "←"
+		brand.add_theme_font_override("font", FONT_BOLD)
+		brand.add_theme_font_size_override("font_size", 26 if is_handheld() else 30)
+		brand.add_theme_color_override("font_color", GOLD)
+		brand.pressed.connect(func():
+			play_sfx("tap")
+			handle_back_request()
+		)
+	elif title == "商店" and stage == 4:
 		brand_art.visible = false
 		brand.text = "‹"
 		brand.add_theme_font_override("font", FONT_BOLD)
@@ -6051,9 +6095,9 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 	top_row.add_child(brand)
 
 	var title_box := VBoxContainer.new()
-	title_box.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if is_handheld() else Control.SIZE_EXPAND_FILL
+	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL if team_management else (Control.SIZE_SHRINK_BEGIN if is_handheld() else Control.SIZE_EXPAND_FILL)
 	if is_handheld():
-		title_box.custom_minimum_size.x = 96
+		title_box.custom_minimum_size.x = 176 if team_management else 96
 		# On very narrow landscape canvases the club button remains available and
 		# the title yields its space to the three always-visible resource balances.
 		title_box.visible = get_viewport_rect().size.x >= 700.0
@@ -6077,6 +6121,8 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 		var title_lab := polish_title(fit_label(title, 18 if phone else 22, GOLD, true))
 		title_lab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		title_box.add_child(title_lab)
+		if team_management:
+			title_box.add_child(fit_label(ensure_club_name(), 10 if phone else 12, TEXT, true))
 	if not equipped_badges.is_empty():
 		var badges_lab := fit_label(equipped_badge_text(), 10 if phone else 11, GOLD, true)
 		badges_lab.tooltip_text = "已裝備徽章（最多兩枚）"
@@ -6087,7 +6133,7 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 	# The screen title remains; details already appear in the page body.
 	sub_lab.visible = not is_handheld()
 	title_box.add_child(sub_lab)
-	if title == "編隊" and not is_handheld():
+	if title in ["編隊", "管理球隊"] and not is_handheld() and not team_management:
 		top_row.add_child(compact_combo_chip())
 	if stage >= 3 and stage != 6 and second_team_unlocked:
 		top_row.add_child(team_switch_chip())
@@ -6111,7 +6157,7 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 			top_row.add_child(hud_shortcut("☰", "more", GOLD, func():
 				jump_shortcut(show_more_hub)
 			))
-	if stage > 0 and stage != 3 and stage != 6 and title != "商店":
+	if stage > 0 and stage != 3 and stage != 6 and title != "商店" and not team_management:
 		top_row.add_child(page_back_chip(stage))
 
 	var content := VBoxContainer.new()
@@ -6132,7 +6178,10 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 	scroll.add_child(content)
 	bind_scroll_child_width(scroll, content)
 	fill_scroll_body(content)
-	if show_dock and stage >= 3 and stage < 6:
+	# The team-management flow uses the full landscape canvas, matching the
+	# dedicated roster-board layout. Its own back button and tabs replace the
+	# five-item global dock while browsing roster, vault, tactics and players.
+	if show_dock and stage >= 3 and stage < 6 and active_menu not in ["roster", "vault", "tactics"]:
 		page.add_child(bottom_navigation())
 	# A short reveal hides the single-frame construction jump. Heavy collections
 	# populate through their virtual grid after this shell is already visible.
@@ -6862,7 +6911,9 @@ func opponent_starting_five(opponent: Dictionary) -> Array[Dictionary]:
 
 func fill_scroll_body(content: Control) -> void:
 	# Let short pages keep their natural height rather than stretching every card.
-	content.size_flags_vertical = Control.SIZE_SHRINK_BEGIN if is_handheld() else Control.SIZE_EXPAND_FILL
+	# Team management is a purpose-built landscape workspace. It must consume the
+	# available canvas or the starter cards collapse to their minimum height.
+	content.size_flags_vertical = Control.SIZE_EXPAND_FILL if active_menu in ["roster", "vault", "tactics"] else (Control.SIZE_SHRINK_BEGIN if is_handheld() else Control.SIZE_EXPAND_FILL)
 
 
 func match_prep_roster_col(title: String, players: Array, accent: Color, on_player: Callable, footer_label: String, footer_action: Callable, start_index := -1, subtitle := "") -> Control:
@@ -13017,11 +13068,12 @@ func card_plate_label(text_value: String, font_px: int, color: Color, _display :
 	lab.reset_size()
 	return lab
 
-func lobby_player_card(player: Dictionary, _starter: bool, index := -1, swap_mode := false, card_w := 96, on_press := Callable(), card_h_override := -1, footer_text := "") -> Control:
+func lobby_player_card(player: Dictionary, _starter: bool, index := -1, swap_mode := false, card_w := 96, on_press := Callable(), card_h_override := -1, footer_text := "", compact_scale := true) -> Control:
 	# The compact mobile layout uses the same artwork and typography hierarchy at
 	# 75% of the former card footprint across home, roster, scout and markets.
-	card_w = maxi(40, roundi(float(card_w) * 0.75))
-	if card_h_override > 0:
+	if compact_scale:
+		card_w = maxi(40, roundi(float(card_w) * 0.75))
+	if compact_scale and card_h_override > 0:
 		card_h_override = maxi(58, roundi(float(card_h_override) * 0.75))
 	var selected := (swap_mode and index == selected_foundation) or (roster_batch_mode and roster_batch_selected.has(str(index)))
 	var swapping := swap_mode and index == swap_pick
@@ -13384,6 +13436,266 @@ func show_result_hub() -> void:
 	var content := begin_screen("結算", "打完才會留下比分與 MVP", 4)
 	content.add_child(hub_tile("還沒開打", "先去賽前看今晚對手", "自動播四節 · 技能特寫", ORANGE, func(): show_match_prep(), {}))
 
+func roster_visual_tabs(active: String) -> Control:
+	var row := HBoxContainer.new()
+	row.name = "RosterVisualTabs"
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_theme_constant_override("separation", 3)
+	for spec: Array in [["先發陣容", "roster", func(): show_roster()], ["持有球員", "vault", func(): show_card_vault()], ["戰力分析", "tactics", func(): open_sub(show_roster, show_tactics)]]:
+		var title := str(spec[0])
+		var key := str(spec[1])
+		var action: Callable = spec[2]
+		var tab := roster_filter_chip(title, active == key, action)
+		tab.name = "RosterTab_%s" % key
+		tab.custom_minimum_size = touch_minimum(Vector2(112, 34))
+		tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		tab.add_theme_font_size_override("font_size", 14 if is_handheld() else 13)
+		row.add_child(tab)
+	return row
+
+func roster_board_target_height() -> float:
+	# 16:9 phones get the same visual proportions as the approved mockup. Shorter
+	# devices scale the workspace down instead of making the whole page scroll.
+	return clampf(content_view_h() - 126.0, 214.0, 304.0)
+
+func reference_vault_filter_bar() -> Control:
+	# The combined roster screen only exposes the four decisions players make
+	# most often. Detailed origin filters remain on the full collection screen.
+	var row := HBoxContainer.new()
+	row.name = "ReferenceVaultFilters"
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_theme_constant_override("separation", 4)
+	row.add_child(roster_filter_chip("全部", vault_filters_clear(), func():
+		vault_filter_pos = ""
+		vault_filter_origin = ""
+		vault_filter_ovr = 0
+		vault_filter_tier = ""
+		show_roster()
+	))
+	row.add_child(roster_filter_chip("排序：" + vault_sort_label(), false, func():
+		var modes := ["ovr_desc", "ovr_asc", "salary_desc", "name", "tier"]
+		var at := modes.find(vault_sort_mode)
+		vault_sort_mode = modes[(at + 1) % modes.size()]
+		show_roster()
+	))
+	var tier_names := {"": "稀有度", "cyan": "青卡", "green": "綠卡", "blue": "藍卡", "red": "紅卡", "purple": "紫卡", "gold": "金卡", "diamond": "鑽卡"}
+	row.add_child(roster_filter_chip(("位置：" + vault_filter_pos) if not vault_filter_pos.is_empty() else "位置", not vault_filter_pos.is_empty(), func():
+		var positions := ["", "PG", "SG", "SF", "PF", "C"]
+		var at := positions.find(vault_filter_pos)
+		vault_filter_pos = positions[(at + 1) % positions.size()]
+		vault_filter_kind = "pos"
+		show_roster()
+	))
+	row.add_child(roster_filter_chip(str(tier_names.get(vault_filter_tier, "稀有度")), not vault_filter_tier.is_empty(), func():
+		var tiers := ["", "cyan", "green", "blue", "red", "purple", "gold", "diamond"]
+		var at := tiers.find(vault_filter_tier)
+		vault_filter_tier = tiers[(at + 1) % tiers.size()]
+		vault_filter_kind = "tier"
+		show_roster()
+	))
+	return row
+
+func roster_club_banner() -> Control:
+	var shell := PanelContainer.new()
+	shell.name = "RosterClubBanner"
+	shell.custom_minimum_size = Vector2(0, 64 if is_handheld() else 78)
+	shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shell.add_theme_stylebox_override("panel", panel_style(Color("07192bf0"), Color("214968"), 12, 1))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	shell.add_child(padded(row, 8))
+	var logo := team_logo_rect(ensure_club_logo_id(), 52 if is_handheld() else 62, club_name)
+	logo.custom_minimum_size = Vector2(52 if is_handheld() else 62, 52 if is_handheld() else 62)
+	logo.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(logo)
+	var words := VBoxContainer.new()
+	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	words.alignment = BoxContainer.ALIGNMENT_CENTER
+	words.add_child(fit_label(ensure_club_name(), 20 if is_handheld() else 24, TEXT, true))
+	words.add_child(fit_label("戰術風格：快速轉換  ·  %s" % current_league, 11, MUTED, false))
+	row.add_child(words)
+	return shell
+
+func roster_visual_summary() -> Control:
+	var shell := PanelContainer.new()
+	shell.name = "RosterVisualSummary"
+	shell.custom_minimum_size = Vector2(0, 58 if is_handheld() else 66)
+	shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shell.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	shell.add_theme_stylebox_override("panel", panel_style(Color("081827e8"), Color("315171"), 12, 1))
+	var row := HBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_theme_constant_override("separation", 0)
+	shell.add_child(padded(row, 8))
+	var cap := maxi(1, salary_cap)
+	var used := roster_salary()
+	var avg_ovr := 0
+	if not team_players.is_empty():
+		var total := 0
+		for i in mini(team_players.size(), 5):
+			total += effective_ovr(team_players[i], i)
+		avg_ovr = roundi(float(total) / float(mini(team_players.size(), 5)))
+	var entries: Array = [
+		["先發平均戰力", "%d" % avg_ovr, GOLD, "res://assets/ui/icons/nav_roster.png"],
+		["登錄名單", "%d／%d" % [team_players.size(), roster_limit()], CYAN, "res://assets/ui/icons/nav_roster.png"],
+		["薪資占用", "%d／%d" % [used, cap], GREEN if used <= cap else RED, "res://assets/ui/hud/budget.png"],
+		["保管箱", "%d／%d" % [card_inventory.size(), vault_capacity()], PURPLE, "res://assets/ui/icons/nav_vault.png"],
+	]
+	for i in entries.size():
+		var entry: Array = entries[i]
+		var item := HBoxContainer.new()
+		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		item.alignment = BoxContainer.ALIGNMENT_CENTER
+		item.add_theme_constant_override("separation", 7)
+		var icon_tex := load_png_tex(str(entry[3]))
+		if icon_tex != null:
+			var icon := TextureRect.new()
+			icon.texture = icon_tex
+			icon.custom_minimum_size = Vector2(28, 28)
+			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			item.add_child(icon)
+		var words := VBoxContainer.new()
+		words.custom_minimum_size.x = 96 if is_handheld() else 118
+		words.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		words.add_theme_constant_override("separation", 1)
+		var caption := fit_label(str(entry[0]), 11, MUTED, true, HORIZONTAL_ALIGNMENT_LEFT)
+		caption.name = "RosterSummaryLabel_%d" % i
+		words.add_child(caption)
+		var value_font := (12 if i == 2 else 14) if is_handheld() else 16
+		var value := fit_label(str(entry[1]), value_font, entry[2] as Color, true, HORIZONTAL_ALIGNMENT_LEFT)
+		value.name = "RosterSummaryValue_%d" % i
+		words.add_child(value)
+		item.add_child(words)
+		row.add_child(item)
+		if i < entries.size() - 1:
+			var divider := ColorRect.new()
+			divider.custom_minimum_size = Vector2(1, 30)
+			divider.color = Color("315171")
+			divider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			row.add_child(divider)
+	return shell
+
+func reference_roster_board() -> Control:
+	var board := PanelContainer.new()
+	board.name = "ReferenceRosterBoard"
+	board.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	board.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	board.custom_minimum_size.y = roster_board_target_height()
+	board.add_theme_stylebox_override("panel", panel_style(Color("061525f2"), Color("24496b"), 16, 1))
+	var columns := HBoxContainer.new()
+	columns.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	columns.add_theme_constant_override("separation", 8)
+	board.add_child(padded(columns, 8))
+	var lineup := VBoxContainer.new()
+	lineup.name = "StarterLineupPanel"
+	lineup.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lineup.size_flags_stretch_ratio = 1.42
+	lineup.add_theme_constant_override("separation", 4)
+	var lineup_head := HBoxContainer.new()
+	lineup_head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var lineup_title := fit_label("先發陣容", 16, GOLD, true)
+	lineup_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lineup_head.add_child(lineup_title)
+	var edit_lineup := action_button("編輯陣容", Color("254e6b"), func(): show_roster(true), Vector2(92, 32))
+	edit_lineup.add_theme_font_size_override("font_size", 11)
+	lineup_head.add_child(edit_lineup)
+	lineup.add_child(lineup_head)
+	lineup.tooltip_text = "五個先發位置依序為 PG／SG／SF／PF／C；點卡查看球員資料。"
+	var starters := HBoxContainer.new()
+	starters.name = "StarterCards"
+	starters.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	starters.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	starters.alignment = BoxContainer.ALIGNMENT_CENTER
+	starters.add_theme_constant_override("separation", 4)
+	lineup.add_child(starters)
+	var card_h := clampi(roundi(roster_board_target_height() - 106.0), 138, 196)
+	var card_w := clampi(roundi(float(card_h) * 0.56), 78, 102)
+	for i in mini(5, team_players.size()):
+		var player: Dictionary = team_players[i]
+		var player_index := i
+		starters.add_child(lobby_player_card(player, true, player_index, false, card_w, func(): show_owned_player(player_index), card_h, str(player.get("skill_name", "即戰力")), false))
+	if team_players.size() < 5:
+		starters.add_child(fit_label("先補滿五個先發位置", 12, ORANGE, true))
+	var strength := HBoxContainer.new()
+	strength.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	strength.add_theme_constant_override("separation", 8)
+	var auto_lineup := action_button("自動編隊", Color("254e6b"), func(): optimize_current_lineup(), Vector2(106, 34))
+	auto_lineup.add_theme_font_size_override("font_size", 12)
+	strength.add_child(auto_lineup)
+	var strength_gap := Control.new()
+	strength_gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	strength.add_child(strength_gap)
+	strength.add_child(fit_label("先發平均戰力", 12, MUTED, true))
+	var starter_strength := 0
+	var starter_count := mini(team_players.size(), 5)
+	for i in mini(team_players.size(), 5):
+		starter_strength += effective_ovr(team_players[i], i)
+	var starter_average := roundi(float(starter_strength) / float(starter_count)) if starter_count > 0 else 0
+	strength.add_child(fit_label("%d" % starter_average, 18, GOLD, true))
+	lineup.add_child(strength)
+	columns.add_child(lineup)
+	var divider := ColorRect.new()
+	divider.custom_minimum_size = Vector2(1, 0)
+	divider.color = Color("24496b")
+	divider.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	columns.add_child(divider)
+	var vault := VBoxContainer.new()
+	vault.name = "ReferenceVaultPanel"
+	vault.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vault.size_flags_stretch_ratio = 1.0
+	vault.clip_contents = true
+	vault.add_theme_constant_override("separation", 4)
+	var vault_head := HBoxContainer.new()
+	vault_head.add_child(fit_label("保管箱", 16, TEXT, true))
+	vault_head.add_spacer(false)
+	vault_head.add_child(fit_label("%d／%d" % [card_inventory.size(), vault_capacity()], 13, CYAN, true, HORIZONTAL_ALIGNMENT_RIGHT))
+	vault.add_child(vault_head)
+	vault.add_child(reference_vault_filter_bar())
+	var visible_indices: Array[int] = []
+	for idx in sorted_vault_indices():
+		if idx < 0 or idx >= card_inventory.size() or not (card_inventory[idx] is Dictionary):
+			continue
+		var raw: Dictionary = to_game_player(card_inventory[idx])
+		if not vault_matches_filter(raw):
+			continue
+		visible_indices.append(idx)
+	if visible_indices.is_empty():
+		var empty := VBoxContainer.new()
+		empty.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		empty.alignment = BoxContainer.ALIGNMENT_CENTER
+		empty.add_child(fit_label("保管箱目前沒有符合條件的球員", 12, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
+		vault.add_child(empty)
+	else:
+		var vault_card_w := 60
+		var vault_scroll := ScrollContainer.new()
+		vault_scroll.name = "ReferenceVaultScroll"
+		vault_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		vault_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		vault_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		vault_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+		vault_scroll.scroll_deadzone = 12 if is_handheld() else 0
+		var virtual_grid := VirtualCardGrid.new()
+		virtual_grid.name = "ReferenceVaultVirtualGrid"
+		virtual_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		virtual_grid.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		virtual_grid.configure(visible_indices, func(index: int): return reference_vault_card(index, vault_card_w), Vector2(vault_card_w + 4, 98))
+		vault_scroll.add_child(virtual_grid)
+		vault.add_child(vault_scroll)
+	columns.add_child(vault)
+	return board
+
+func reference_vault_card(index: int, card_w: int) -> Control:
+	if index < 0 or index >= card_inventory.size() or not (card_inventory[index] is Dictionary):
+		return Control.new()
+	var card: Dictionary = to_game_player(card_inventory[index])
+	var vault_index := index
+	return lobby_player_card(card, false, -1, false, card_w, func():
+		show_player_sheet(card, func(): show_roster(), func(): place_from_vault(vault_index), "登錄球隊")
+	, 92, "", false)
+
 func show_roster(edit_mode: Variant = null) -> void:
 	active_menu = "roster"
 	if typeof(edit_mode) == TYPE_BOOL:
@@ -13399,26 +13711,32 @@ func show_roster(edit_mode: Variant = null) -> void:
 			team_players[i] = refresh_stored_player(team_players[i])
 	ensure_photographed_starters()
 	var hint := "點兩張卡互換。先點人再放保管箱或釋出。" if roster_editing else "點卡看資料與養成。要換人先按編輯陣容。"
-	var content := begin_screen("編隊", hint, 4)
+	var content := begin_screen("管理球隊", hint, 4)
+	content.add_child(roster_visual_tabs("roster"))
 	var chips := HBoxContainer.new()
 	chips.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	chips.add_theme_constant_override("separation", 6)
 	content.add_child(chips)
-	chips.visible = not is_handheld() or roster_filters_visible
+	chips.visible = roster_editing and (not is_handheld() or roster_filters_visible)
 	chips.add_child(roster_count_pill("名單", "%d／%d" % [team_players.size(), roster_limit()], GOLD))
 	chips.add_child(roster_count_pill("保管箱", str(card_inventory.size()), CYAN))
 	chips.add_child(roster_count_pill("外援", "%d／%d" % [foreigner_count(), foreigner_limit()], ORANGE))
 	chips.add_child(roster_count_pill("外籍生", "%d／%d" % [foreign_student_count(), foreign_student_limit()], PURPLE))
-	if not is_handheld() or roster_filters_visible:
+	if roster_editing and (not is_handheld() or roster_filters_visible):
 		content.add_child(roster_filter_bar())
-	content.add_child(phone_roster_board(roster_editing) if is_handheld() and roster_filters_clear() else lobby_roster_board(roster_editing))
+	if not roster_editing and roster_filters_clear():
+		content.add_child(reference_roster_board())
+	else:
+		content.add_child(phone_roster_board(roster_editing) if is_handheld() and roster_filters_clear() else lobby_roster_board(roster_editing))
+	if roster_editing:
+		content.add_child(roster_visual_summary())
 	if is_handheld() and not roster_filters_visible:
 		content.move_child(chips, content.get_child_count() - 1)
 	var actions := HBoxContainer.new()
 	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	actions.size_flags_vertical = Control.SIZE_SHRINK_END
 	actions.add_theme_constant_override("separation", 8)
-	if is_handheld():
+	if is_handheld() and roster_editing:
 		var filter_btn := action_button("收起篩選" if roster_filters_visible else "篩選／名單", Color("254e6b"), func():
 			roster_filters_visible = not roster_filters_visible
 			show_roster()
@@ -13452,20 +13770,25 @@ func show_roster(edit_mode: Variant = null) -> void:
 		auto_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		auto_btn.tooltip_text = "依 PG／SG／SF／PF／C 適性與 OVR 自動安排先發，其他球員留在替補。"
 		actions.add_child(auto_btn)
-		var done_btn := gold_action_button("完成編輯", func(): show_roster(false))
+		var done_btn := gold_action_button("⚑  儲存陣容", func():
+			save_game()
+			show_roster(false)
+			flash_notice("陣容已儲存")
+		)
 		done_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		actions.add_child(done_btn)
 	else:
-		var edit_btn := gold_action_button("編輯陣容", func(): show_roster(true))
-		edit_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		actions.add_child(edit_btn)
-	var tactic_btn := gold_action_button("戰術", func(): open_sub(show_roster, show_tactics))
-	tactic_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions.add_child(tactic_btn)
-	if not roster_editing:
-		var vault_btn := gold_action_button("保管箱", func(): show_card_vault())
-		vault_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		actions.add_child(vault_btn)
+		var summary := roster_visual_summary()
+		summary.size_flags_stretch_ratio = 3.2
+		actions.add_child(summary)
+		var save_btn := gold_action_button("⚑  儲存陣容", func():
+			save_game()
+			flash_notice("陣容已儲存")
+		)
+		save_btn.name = "SaveLineupButton"
+		save_btn.custom_minimum_size = Vector2(252, 58 if is_handheld() else 66)
+		save_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
+		actions.add_child(save_btn)
 	if roster_editing:
 		var pick_name := ""
 		if selected_foundation >= 0 and selected_foundation < team_players.size():
@@ -13737,6 +14060,13 @@ func vault_filter_bar() -> Control:
 	var row := HBoxContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_theme_constant_override("separation", 4)
+	row.add_child(roster_filter_chip("全部", vault_filters_clear(), func():
+		vault_filter_pos = ""
+		vault_filter_origin = ""
+		vault_filter_ovr = 0
+		vault_filter_tier = ""
+		show_card_vault()
+	))
 	row.add_child(roster_filter_chip("排序：" + vault_sort_label(), false, func(): cycle_vault_sort()))
 	row.add_child(roster_filter_chip("位置", vault_filter_kind == "pos", func():
 		vault_filter_kind = "pos"
@@ -13750,7 +14080,7 @@ func vault_filter_bar() -> Control:
 		vault_filter_kind = "ovr"
 		show_card_vault()
 	))
-	row.add_child(roster_filter_chip("卡色", vault_filter_kind == "tier", func():
+	row.add_child(roster_filter_chip("稀有度", vault_filter_kind == "tier", func():
 		vault_filter_kind = "tier"
 		show_card_vault()
 	))
@@ -13840,7 +14170,8 @@ func vault_player_entry(idx: int, card_w: int) -> Control:
 
 func show_card_vault() -> void:
 	active_menu = "vault"
-	var content := begin_screen("保管箱", "箱內不算薪資帽。點卡登錄；滿員或超帽時點卡換人。", 4)
+	var content := begin_screen("管理球隊", "保管箱不計入薪資帽；點卡可查看資料或登錄球隊。", 4)
+	content.add_child(roster_visual_tabs("vault"))
 	content.add_child(combo_status_banner(true))
 	var chips := HBoxContainer.new()
 	chips.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -13888,6 +14219,7 @@ func show_card_vault() -> void:
 			inner = virtual_grid
 	board.add_child(padded(inner, 8))
 	content.add_child(board)
+	content.add_child(roster_visual_summary())
 	if is_handheld():
 		content.move_child(board, 0)
 		if vault_filters_visible:

@@ -751,6 +751,17 @@ func test_purchase_validation() -> void:
 	var verifier: String = game.pkce_verifier()
 	check(verifier.length() >= 43 and verifier.length() <= 128 and verifier != game.pkce_verifier(), "PKCE verifier is valid-length and fresh")
 	check(game.pkce_challenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk") == "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM", "PKCE S256 matches RFC example")
+	var callback: String = game.mobile_auth_url_from_data({"scheme":"taiwanbasketballgm", "host":"auth", "path":"/callback", "query":"code=fixture"})
+	check(callback == "taiwanbasketballgm://auth/callback?code=fixture", "mobile OAuth consumes the iOS deeplink event payload directly")
+	game.clear_pending_oauth()
+	game.oauth_provider = "google"
+	game.oauth_code_verifier = verifier
+	game.persist_pending_oauth()
+	game.oauth_provider = ""
+	game.oauth_code_verifier = ""
+	game.restore_pending_oauth()
+	check(game.oauth_provider == "google" and game.oauth_code_verifier == verifier, "mobile OAuth survives an iOS process restart during browser login")
+	game.clear_pending_oauth()
 
 func test_draft_and_acquisition() -> void:
 	await fresh_game()
