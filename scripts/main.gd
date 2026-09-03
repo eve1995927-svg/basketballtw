@@ -133,8 +133,9 @@ const LEGAL_NOTICE_TITLE := "遊戲聲明與權利說明"
 const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官方聯盟或球隊產品。\n\n遊戲中部分隊名、球員名稱與賽事名稱參考真實籃球資訊，並非全部虛構。球員能力、卡片稀有度、遊戲薪資、交易、陣容及比賽結果屬於遊戲模擬設定，不代表真實人物的實際表現、合約、行為或官方評價。\n\n本遊戲與任何真實職業籃球聯盟、球隊或球員無官方授權、合作、贊助或背書關係。\n\n遊戲所涉及的名稱、商標、隊徽、照片、肖像及其他素材之相關權利，仍屬各該權利人。本聲明不構成素材使用授權，也不表示相關使用當然合法或免除依法應負的責任。\n\n本說明不要求使用者放棄依法享有的權利。\n\n更新日期：2026 年 8 月 31 日"
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
-const APP_VERSION := "0.9.16"
-const APP_BUILD := 153
+const APP_VERSION := "0.9.17"
+const APP_BUILD := 154
+const ONLINE_ONLY := true
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const STYLIZED_ART := [
 	"res://assets/art/hero_pg.png",
@@ -11266,7 +11267,7 @@ func show_entering(message := "正在進入…") -> void:
 	sheet.add_child(padded(box, 28))
 	box.add_child(polish_title(plain_label("台籃模擬器", 24, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)))
 	box.add_child(kicker_label(message, 14, TEXT))
-	if pending_enter_after_auth or not auth_access.is_empty():
+	if not ONLINE_ONLY and (pending_enter_after_auth or not auth_access.is_empty()):
 		box.add_child(cloud_status_panel())
 		box.add_child(action_button("先使用本機存檔", MUTED, func():
 			cancel_cloud_requests()
@@ -11357,15 +11358,13 @@ func show_login() -> void:
 		body.add_child(bind_account_button("進入球場", GOLD, Color("1a1200"), func(): enter_after_release_gate()))
 		body.add_child(bind_account_button("登出", Color("3a2428"), TEXT, func(): logout_account()))
 	else:
-		var offline := bind_account_button("先離線遊玩（不需登入）", GOLD, Color("1a1200"), func(): continue_after_login())
-		offline.name = "OfflinePlayButton"
-		body.add_child(offline)
+		body.add_child(wrap_label("本遊戲為線上帳號制，需要網路連線並登入才能進入球場。", 14, GOLD))
 		body.add_child(bind_account_button("使用 Google 登入", Color("f4f4f4"), Color("111111"), func(): start_oauth("google"), "res://assets/ui/logos/google.svg"))
 		if not OS.has_feature("web"):
 			body.add_child(bind_account_button("使用 Apple 登入", Color("111111"), Color("f4f4f4"), func(): start_oauth("apple")))
 		else:
 			body.add_child(wrap_label("網頁版會使用安全的 HTTPS 回呼；若瀏覽器阻擋，請改用信箱驗證碼。", 18, MUTED))
-		body.add_child(wrap_label("離線進度保存在此瀏覽器，請勿清除網站資料。" if OS.has_feature("web") else "離線進度只存在這台裝置，移除 App 會遺失。", 18, MUTED))
+		body.add_child(wrap_label("球隊、球員、資源與賽季進度以雲端帳號為準。", 14, MUTED))
 		body.add_child(label("或用信箱驗證碼", 12, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
 		var mail := text_field("電子信箱", login_email)
 		mail.custom_minimum_size = touch_minimum(Vector2(0, 40))
@@ -11749,8 +11748,16 @@ func continue_after_login() -> void:
 	show_save_slots()
 
 func enter_after_release_gate() -> void:
+	if not is_logged_in():
+		show_login()
+		flash_notice("請先登入線上帳號")
+		return
 	pending_enter_after_auth = true
-	finish_auth_enter()
+	release_gate_pending = false
+	release_gate_checked = false
+	release_gate_blocked = false
+	show_entering("正在確認帳號與雲端存檔…")
+	apply_access_token(auth_access)
 
 func show_welcome_back() -> void:
 	welcome_open = true
@@ -16471,6 +16478,10 @@ func _on_cloud_http(result: int, code: int, headers: PackedStringArray, body: Pa
 	if failed and kind in ["pull", "pull_slots", "pull_account"] and code != 404:
 		# Do not fall back to an old save on a network error, or upload local defaults.
 		cloud_queue.clear()
+		if ONLINE_ONLY:
+			pending_enter_after_auth = false
+			show_login()
+			flash_notice("無法讀取雲端存檔，請確認網路後再試")
 		return
 	if invalid_read:
 		call_deferred("_cloud_flush")
@@ -16521,8 +16532,9 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 		release_gate_pending = false
 		release_gate_checked = true
 		if code < 200 or code >= 300:
-			cloud_status = "版本服務暫時無法讀取，先保留目前版本；離線遊玩不受影響。"
-			finish_auth_enter()
+			pending_enter_after_auth = false
+			show_login()
+			flash_notice("無法確認遊戲版本，請確認網路後再試")
 			return
 		var config_rows: Variant = JSON.parse_string(payload)
 		if config_rows is Dictionary:
@@ -16558,15 +16570,17 @@ func _dispatch_cloud_http(kind: String, code: int, payload: String) -> void:
 		return
 	if kind == "economy_bootstrap":
 		if code < 200 or code >= 300:
-			cloud_status = "雲端資源尚未同步，本機資料保留；請稍後重試。"
-			finish_auth_enter()
+			pending_enter_after_auth = false
+			show_login()
+			flash_notice("無法同步雲端資源，請確認網路後再試")
 			return
 		var account_balance: Variant = JSON.parse_string(payload)
 		if account_balance is Array and not account_balance.is_empty():
 			account_balance = account_balance[0]
 		if not (account_balance is Dictionary):
-			cloud_status = "雲端資源回應格式錯誤，本機資料保留。"
-			finish_auth_enter()
+			pending_enter_after_auth = false
+			show_login()
+			flash_notice("雲端資源回應不完整，請稍後再試")
 			return
 		budget_million = maxi(0, int(account_balance.get("budget_million", budget_million)))
 		gold = maxi(0, int(account_balance.get("gold", gold)))
