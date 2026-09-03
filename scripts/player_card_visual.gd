@@ -22,17 +22,77 @@ class RaritySparkles extends Control:
 			draw_line(p - Vector2(0, r), p + Vector2(0, r), glow, 1.2, true)
 			draw_circle(p, r * 0.42, core)
 
-class TrainingGlow extends Control:
+class CourtSparkles extends Control:
+	var diamond := false
+	var elapsed := 0.0
+	var redraw_elapsed := 0.0
+
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
 		set_process(true)
 		queue_redraw()
-	func _process(_delta: float) -> void:
-		queue_redraw()
+
+	func _process(delta: float) -> void:
+		elapsed += delta
+		redraw_elapsed += delta
+		# Twenty redraws per second is enough for a gentle twinkle at card size.
+		if redraw_elapsed >= 0.05:
+			redraw_elapsed = 0.0
+			queue_redraw()
+
 	func _draw() -> void:
-		var pulse := 0.62 + 0.22 * sin(Time.get_ticks_msec() / 420.0)
-		var color := Color(0.55, 0.95, 1.0, pulse)
-		draw_rect(Rect2(2, 2, size.x - 4, size.y - 4), color, false, 1.6)
+		var points := [
+			Vector2(0.14, 0.16), Vector2(0.31, 0.31), Vector2(0.76, 0.17),
+			Vector2(0.88, 0.39), Vector2(0.20, 0.57), Vector2(0.69, 0.51),
+		]
+		var glow := Color("ccefff") if diamond else Color("ffe49a")
+		for i in points.size():
+			var speed := 0.72 + float(i % 3) * 0.17
+			var phase := elapsed * speed + float(i) * 1.37
+			var alpha := 0.20 + 0.42 * (0.5 + 0.5 * sin(phase * TAU))
+			var drift := Vector2(sin(phase) * 1.4, cos(phase * 0.73) * 0.9)
+			var p: Vector2 = points[i] * size + drift
+			var radius := 2.1 if i % 2 == 0 else 1.4
+			draw_circle(p, radius * 2.8, Color(glow, alpha * 0.10))
+			draw_line(p - Vector2(radius, 0), p + Vector2(radius, 0), Color(glow, alpha), 0.8, true)
+			draw_line(p - Vector2(0, radius), p + Vector2(0, radius), Color(glow, alpha), 0.8, true)
+
+class TrainingGlow extends Control:
+	var glow_layers: Array[StyleBoxFlat] = []
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# A fixed stack of rounded inset borders creates a gold-to-ivory gradient.
+		# It lives on the authored 144x212 canvas, so the frame and glow always
+		# receive the exact same scale and cannot drift at different UI sizes.
+		glow_layers = [
+			glow_style(Color("b978241f"), 2, 22),
+			glow_style(Color("e4a63e42"), 2, 21),
+			glow_style(Color("ffd76a70"), 2, 19),
+			glow_style(Color("ffe79fa8"), 2, 18),
+			glow_style(Color("fff4cce8"), 1, 17),
+		]
+		queue_redraw()
+		modulate.a = 0.58
+		var pulse := create_tween().set_loops()
+		pulse.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+		pulse.tween_property(self, "modulate:a", 1.0, 0.72)
+		pulse.tween_property(self, "modulate:a", 0.58, 0.72)
+
+	func glow_style(color: Color, width: int, radius: int) -> StyleBoxFlat:
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0, 0, 0, 0)
+		style.border_color = color
+		style.set_border_width_all(width)
+		style.set_corner_radius_all(radius)
+		style.anti_aliasing = true
+		return style
+
+	func _draw() -> void:
+		var insets := [1.0, 2.5, 4.0, 5.5, 7.0]
+		for i in glow_layers.size():
+			var inset: float = insets[i]
+			draw_style_box(glow_layers[i], Rect2(inset, inset, size.x - inset * 2.0, size.y - inset * 2.0))
 
 
 class StatBadge extends Control:
@@ -96,12 +156,31 @@ func configure(data: Dictionary, fonts: Dictionary) -> void:
 	add_child(canvas)
 	# The frame PNG already defines the card silhouette. A full rectangular plate
 	# showed through its transparent corners as black, so the canvas stays clear.
-	add_art(canvas, "Portrait", data.portrait, Rect2(144 * 0.11, 212 * 0.06, 144 * 0.78, 212 * 0.72), TextureRect.STRETCH_KEEP_ASPECT_COVERED)
+	var portrait_rect := Rect2(144 * 0.11, 212 * 0.06, 144 * 0.78, 212 * 0.72)
 	var rarity := str(data.get("tier", ""))
-	if rarity in ["purple", "diamond"]:
+	var court: Texture2D = data.get("court")
+	if court != null:
+		var court_art := add_art(canvas, "CourtBackground", court, portrait_rect, TextureRect.STRETCH_KEEP_ASPECT_COVERED)
+		court_art.modulate = data.get("court_tint", Color.WHITE)
+		var court_shade := ColorRect.new()
+		court_shade.name = "CourtShade"
+		court_shade.position = portrait_rect.position
+		court_shade.size = portrait_rect.size
+		court_shade.color = Color(0.015, 0.025, 0.055, 0.20)
+		court_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		canvas.add_child(court_shade)
+		if rarity in ["gold", "diamond"]:
+			var court_sparkles := CourtSparkles.new()
+			court_sparkles.name = "PremiumCourtSparkles"
+			court_sparkles.diamond = rarity == "diamond"
+			court_sparkles.position = portrait_rect.position
+			court_sparkles.size = portrait_rect.size
+			canvas.add_child(court_sparkles)
+	add_art(canvas, "Portrait", data.portrait, portrait_rect, TextureRect.STRETCH_KEEP_ASPECT_COVERED)
+	if rarity == "purple":
 		var sparkles := RaritySparkles.new()
 		sparkles.name = "RaritySparkles"
-		sparkles.diamond = rarity == "diamond"
+		sparkles.diamond = false
 		sparkles.position = Vector2.ZERO
 		sparkles.size = DESIGN_SIZE
 		canvas.add_child(sparkles)
@@ -125,7 +204,7 @@ func configure(data: Dictionary, fonts: Dictionary) -> void:
 		footer_gradient.fill_to = Vector2(0, 1)
 	add_art(canvas, "FooterGradient", footer_gradient, Rect2(16, 111, 112, 95))
 	add_art(canvas, "OriginalFrame", data.frame, Rect2(Vector2.ZERO, DESIGN_SIZE)).modulate = data.frame_tint
-	# Move the large emblem above the centered text; all lower badges stay below the face.
+	# Keep the original large team logo on the left as a separate card element.
 	if data.logo != null:
 		add_art(canvas, "OriginLogo", data.logo, Rect2(13, 103, 36, 36), TextureRect.STRETCH_KEEP_ASPECT_CENTERED)
 	elif not str(data.logo_mark).is_empty():
@@ -147,12 +226,14 @@ func configure(data: Dictionary, fonts: Dictionary) -> void:
 	label(position_badge, "Position", position_text, Rect2(6, 0, pos_width - 12, 23), fonts.kicker, 17, Color("e6d9bd"))
 	var ovr := StatBadge.new()
 	ovr.name = "OvrBadge"
-	ovr.position = Vector2(100, 9)
+	# Lift the complete OVR plate slightly; the original top gap was visually
+	# larger than the position and training badges.
+	ovr.position = Vector2(100, 6)
 	ovr.size = Vector2(33, 40)
 	ovr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	canvas.add_child(ovr)
-	label(ovr, "Caption", "OVR", Rect2(3, 3, 27, 9), fonts.kicker, 8, Color("b8a98c"))
-	label(ovr, "Number", str(data.ovr), Rect2(3, 12, 27, 26), fonts.number, 25)
+	label(ovr, "Caption", "OVR", Rect2(3, 1, 27, 9), fonts.kicker, 8, Color("b8a98c"))
+	label(ovr, "Number", str(data.ovr), Rect2(3, 9, 27, 28), fonts.number, 25)
 	if not str(data.identity).is_empty():
 		label(canvas, "Identity", data.identity, Rect2(87, 94, 44, 18), fonts.bold, 12, Color("ead9fa"))
 	if not str(data.origin).is_empty():

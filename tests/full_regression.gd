@@ -26,6 +26,7 @@ func run() -> void:
 	await test_free_agent_signing()
 	await test_economy_update()
 	await test_economy()
+	await test_store_cosmetics()
 	await test_draft_and_acquisition()
 	await test_slot_isolation()
 	test_purchase_validation()
@@ -58,6 +59,50 @@ func test_no_headline_selection() -> void:
 		var score: Array[int] = MatchSimulator.game({"rating": 76, "offense": 0.2, "defense": 0.2, "pace": 24, "three_rate": 0.38}, {"rating": 75, "offense": 0.2, "defense": 0.2, "pace": 24, "three_rate": 0.36}, rng)
 		scores["%d-%d" % [score[0], score[1]]] = true
 	check(scores.size() >= 4, "repeated matches produce varied scores instead of a fixed result")
+
+func test_store_cosmetics() -> void:
+	await fresh_game()
+	check(game.home_resource_number(39392857) == "3939萬", "home HUD abbreviates eight-digit balances without clipping")
+	check(game.home_resource_number(123456789) == "1.2億", "home HUD abbreviates hundred-million balances")
+	check(game.home_resource_number(1280) == "1280", "home HUD keeps short balances exact")
+	var product_ids: Array = game.store_products().map(func(product: Dictionary): return str(product.id))
+	check(not product_ids.has("pack_rookie") and not product_ids.has("training_glow"), "store does not sell card packs, training glow, or reveal animation")
+	for city_id in ["arena_taipei", "arena_new_taipei", "arena_taichung", "arena_tainan", "arena_kaohsiung", "arena_hualien"]:
+		check(int(game.store_product_by_id(city_id).gold) == 300, "Taiwan city arena costs 300 gold: " + city_id)
+	for virtual_id in ["arena_champion", "arena_neon", "arena_night"]:
+		check(int(game.store_product_by_id(virtual_id).gold) == 500, "virtual arena costs 500 gold: " + virtual_id)
+	game.gold = 1000
+	var champion: Dictionary = game.store_product_by_id("arena_champion")
+	game.activate_store_product(champion)
+	await process_frame
+	check(game.gold == 500, "arena cosmetic deducts its gold price once")
+	check(game.store_cosmetics_owned.has("arena_champion"), "arena cosmetic is permanently recorded as owned")
+	check(game.supporter_theme == "冠軍金色主場", "purchased arena cosmetic is applied immediately")
+	game.activate_store_product(champion)
+	await process_frame
+	check(game.gold == 500, "owned arena cosmetic can be reapplied without another charge")
+	game.set_supporter_theme("賽博龐克主場")
+	await process_frame
+	check(game.supporter_theme == "冠軍金色主場", "locked arena cannot be applied from the showcase shortcut")
+	check(game.active_menu == "store" and game.store_selected_product == "arena_neon", "locked arena shortcut opens the matching store item")
+	game.gold = 5000
+	game.activate_store_product(game.store_product_by_id("vault_plus_10"))
+	await process_frame
+	check(game.vault_capacity() == 30 and game.gold == 4700, "vault upgrade adds 10 slots for 300 gold")
+	game.activate_store_product(game.store_product_by_id("second_team"))
+	await process_frame
+	check(game.second_team_unlocked and game.gold == 4400, "second team unlock costs 300 gold")
+	game.activate_store_product(game.store_product_by_id("event_jones"))
+	await process_frame
+	check(game.jones_pass and game.gold == 3800, "Jones Cup unlock costs 600 gold")
+	var before_monthly: int = game.gold
+	game.complete_purchase("monthly_pass")
+	await process_frame
+	check(game.gold == before_monthly + 400 and game.store_cosmetics_owned.has("arena_monthly"), "monthly pass grants 400 immediate gold and the limited arena")
+	var before_bundle: int = game.gold
+	game.complete_purchase("gold_300")
+	await process_frame
+	check(game.gold == before_bundle + 300, "NT$30 gold bundle grants 300 gold at 1:10")
 
 func test_veteran_and_training_rules() -> void:
 	await fresh_game()
@@ -96,7 +141,32 @@ func test_veteran_and_training_rules() -> void:
 	check(game.training_points == 1 and int(game.team_players[0].get("training_sessions", 0)) == 5, "fifth completed training blocks further attempts")
 	var card: Control = game.lobby_player_card(game.team_players[0], false, 0, false, 96)
 	check(card.find_child("TrainingBadge", true, false) != null and card.find_child("TrainingGlow", true, false) != null, "trained card shows bonus and glow")
+	check(card.find_child("CourtBackground", true, false) != null, "player card places a court behind its cutout portrait")
 	card.free()
+	var gold_card: Control = game.lobby_player_card(veteran, false, -1, false, 96)
+	check(gold_card.find_child("CourtBackground", true, false) != null and gold_card.find_child("PremiumCourtSparkles", true, false) != null, "gold card has a court and subtle premium sparkles")
+	gold_card.free()
+	var diamond_player: Dictionary = game.to_game_player({"name":"鑽石背景測試", "position":"PG", "ovr":90, "locked_prize":true, "tier":"DIAMOND"})
+	var diamond_visual: Control = game.lobby_player_card(diamond_player, false, -1, false, 96)
+	check(diamond_visual.find_child("CourtBackground", true, false) != null and diamond_visual.find_child("PremiumCourtSparkles", true, false) != null, "diamond card has a court and subtle premium sparkles")
+	diamond_visual.free()
+	var promotion_player: Dictionary = game.to_game_player({"name":"升框測試球員", "position":"SG", "ovr":70, "origin_team_id":"sbl_yulon"})
+	promotion_player["match_appearances"] = 3
+	promotion_player["training_sessions"] = 0
+	promotion_player["salary_million"] = game.published_salary(promotion_player)
+	game.team_players[0] = promotion_player
+	game.training_points = 1
+	game.budget_million = 1000
+	game.apply_player_training(0, true)
+	await process_frame
+	check(game.team_players[0].ovr == 71 and game.player_tier_key(game.team_players[0]) == "green", "training threshold promotes gray card to green")
+	check(is_instance_valid(game.card_reveal_modal) and game.card_reveal_modal.name == "TierUpReveal", "card-tier promotion opens its reveal")
+	if is_instance_valid(game.card_reveal_modal):
+		check(game.card_reveal_modal.find_child("OldTierCard", true, false) != null, "tier reveal keeps the old card for the crack transition")
+		check(game.card_reveal_modal.find_child("NewTierCard", true, false) != null, "tier reveal prepares the promoted card")
+		check(game.card_reveal_modal.find_child("TierUpCracks", true, false) != null, "tier reveal includes the light-crack layer")
+		game.close_card_reveal()
+		await process_frame
 
 func test_duplicate_release_and_sort() -> void:
 	await fresh_game()
@@ -1038,6 +1108,12 @@ func open_free_agent_for_layout() -> void:
 	var player: Dictionary = game.cheap_bench_player()
 	game.show_player_sheet(player, game.show_free_agent_market, func(): game.sign_free_agent(player), "確認自由簽約", -1, true)
 
+func open_tier_up_for_layout() -> void:
+	var player: Dictionary = game.to_game_player({"name":"升框測試球員", "position":"SG", "ovr":71, "origin_team_id":"sbl_yulon"})
+	player["training_sessions"] = 1
+	player["salary_million"] = game.published_salary(player)
+	game.show_tier_up_reveal(player, "cyan", 70)
+
 func extended_visual_tour() -> void:
 	await fresh_game()
 	var output := OS.get_environment("TB_TEST_OUTPUT")
@@ -1054,6 +1130,15 @@ func extended_visual_tour() -> void:
 		await process_frame
 		for entry in [
 			["saves", func(): game.extra_save_bought = 8; game.show_save_slots()],
+			["home", func(): game.home_environment_mode = "arena"; game.show_dashboard()],
+			["home_more", func(): game.show_dashboard(); game.show_dashboard_more_menu()],
+			["home_locker", func(): game.home_environment_mode = "locker"; game.show_dashboard()],
+			["store", func(): game.select_store_product("精選", "arena_taipei")],
+			["store_arenas", func(): game.select_store_product("球場", "arena_taipei")],
+			["store_lockers", func(): game.select_store_product("更衣室", "locker_wood")],
+			["store_utilities", func(): game.select_store_product("便利功能", "vault_plus_10")],
+			["store_events", func(): game.select_store_product("賽事", "event_jones")],
+			["store_gold", func(): game.select_store_product("黃金", "monthly_pass")],
 			["welcome", game.show_welcome_back], ["build", game.show_team_build],
 			["logos", game.show_club_logo_picker], ["settings", game.show_settings_hub],
 			["legal", func(): game.show_settings_hub(); game.show_legal_notice()],
@@ -1073,6 +1158,7 @@ func extended_visual_tour() -> void:
 			["referral", func(): game.show_dashboard(); game.show_referral_sheet()],
 			["iap", func(): game.show_iap_sheet("extra_save")],
 			["card_reveal", func(): game.show_dashboard(); game.show_card_reveal(game.team_players[0])],
+			["tier_up", open_tier_up_for_layout],
 			["share", func(): game.show_dashboard(); game.show_share_sheet("測試分享", game.team_players[0])],
 			["market_hub", game.show_market],
 			["draft_open", open_draft_for_layout],
@@ -1086,7 +1172,7 @@ func extended_visual_tour() -> void:
 		]:
 			entry[1].call()
 			game.match_play_id += 1
-			await create_timer(0.75 if entry[0] == "card_reveal" else 0.15).timeout
+			await create_timer(0.75 if entry[0] in ["card_reveal", "tier_up"] else 0.15).timeout
 			if OS.get_environment("TB_TEST_VISUAL") == "1":
 				await RenderingServer.frame_post_draw
 				root.get_texture().get_image().save_png(output.path_join("%dx%d_full_%s.png" % [spec.x, spec.y, entry[0]]))

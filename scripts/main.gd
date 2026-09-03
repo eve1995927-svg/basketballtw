@@ -20,6 +20,32 @@ var prep_extra_event := ""
 const PlayerCardVisual = preload("res://scripts/player_card_visual.gd")
 const BasketballCourtBoard = preload("res://scripts/basketball_court_board.gd")
 const ButtonSkin = preload("res://scripts/button_skin.gd")
+
+# Lightweight, code-drawn light cracks for card-tier promotion. Keeping this as
+# a Control avoids a full-screen shader and keeps the reveal cheap on phones.
+class TierUpCracks extends Control:
+	var accent := Color.WHITE
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		queue_redraw()
+
+	func _draw() -> void:
+		var w := size.x
+		var h := size.y
+		var paths := [
+			[Vector2(w * 0.50, h * 0.06), Vector2(w * 0.43, h * 0.25), Vector2(w * 0.51, h * 0.43), Vector2(w * 0.39, h * 0.65)],
+			[Vector2(w * 0.05, h * 0.38), Vector2(w * 0.25, h * 0.42), Vector2(w * 0.39, h * 0.54)],
+			[Vector2(w * 0.95, h * 0.31), Vector2(w * 0.73, h * 0.39), Vector2(w * 0.58, h * 0.54)],
+			[Vector2(w * 0.57, h * 0.55), Vector2(w * 0.68, h * 0.72), Vector2(w * 0.61, h * 0.93)],
+		]
+		for path in paths:
+			for i in range(path.size() - 1):
+				draw_line(path[i], path[i + 1], Color(accent, 0.18), 7.0, true)
+				draw_line(path[i], path[i + 1], Color(accent, 0.92), 1.8, true)
+		for point in [Vector2(w * 0.39, h * 0.54), Vector2(w * 0.58, h * 0.54)]:
+			draw_circle(point, 13.0, Color(accent, 0.10))
+			draw_circle(point, 3.0, Color(1, 1, 1, 0.92))
 # Compact phone controls: keep the label size, reduce the surrounding box.
 # 44 is the practical touch floor; going to a literal 40 would reintroduce missed taps.
 const MOBILE_TOUCH_SIZE := 44.0
@@ -107,7 +133,7 @@ const TRAINING_MAX_SESSIONS := 5
 const STARTING_SALARY_CAP := 3000
 const UI_TOP_BAR_HEIGHT_PHONE := 44
 const UI_TOP_BAR_HEIGHT_DESKTOP := 56
-const UI_BOTTOM_BAR_HEIGHT_PHONE := 40
+const UI_BOTTOM_BAR_HEIGHT_PHONE := 58
 const UI_BOTTOM_BAR_HEIGHT_DESKTOP := 52
 const UI_RESOURCE_CHIP_HEIGHT_PHONE := 44
 const UI_RESOURCE_CHIP_HEIGHT_DESKTOP := 52
@@ -160,10 +186,12 @@ const FICTIONAL_TEAM_NAMES := {
 	"ghosthawks": "台南飛鷹",
 	"yankey": "新竹洋基",
 	"mars": "台北戰士",
+	"leopards": "桃園黑豹",
 	"sbl_beer": "台灣烈酒",
 	"sbl_bank": "台灣金控",
 	"sbl_yulon": "裕隆恐龍",
 	"sbl_pure": "彰化柏力力",
+	"sbl_kites": "基隆雷鳥",
 }
 const ACHIEVEMENT_BADGES := [
 	{"id":"home_fan", "name":"資深主場迷", "hint":"累積 10 場主場比賽"},
@@ -308,6 +336,14 @@ var gacha_opened := 0
 var scout_pity_progress := 0
 var scout_board_serial := 0
 var supporter_theme := "標準球館"
+var store_cosmetics_owned: Array[String] = ["standard"]
+var store_category := "精選"
+var store_selected_product := "arena_taipei"
+var home_environment_mode := "arena"
+var home_schedule_preview_offset := 0
+var locker_room_theme := "標準更衣室"
+var vault_capacity_bonus := 0
+var second_team_unlocked := false
 var active_challenge := ""
 var challenge_progress: Dictionary = {"small_market":0, "salary_cap":0, "national_pride":0}
 var challenge_completed: Dictionary = {"small_market":false, "salary_cap":false, "national_pride":false}
@@ -780,7 +816,7 @@ func run_iphone_fitshot() -> void:
 	last_mvp = str(team_players[0].get("name", "MVP")) if not team_players.is_empty() else "MVP"
 	last_opponent = current_match_opponent()
 	if last_opponent.is_empty():
-		last_opponent = {"name": "臺灣銀行"}
+		last_opponent = {"name": "台灣金控"}
 	show_post_match()
 	await get_tree().create_timer(0.55).timeout
 	await dump_fitshot("05_result")
@@ -3213,7 +3249,7 @@ func team_accent(team_id: String) -> Color:
 		"fubon":
 			return Color("1d4ed8")
 		"pilots":
-			return Color("0f766e")
+			return Color("f97316")
 		"ghosthawks":
 			return Color("b91c1c")
 		"yankey":
@@ -3221,19 +3257,19 @@ func team_accent(team_id: String) -> Color:
 		"dreamers":
 			return Color("65a30d")
 		"lioneers":
-			return Color("f97316")
+			return Color("7c3aed")
 		"aquas":
 			return Color("0284c7")
 		"dea":
-			return Color("dc2626")
+			return Color("facc15")
 		"kings":
 			return Color("facc15")
 		"mars":
-			return Color("7c3aed")
+			return Color("dc2626")
 		"leopards":
-			return Color("ca8a04")
+			return Color("15803d")
 		"sbl_pure":
-			return Color("7c2d12")
+			return Color("7c3aed")
 		"sbl_kites":
 			return Color("0f766e")
 		"sbl_bank":
@@ -3832,7 +3868,17 @@ func try_purchase_twd(sku: String) -> void:
 
 func iap_product(sku: String) -> Dictionary:
 	if sku == "monthly_pass":
-		return {"title": "主場應援月卡", "price": "NT$190", "store_id": "tb_monthly_pass", "note": "30 天每日資金 100 萬、黃金 20、球探點 5；漏領可累積，最多 30 天。附專屬球員卡框與主場看板。"}
+		return {"title": "主場應援月卡", "price": "NT$190", "store_id": "tb_monthly_pass", "note": "立即獲得黃金 400，之後 30 天每日黃金 50；漏領可累積。附月影雲海限定球場，可永久自由切換。"}
+	var gold_bundles := {
+		"gold_300": ["300 黃金", "NT$30", "tb_gold_300", 300],
+		"gold_900": ["900 黃金", "NT$90", "tb_gold_900", 900],
+		"gold_1900": ["1,900 黃金", "NT$190", "tb_gold_1900", 1900],
+		"gold_4900": ["4,900 黃金", "NT$490", "tb_gold_4900", 4900],
+		"gold_9900": ["9,900 黃金", "NT$990", "tb_gold_9900", 9900],
+	}
+	if gold_bundles.has(sku):
+		var bundle: Array = gold_bundles[sku]
+		return {"title": bundle[0], "price": bundle[1], "store_id": bundle[2], "gold_amount": bundle[3], "note": "固定匯率 NT$1＝10 黃金；完成平台付款後立即入帳。"}
 	if sku == "extra_save":
 		return {"title": "再加一格存檔", "price": "NT$100", "store_id": "tb_extra_save", "note": "一次買一格，帳號最多 10 格。現在 %d／10。" % max_save_slots()}
 	if sku == "easl":
@@ -3848,7 +3894,7 @@ func show_iap_sheet(sku: String) -> void:
 	iap_pending_sku = sku
 	var product := iap_product(sku)
 	var content := begin_screen("商店", "%s · %s" % [product.get("title", "商品"), product.get("price", "NT$100")], 0, false)
-	content.add_child(callout("付費內容", "存檔格、東超通行證、中華隊模式。", GOLD))
+	content.add_child(callout("平台內購", "黃金、30 日月卡、存檔格與額外賽事。", GOLD))
 	content.add_child(label(str(product.get("note", "")), 14, TEXT))
 	var price := str(product.get("price", "NT$100"))
 	if iap_store_ready():
@@ -3858,7 +3904,7 @@ func show_iap_sheet(sku: String) -> void:
 		content.add_child(label("編輯器／沙盒：確認後寫入本機憑證，方便你測流程。", 12, MUTED))
 		content.add_child(action_button("沙盒完成 %s" % price, ORANGE, func(): complete_purchase(sku), Vector2(0, 52)))
 	else:
-		content.add_child(label("匯出 iOS／Android 時請接 StoreKit 或 Play Billing（tb_extra_save、tb_easl、tb_jones、tb_national）。現在無法扣款。", 13, MUTED))
+		content.add_child(label("平台商店尚未連線，本次不會扣款。請先完成 StoreKit／Google Play Billing 商品與外掛設定。", 13, MUTED))
 		content.add_child(action_button("恢復已買憑證", CYAN, func(): restore_iap(), Vector2(0, 48)))
 	content.add_child(action_button("取消", Color("254e6b"), func():
 		pending_enter_league = ""
@@ -3901,6 +3947,8 @@ func restore_iap() -> void:
 		jones_pass = true
 	if bool(iap_receipts.get("monthly_pass", false)):
 		monthly_pass_active = true
+		if not store_cosmetics_owned.has("arena_monthly"):
+			store_cosmetics_owned.append("arena_monthly")
 	save_account()
 	flash_notice("已依本機／雲端憑證恢復購買")
 	show_store_hub()
@@ -3928,13 +3976,29 @@ func poll_native_iap() -> void:
 
 func complete_purchase(sku: String) -> void:
 	if sku == "monthly_pass":
+		var first_activation := not bool(iap_receipts.get("monthly_pass", false))
 		monthly_pass_active = true
 		iap_receipts["monthly_pass"] = true
+		if first_activation:
+			gold += 400
+			if not store_cosmetics_owned.has("arena_monthly"):
+				store_cosmetics_owned.append("arena_monthly")
 		iap_pending_sku = ""
 		save_account()
 		save_game()
-		flash_notice("主場應援月卡已開通")
+		flash_notice("主場應援月卡已開通，黃金 +400，限定球場已解鎖")
 		show_daily_tasks()
+		return
+	if sku.begins_with("gold_"):
+		var amount := int(iap_product(sku).get("gold_amount", 0))
+		if amount <= 0:
+			flash_notice("黃金商品資料錯誤，沒有扣款")
+			return
+		gold += amount
+		iap_pending_sku = ""
+		save_game()
+		flash_notice("黃金 +%s 已入帳" % resource_display_number(amount))
+		show_store_hub()
 		return
 	if sku == "extra_save":
 		if extra_slots_left() <= 0:
@@ -3978,61 +4042,333 @@ func complete_purchase(sku: String) -> void:
 		show_extra_event("wcq")
 		return
 
+func store_products() -> Array[Dictionary]:
+	return [
+		{"id":"arena_taipei", "title":"台北雨夜河濱", "category":"球場", "price":"300 黃金", "gold":300, "art":"res://assets/art/arenas/taiwan/taipei_riverside.png", "description":"雨停後的河濱最會留人。遠方城市燈亮了，這一球還不能散。", "note":"台灣城市系列 · 戶外", "theme":"台北雨夜河濱"},
+		{"id":"arena_new_taipei", "title":"新北籃球聖殿", "category":"球場", "price":"300 黃金", "gold":300, "art":"res://assets/art/arenas/taiwan/new_taipei_xinzhuang.png", "description":"看台很近、聲音很滿。踏進這裡，連熱身球都像決勝球。", "note":"台灣城市系列 · 室內", "theme":"新北籃球聖殿"},
+		{"id":"arena_taichung", "title":"台中弧光主場", "category":"球場", "price":"300 黃金", "gold":300, "art":"res://assets/art/arenas/taiwan/taichung_arc.png", "description":"木質弧頂把歡呼收得剛剛好，中場一抬頭就是城市綠意。", "note":"台灣城市系列 · 室內", "theme":"台中弧光主場"},
+		{"id":"arena_tainan", "title":"台南古都夜場", "category":"球場", "price":"300 黃金", "gold":300, "art":"res://assets/art/arenas/taiwan/tainan_oldtown.png", "description":"紅磚、老樹、晚風。輸的人請下一攤，贏的人留下來再一場。", "note":"台灣城市系列 · 戶外", "theme":"台南古都夜場"},
+		{"id":"arena_kaohsiung", "title":"高雄港灣夕照", "category":"球場", "price":"300 黃金", "gold":300, "art":"res://assets/art/arenas/taiwan/kaohsiung_harbor.png", "description":"海風會干擾投籃，夕陽不會。港邊燈一亮，就是南方主場時間。", "note":"台灣城市系列 · 戶外", "theme":"高雄港灣夕照"},
+		{"id":"arena_hualien", "title":"花蓮山海晨光", "category":"球場", "price":"300 黃金", "gold":300, "art":"res://assets/art/arenas/taiwan/hualien_coast.png", "description":"左手是山、右手是海。早起投進第一球，今天就不會太差。", "note":"台灣城市系列 · 戶外", "theme":"花蓮山海晨光"},
+		{"id":"arena_champion", "title":"冠軍金色球場", "category":"球場", "price":"500 黃金", "gold":500, "art":"res://assets/art/arena_playoff.png", "description":"聚光燈只照向球場中央。今晚，獎盃和壓力都是真的。", "note":"虛擬球場 · 永久解鎖", "theme":"冠軍金色主場"},
+		{"id":"arena_neon", "title":"霓虹球場", "category":"球場", "price":"500 黃金", "gold":500, "art":"res://assets/art/arenas/cyberpunk_arena_base.png", "description":"藍紫燈線沿著三分線醒來，適合把比賽打得比夜還晚。", "note":"虛擬球場 · 永久解鎖", "theme":"賽博龐克主場"},
+		{"id":"arena_night", "title":"夜場靛藍", "category":"球場", "price":"500 黃金", "gold":500, "art":"res://assets/art/arena_night.png", "description":"把觀眾席壓暗，只留下籃框和下一次進攻。", "note":"虛擬球場 · 永久解鎖", "theme":"夜場靛藍"},
+		{"id":"arena_monthly", "title":"月影雲海球場", "category":"球場", "price":"月卡限定", "gold":0, "art":"res://assets/art/arenas/monthly_moon.png", "description":"雲海壓低喧鬧，月光替三分線描金。購買月卡後永久保留，可自由切換。", "note":"主場應援月卡限定", "theme":"月影雲海球場"},
+		{"id":"locker_wood", "title":"木質職業更衣室", "category":"更衣室", "price":"300 黃金", "gold":300, "art":"res://assets/art/locker_rooms/pro_wood.png", "description":"木櫃、皮椅、乾淨的戰術牆。沒有藉口，只剩上場前的安靜。", "note":"更衣室背景 · 永久解鎖", "locker":"木質職業更衣室"},
+		{"id":"locker_champion", "title":"黑金冠軍更衣室", "category":"更衣室", "price":"500 黃金", "gold":500, "art":"res://assets/art/locker_rooms/champion_black_gold.png", "description":"獎盃放在正中央提醒所有人：拿過一次，不代表已經足夠。", "note":"更衣室背景 · 永久解鎖", "locker":"黑金冠軍更衣室"},
+		{"id":"locker_neon", "title":"霓虹科技更衣室", "category":"更衣室", "price":"600 黃金", "gold":600, "art":"res://assets/art/locker_rooms/neon_tech.png", "description":"燈線亮起、戰術上牆。這裡不像休息室，更像下一場的控制中心。", "note":"更衣室背景 · 永久解鎖", "locker":"霓虹科技更衣室"},
+		{"id":"locker_retro", "title":"復古台籃更衣室", "category":"更衣室", "price":"700 黃金", "gold":700, "art":"res://assets/art/locker_rooms/retro_taiwan.png", "description":"磨亮的磨石子地板和老風扇，裝著一整代球迷熟悉的夏天。", "note":"更衣室背景 · 永久解鎖", "locker":"復古台籃更衣室"},
+		{"id":"vault_plus_10", "title":"保管箱擴充 +10", "category":"便利功能", "price":"300 黃金", "gold":300, "art":"res://assets/ui/icons/nav_vault.png", "description":"初始容量 20 張，每次永久增加 10 格。收藏可以慢慢長大，不必急著放棄誰。", "note":"可重複購買", "utility":"vault"},
+		{"id":"save_plus_1", "title":"增加存檔格", "category":"便利功能", "price":"1,000 黃金", "gold":1000, "art":"res://assets/ui/store/save_slot.png", "description":"永久增加一個獨立球隊存檔，最多 10 格。每一格都是另一段總管生涯。", "note":"帳號功能", "utility":"save"},
+		{"id":"second_team", "title":"解鎖第二隊伍", "category":"便利功能", "price":"300 黃金", "gold":300, "art":"res://assets/art/lobby/roster.png", "description":"同一存檔建立第二支球隊，首頁可一鍵切換，兩隊名單與生涯各自保存。", "note":"永久解鎖 · 可切換", "utility":"team_two"},
+		{"id":"event_jones", "title":"瓊斯盃", "category":"賽事", "price":"600 黃金", "gold":600, "art":"res://assets/ui/store/jones.png", "description":"短期盃賽節奏快、壓力直接。挑戰專屬獎盃、紀錄、新聞事件與賽事獎勵。", "note":"永久賽事擴充", "event":"jones"},
+		{"id":"event_easl", "title":"東超／BCL", "category":"賽事", "price":"900 黃金", "gold":900, "art":"res://assets/ui/store/easl.png", "description":"跨國客場、陌生節奏、三場定生死。包含專屬獎盃、紀錄與特殊新聞。", "note":"兩項賽事一起永久解鎖", "event":"easl"},
+		{"id":"event_wcq", "title":"世界盃資格賽", "category":"賽事", "price":"1,200 黃金", "gold":1200, "art":"res://assets/ui/store/national.png", "description":"選出中華隊名單，走過資格賽。勝利會留下國家隊紀錄與專屬成就。", "note":"永久賽事擴充", "event":"wcq"},
+		{"id":"event_bundle", "title":"國際賽事完整包", "category":"賽事", "price":"2,200 黃金", "gold":2200, "art":"res://assets/art/activity/activity_vs_hero.png", "description":"一次解鎖瓊斯盃、東超／BCL與世界盃資格賽，三條故事線都保留重玩空間。", "note":"組合價 · 永久解鎖", "event":"bundle"},
+		{"id":"monthly_pass", "title":"主場應援月卡", "category":"黃金", "price":"NT$190", "gold":-1, "art":"res://assets/art/arenas/monthly_moon.png", "description":"立即 400 黃金，之後 30 天每日 50 黃金；漏領可累積。另送月影雲海球場，可自由切換。", "note":"總計 1,900 黃金 · 限定球場永久保留", "sku":"monthly_pass"},
+		{"id":"gold_300", "title":"300 黃金", "category":"黃金", "price":"NT$30", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"小額補充，匯率固定 NT$1＝10 黃金。", "note":"平台內購", "sku":"gold_300"},
+		{"id":"gold_900", "title":"900 黃金", "category":"黃金", "price":"NT$90", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"需要一座球場，或替更衣室換個氣氛。", "note":"平台內購", "sku":"gold_900"},
+		{"id":"gold_1900", "title":"1,900 黃金", "category":"黃金", "price":"NT$190", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"固定 1：10，不用猜哪一包才划算。", "note":"平台內購", "sku":"gold_1900"},
+		{"id":"gold_4900", "title":"4,900 黃金", "category":"黃金", "price":"NT$490", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"適合一次收藏多座城市球場。", "note":"平台內購", "sku":"gold_4900"},
+		{"id":"gold_9900", "title":"9,900 黃金", "category":"黃金", "price":"NT$990", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"最高額固定匯率方案，不製造假折扣。", "note":"平台內購", "sku":"gold_9900"},
+	]
+
+func store_visible_products(category: String) -> Array[Dictionary]:
+	var visible: Array[Dictionary] = []
+	for product in store_products():
+		if category == "精選" and str(product.id) in ["arena_taipei", "arena_tainan", "arena_champion", "monthly_pass"]:
+			visible.append(product)
+		elif str(product.category) == category:
+			visible.append(product)
+	return visible
+
+func store_product_by_id(product_id: String) -> Dictionary:
+	for product in store_products():
+		if str(product.id) == product_id:
+			return product
+	return store_products()[0]
+
+func store_cosmetic_owned(product: Dictionary) -> bool:
+	return store_cosmetics_owned.has(str(product.get("id", "")))
+
+func training_glow_unlocked() -> bool:
+	for player in team_players:
+		if int(player.get("training_sessions", 0)) >= TRAINING_MAX_SESSIONS:
+			return true
+	return false
+
+func store_product_status(product: Dictionary) -> String:
+	var product_id := str(product.get("id", ""))
+	if product.has("theme"):
+		if store_cosmetic_owned(product):
+			return "使用中" if supporter_theme == str(product.theme) else "已永久解鎖"
+		return "尚未擁有"
+	if product.has("locker"):
+		if store_cosmetic_owned(product):
+			return "使用中" if locker_room_theme == str(product.locker) else "已永久解鎖"
+		return "尚未擁有"
+	if product_id == "vault_plus_10":
+		return "目前 %d 格" % vault_capacity()
+	if product_id == "save_plus_1":
+		return "已滿 10 格" if extra_slots_left() <= 0 else "目前 %d／10 格" % max_save_slots()
+	if product_id == "second_team":
+		return "已永久解鎖" if second_team_unlocked else "目前只有第一隊"
+	if product.has("event"):
+		var event_id := str(product.event)
+		if event_id == "bundle":
+			return "已全部解鎖" if easl_pass and jones_pass and national_unlocked else "三項賽事組合價"
+		return "已永久解鎖" if extra_event_owned(event_id) else "尚未解鎖"
+	if product_id == "monthly_pass":
+		return "已開通" if monthly_pass_active else "30 天應援內容"
+	if product.has("sku"):
+		return "NT$1＝10 黃金"
+	return "可購買"
+
+func select_store_product(category: String, product_id: String) -> void:
+	store_category = category
+	store_selected_product = product_id
+	show_store_hub()
+
+func activate_store_product(product: Dictionary) -> void:
+	var product_id := str(product.get("id", ""))
+	if product.has("sku"):
+		var sku := str(product.sku)
+		if sku == "monthly_pass" and monthly_pass_active:
+			show_daily_tasks()
+		else:
+			show_iap_sheet(sku)
+		return
+	if product.has("theme"):
+		if product_id == "arena_monthly" and not store_cosmetic_owned(product):
+			select_store_product("黃金", "monthly_pass")
+			flash_notice("月影雲海球場隨主場應援月卡解鎖")
+			return
+		if store_cosmetic_owned(product):
+			supporter_theme = str(product.theme)
+			home_environment_mode = "arena"
+			save_game()
+			flash_notice("已套用「%s」" % product.title)
+			show_store_hub()
+			return
+		var price := int(product.get("gold", 0))
+		if gold < price:
+			flash_notice("黃金不足：還差 %d 黃金" % (price - gold))
+			return
+		gold -= price
+		store_cosmetics_owned.append(product_id)
+		supporter_theme = str(product.theme)
+		home_environment_mode = "arena"
+		save_game()
+		flash_notice("已永久解鎖並套用「%s」" % product.title)
+		show_store_hub()
+		return
+	if product.has("locker"):
+		if store_cosmetic_owned(product):
+			locker_room_theme = str(product.locker)
+			home_environment_mode = "locker"
+			save_game()
+			flash_notice("已套用「%s」" % product.title)
+			show_store_hub()
+			return
+		if not spend_store_gold(product):
+			return
+		store_cosmetics_owned.append(product_id)
+		locker_room_theme = str(product.locker)
+		home_environment_mode = "locker"
+		save_game()
+		flash_notice("已永久解鎖並套用「%s」" % product.title)
+		show_store_hub()
+		return
+	if product_id == "vault_plus_10":
+		if not spend_store_gold(product):
+			return
+		vault_capacity_bonus += 10
+		save_game()
+		flash_notice("保管箱已增加 10 格，目前 %d 格" % vault_capacity())
+		show_store_hub()
+		return
+	if product_id == "save_plus_1":
+		if extra_slots_left() <= 0:
+			flash_notice("存檔格已經 10 格")
+			return
+		if not spend_store_gold(product):
+			return
+		extra_save_bought += 1
+		extra_save_unlocked = true
+		save_account()
+		save_game()
+		flash_notice("已增加一格存檔，目前 %d／10" % max_save_slots())
+		show_store_hub()
+		return
+	if product_id == "second_team":
+		if second_team_unlocked:
+			flash_notice("第二隊伍已經解鎖")
+			return
+		if not spend_store_gold(product):
+			return
+		second_team_unlocked = true
+		save_game()
+		flash_notice("第二隊伍已解鎖，現在可以從首頁切換")
+		show_store_hub()
+		return
+	if product.has("event"):
+		var event_id := str(product.event)
+		if (event_id == "bundle" and easl_pass and jones_pass and national_unlocked) or (event_id != "bundle" and extra_event_owned(event_id)):
+			show_extra_events()
+			return
+		if not spend_store_gold(product):
+			return
+		if event_id in ["easl", "bundle"]: easl_pass = true
+		if event_id in ["jones", "bundle"]: jones_pass = true
+		if event_id in ["wcq", "bundle"]: national_unlocked = true
+		save_account()
+		save_game()
+		flash_notice("已永久解鎖賽事內容")
+		show_store_hub()
+
+func spend_store_gold(product: Dictionary) -> bool:
+	var price := int(product.get("gold", 0))
+	if gold < price:
+		flash_notice("黃金不足：還差 %d 黃金" % (price - gold))
+		return false
+	gold -= price
+	return true
+
+func extra_event_owned(event_id: String) -> bool:
+	match event_id:
+		"easl": return easl_pass
+		"jones": return jones_pass
+		"wcq": return national_unlocked
+		_: return false
+
+func vault_capacity() -> int:
+	return 20 + vault_capacity_bonus
+
+func store_category_button(caption: String, selected: bool) -> Button:
+	var icons := {"精選":"★", "球場":"▣", "更衣室":"⌂", "便利功能":"◆", "賽事":"♜", "黃金":"●"}
+	var narrow := usable_view().x < 720.0
+	var button := action_button("%s  %s" % [icons.get(caption, "•"), caption], Color("101923e8"), func():
+		var products := store_visible_products(caption)
+		var first_id := str(products[0].id) if not products.is_empty() else "arena_taipei"
+		select_store_product(caption, first_id)
+	, Vector2(92 if narrow else (112 if is_handheld() else 142), 38 if narrow else 39))
+	button.add_theme_font_size_override("font_size", 12 if narrow else 14)
+	button.add_theme_stylebox_override("normal", panel_style(Color("2b2413e8") if selected else Color("0b1420e8"), GOLD if selected else Color("405064"), 10, 2 if selected else 1))
+	return button
+
+func store_product_card(product: Dictionary, selected: bool) -> Control:
+	var shell := PanelContainer.new()
+	shell.name = "StoreProduct_" + str(product.id)
+	shell.custom_minimum_size = Vector2(142 if is_handheld() else 184, 120 if compact_phone() else 184)
+	shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shell.clip_contents = true
+	shell.add_theme_stylebox_override("panel", panel_style(Color("08121ef2"), GOLD if selected else Color("445466"), 13, 2 if selected else 1))
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 2)
+	shell.add_child(padded(box, 6))
+	var art := TextureRect.new()
+	art.texture = load_png_tex(str(product.art))
+	art.custom_minimum_size = Vector2(0, 63 if compact_phone() else 112)
+	art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	art.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED if str(product.category) == "球場" else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(art)
+	box.add_child(fit_label(str(product.title), 14, TEXT, true, HORIZONTAL_ALIGNMENT_CENTER))
+	box.add_child(fit_label(str(product.price), 13, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
+	var hit := hub_tile_hit(GOLD, selected, func(): select_store_product(store_category, str(product.id)))
+	shell.add_child(hit)
+	bind_press_juice(shell, hit)
+	return shell
+
+func store_detail_panel(product: Dictionary) -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.name = "StoreProductDetail"
+	panel.custom_minimum_size = Vector2(230 if is_handheld() else 310, 0)
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_theme_stylebox_override("panel", panel_style(Color("07111df2"), Color("ba974799"), 14, 1))
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 5)
+	panel.add_child(padded(box, 10))
+	var art := TextureRect.new()
+	art.texture = load_png_tex(str(product.art))
+	art.custom_minimum_size = Vector2(0, 70 if compact_phone() else 130)
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED if str(product.category) == "球場" else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(art)
+	box.add_child(label(str(product.title), 19, TEXT, true, HORIZONTAL_ALIGNMENT_CENTER))
+	box.add_child(wrap_label(str(product.description), 12, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
+	box.add_child(fit_label(store_product_status(product), 12, CYAN if store_product_status(product).contains("已") else GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
+	box.add_child(fit_label(str(product.note), 11, MUTED, false, HORIZONTAL_ALIGNMENT_CENTER))
+	var action_text := "購買 · %s" % str(product.price)
+	if product.has("theme") and store_cosmetic_owned(product):
+		action_text = "使用中" if supporter_theme == str(product.theme) else "套用"
+	elif product.has("locker") and store_cosmetic_owned(product):
+		action_text = "使用中" if locker_room_theme == str(product.locker) else "套用"
+	elif str(product.id) == "second_team" and second_team_unlocked:
+		action_text = "已解鎖"
+	elif product.has("event") and str(product.event) != "bundle" and extra_event_owned(str(product.event)):
+		action_text = "前往賽事"
+	elif str(product.id) == "monthly_pass" and monthly_pass_active:
+		action_text = "前往領取"
+	var buy := gold_action_button(action_text, func(): activate_store_product(product), Vector2(0, 48))
+	buy.name = "StorePurchaseButton"
+	buy.disabled = str(product.id) == "second_team" and second_team_unlocked
+	box.add_child(buy)
+	return panel
+
 func show_store_hub() -> void:
 	active_menu = "store"
-	var content := begin_screen("商店", "功能道具與外觀在這裡；球員卡統一前往市場取得。", 4)
+	var visible := store_visible_products(store_category)
+	if visible.is_empty():
+		store_category = "精選"
+		visible = store_visible_products(store_category)
+	if not visible.any(func(product: Dictionary): return str(product.id) == store_selected_product):
+		store_selected_product = str(visible[0].id)
+	var selected := store_product_by_id(store_selected_product)
+	var content := begin_screen("商店", "圖案、內容與價格一次看清楚；外觀商品不影響勝負。", 4, true, false)
+	var wide_store := usable_view().x >= 540.0
+	var layout: BoxContainer = HBoxContainer.new() if wide_store else VBoxContainer.new()
+	layout.name = "StoreLayout"
+	layout.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	layout.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_theme_constant_override("separation", 10)
+	content.add_child(layout)
+	var categories: BoxContainer = VBoxContainer.new() if wide_store else HBoxContainer.new()
+	categories.name = "StoreCategories"
+	categories.custom_minimum_size.x = ((176 if usable_view().x >= 1000.0 else 112) if is_handheld() else 168) if wide_store else 0
+	categories.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if wide_store else Control.SIZE_EXPAND_FILL
+	categories.add_theme_constant_override("separation", 6)
+	layout.add_child(categories)
+	for category in ["精選", "球場", "更衣室", "便利功能", "賽事", "黃金"]:
+		categories.add_child(store_category_button(category, store_category == category))
+	var products_and_detail := HBoxContainer.new()
+	products_and_detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	products_and_detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	products_and_detail.add_theme_constant_override("separation", 8)
+	layout.add_child(products_and_detail)
+	var product_scroll := ScrollContainer.new()
+	product_scroll.name = "StoreProductScroll"
+	product_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	product_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	product_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	product_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	products_and_detail.add_child(product_scroll)
 	var grid := GridContainer.new()
-	grid.columns = 3
+	grid.name = "StoreProductGrid"
+	grid.columns = 2
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
-	content.add_child(grid)
-	var save_left := extra_slots_left()
-	var save_note := "已滿 10 格" if save_left <= 0 else "現在 %d／10" % max_save_slots()
-	grid.add_child(store_square("存檔格", "NT$100", save_note, CYAN, func():
-		if extra_slots_left() <= 0:
-			flash_notice("存檔格已經 10 格")
-			show_save_slots()
-		else:
-			try_purchase_twd("extra_save")
-	, "save_slot"))
-	grid.add_child(store_square("好友推薦", "免費", "雙方各 +1 格 · 10 人送林書豪", GOLD, func(): show_referral_sheet(), "referral"))
-	var easl_note := "已擁有" if easl_pass else ("需職業前二" if not pro_top2 else "東超＋BCL")
-	grid.add_child(store_square("東超／BCL", "NT$100", easl_note, GOLD, func():
-		if not pro_top2:
-			flash_notice("PLG 或 TPBL 例行賽前二才能買東超／BCL")
-			return
-		if easl_pass:
-			show_extra_event("easl")
-			return
-		try_purchase_twd("easl")
-	, "easl"))
-	var jones_note := "已擁有 · 可免費再打" if jones_pass else ("需職業前二" if not pro_top2 else "場次較少")
-	grid.add_child(store_square("瓊斯盃 2026", "NT$60", jones_note, ORANGE, func():
-		if not pro_top2:
-			flash_notice("PLG 或 TPBL 例行賽前二才能買瓊斯盃")
-			return
-		if jones_pass:
-			show_extra_event("jones")
-			return
-		try_purchase_twd("jones")
-	, "jones"))
-	var nat_note := "本存檔已解鎖" if national_unlocked else ("需職業前二" if not pro_top2 else "世界盃資格賽")
-	grid.add_child(store_square("中華隊", "NT$100", nat_note, RED, func(): try_open_extra("wcq"), "national"))
-	grid.add_child(store_square("主場主題", "NT$90", "賽博龐克系列 · 純外觀", Color("d94cff"), func(): show_supporter_club(), "arena"))
-	content.add_child(store_square("主場應援月卡", "NT$190", "每日資源 · 卡框 · 看板" if not monthly_pass_active else "已開通 · 前往任務領取", GOLD, func():
-		if monthly_pass_active:
-			show_daily_tasks()
-		else:
-			show_iap_sheet("monthly_pass")
-	, "arena"))
-	var actions := HBoxContainer.new()
-	actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	actions.add_theme_constant_override("separation", 8)
-	content.add_child(actions)
-	actions.add_child(action_button("恢復購買", CYAN, func(): restore_iap(), Vector2(0, 44)))
+	product_scroll.add_child(grid)
+	bind_scroll_child_width(product_scroll, grid)
+	for product in visible:
+		grid.add_child(store_product_card(product, str(product.id) == store_selected_product))
+	products_and_detail.add_child(store_detail_panel(selected))
 
 func store_icon_tex(icon_id: String) -> Texture2D:
 	return load_png_tex(str(STORE_ICONS.get(icon_id, "")))
@@ -4218,7 +4554,7 @@ func try_enter_international(code: String) -> void:
 		return
 	if not easl_pass:
 		pending_enter_league = code
-		try_purchase_twd("easl")
+		select_store_product("賽事", "event_easl")
 		return
 	enter_league(code)
 
@@ -4228,7 +4564,7 @@ func try_open_national() -> void:
 		show_national_team()
 		return
 	if not national_unlocked:
-		try_purchase_twd("national")
+		select_store_product("賽事", "event_wcq")
 		return
 	show_national_team()
 
@@ -4316,8 +4652,8 @@ func show_offseason() -> void:
 		var intl := HBoxContainer.new()
 		intl.add_theme_constant_override("separation", 8)
 		content.add_child(intl)
-		var easl_caption := "去東超（3 場）" if easl_pass else "解鎖東超 NT$100"
-		var bcl_caption := "去 BCL（3 場）" if easl_pass else "解鎖 BCL NT$100"
+		var easl_caption := "去東超（3 場）" if easl_pass else "解鎖東超／BCL · 900 黃金"
+		var bcl_caption := "去 BCL（3 場）" if easl_pass else "解鎖東超／BCL · 900 黃金"
 		intl.add_child(action_button(easl_caption if pro_top2 else "東超（需前二）", GOLD, func(): try_enter_international("EASL"), Vector2(0, 50)))
 		intl.add_child(action_button(bcl_caption if pro_top2 else "BCL（需前二）", RED, func(): try_enter_international("BCL"), Vector2(0, 50)))
 	content.add_child(action_button("回大廳", Color("254e6b"), func(): show_dashboard(), Vector2(0, 48)))
@@ -4898,14 +5234,16 @@ func stash_overflow_to_vault() -> bool:
 		var idx := most_expensive_bench_index()
 		if idx < 0:
 			break
-		stash_to_vault(team_players[idx])
+		if not stash_to_vault(team_players[idx]):
+			break
 		team_players.remove_at(idx)
 		dirty = true
 	while over_salary_cap() and team_players.size() > minimum_roster_to_play():
 		var idx := most_expensive_bench_index()
 		if idx < 0:
 			break
-		stash_to_vault(team_players[idx])
+		if not stash_to_vault(team_players[idx]):
+			break
 		team_players.remove_at(idx)
 		dirty = true
 	if dirty:
@@ -5326,10 +5664,31 @@ func body_row_h() -> int:
 	return clampi(int((content_view_h() - 52.0) / 6.0), 32, 48)
 
 func screen_arena_tex() -> Texture2D:
+	var themed_arenas := {
+		"台北雨夜河濱": "res://assets/art/arenas/taiwan/taipei_riverside.png",
+		"新北籃球聖殿": "res://assets/art/arenas/taiwan/new_taipei_xinzhuang.png",
+		"台中弧光主場": "res://assets/art/arenas/taiwan/taichung_arc.png",
+		"台南古都夜場": "res://assets/art/arenas/taiwan/tainan_oldtown.png",
+		"高雄港灣夕照": "res://assets/art/arenas/taiwan/kaohsiung_harbor.png",
+		"花蓮山海晨光": "res://assets/art/arenas/taiwan/hualien_coast.png",
+		"月影雲海球場": "res://assets/art/arenas/monthly_moon.png",
+	}
+	if themed_arenas.has(supporter_theme):
+		var themed := load_png_tex(str(themed_arenas[supporter_theme]))
+		if themed != null:
+			return themed
 	if supporter_theme == "賽博龐克主場":
 		var cyber := load_png_tex("res://assets/art/arenas/cyberpunk_arena_base.png")
 		if cyber != null:
 			return cyber
+	if supporter_theme == "冠軍金色主場":
+		var champion := load_png_tex("res://assets/art/arena_playoff.png")
+		if champion != null:
+			return champion
+	if supporter_theme == "夜場靛藍":
+		var indigo := load_png_tex("res://assets/art/arena_night.png")
+		if indigo != null:
+			return indigo
 	if season_phase in ["semifinal", "final", "champion"]:
 		var playoff := load_png_tex("res://assets/art/arena_playoff.png")
 		if playoff != null:
@@ -5338,6 +5697,17 @@ func screen_arena_tex() -> Texture2D:
 	if night != null:
 		return night
 	return load_png_tex("res://assets/ui/arena_bg.png")
+
+func locker_room_tex() -> Texture2D:
+	var rooms := {
+		"木質職業更衣室": "res://assets/art/locker_rooms/pro_wood.png",
+		"黑金冠軍更衣室": "res://assets/art/locker_rooms/champion_black_gold.png",
+		"霓虹科技更衣室": "res://assets/art/locker_rooms/neon_tech.png",
+		"復古台籃更衣室": "res://assets/art/locker_rooms/retro_taiwan.png",
+	}
+	if rooms.has(locker_room_theme):
+		return load_png_tex(str(rooms[locker_room_theme]))
+	return load_png_tex("res://assets/art/locker_rooms/basic.png")
 
 func hud_icon(path: String, box := 22) -> TextureRect:
 	var glyph := TextureRect.new()
@@ -5351,7 +5721,7 @@ func hud_icon(path: String, box := 22) -> TextureRect:
 	glyph.clip_contents = false
 	return glyph
 
-func begin_screen(title: String, subtitle: String, stage: int, show_resources := true) -> VBoxContainer:
+func begin_screen(title: String, subtitle: String, stage: int, show_resources := true, show_dock := true) -> VBoxContainer:
 	if stage != 6:
 		match_play_id += 1
 	clear_screen()
@@ -5361,7 +5731,12 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 
 	var bg := TextureRect.new()
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.texture = screen_arena_tex()
+	# The dashboard uses deliberately composed clubhouse key art. Keeping the
+	# person and architecture in the backdrop avoids stretching a card portrait.
+	if active_menu == "dashboard":
+		bg.texture = locker_room_tex() if home_environment_mode == "locker" else load_png_tex("res://assets/art/lobby/home_clubhouse_v2.png")
+	else:
+		bg.texture = screen_arena_tex()
 	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -5369,7 +5744,7 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 
 	var shade := ColorRect.new()
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.color = Color(0.02, 0.03, 0.05, 0.38)
+	shade.color = Color(0.02, 0.03, 0.05, 0.18 if active_menu == "dashboard" else 0.38)
 	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(shade)
 
@@ -5391,7 +5766,8 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 
 	var top := PanelContainer.new()
 	top.name = "TopBar"
-	top.custom_minimum_size = Vector2(0, UI_TOP_BAR_HEIGHT_PHONE if is_handheld() else UI_TOP_BAR_HEIGHT_DESKTOP)
+	var dashboard_top := active_menu == "dashboard"
+	top.custom_minimum_size = Vector2(0, UI_TOP_BAR_HEIGHT_PHONE if is_handheld() else (72 if dashboard_top else UI_TOP_BAR_HEIGHT_DESKTOP))
 	top.add_theme_stylebox_override("panel", glass_style(14))
 	page.add_child(top)
 
@@ -5421,7 +5797,16 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 	brand_art.offset_bottom = -2
 	brand_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	brand.add_child(brand_art)
-	if stage >= 3 and stage != 6:
+	if title == "商店" and stage == 4:
+		brand_art.visible = false
+		brand.text = "‹"
+		brand.add_theme_font_override("font", FONT_BOLD)
+		brand.add_theme_font_size_override("font_size", 30)
+		brand.pressed.connect(func():
+			play_sfx("tap")
+			handle_back_request()
+		)
+	elif stage >= 3 and stage != 6:
 		brand.pressed.connect(func():
 			play_sfx("tap")
 			jump_shortcut(show_club_logo_picker)
@@ -5467,7 +5852,7 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 	title_box.add_child(sub_lab)
 	if title == "編隊" and not is_handheld():
 		top_row.add_child(compact_combo_chip())
-	if stage >= 3 and stage != 6:
+	if stage >= 3 and stage != 6 and second_team_unlocked:
 		top_row.add_child(team_switch_chip())
 
 	if is_handheld() and (show_resources or stage >= 3 or not team_players.is_empty()):
@@ -5478,13 +5863,18 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 		top_row.add_child(hud_economy_row())
 	if show_resources and not is_handheld():
 		top_row.add_child(hud_economy_row(true))
-		top_row.add_child(hud_shortcut(mission_shortcut_title(), "match", ORANGE, func():
-			jump_shortcut(show_challenge_hub)
-		))
-		top_row.add_child(hud_shortcut("商店", "save", GOLD, func():
-			jump_shortcut(show_store_hub)
-		))
-	if stage > 0 and stage != 3 and stage != 6:
+		if active_menu != "dashboard":
+			top_row.add_child(hud_shortcut(mission_shortcut_title(), "match", ORANGE, func():
+				jump_shortcut(show_challenge_hub)
+			))
+			top_row.add_child(hud_shortcut("商店", "save", GOLD, func():
+				jump_shortcut(show_store_hub)
+			))
+		else:
+			top_row.add_child(hud_shortcut("☰", "more", GOLD, func():
+				jump_shortcut(show_more_hub)
+			))
+	if stage > 0 and stage != 3 and stage != 6 and title != "商店":
 		top_row.add_child(page_back_chip(stage))
 
 	var content := VBoxContainer.new()
@@ -5505,7 +5895,7 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 	scroll.add_child(content)
 	bind_scroll_child_width(scroll, content)
 	fill_scroll_body(content)
-	if stage >= 3 and stage < 6:
+	if show_dock and stage >= 3 and stage < 6:
 		page.add_child(bottom_navigation())
 	modulate.a = 1.0
 	return content
@@ -5539,37 +5929,35 @@ func bottom_navigation() -> PanelContainer:
 	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bar.size_flags_vertical = Control.SIZE_SHRINK_END
 	bar.name = "BottomNavigation"
-	bar.custom_minimum_size = Vector2(0, UI_BOTTOM_BAR_HEIGHT_PHONE if is_handheld() else UI_BOTTOM_BAR_HEIGHT_DESKTOP)
-	var dock_style := panel_style(Color(0.05, 0.07, 0.10, 0.88), Color(0.96, 0.78, 0.32, 0.22), 14, 1)
+	bar.custom_minimum_size = Vector2(0, UI_BOTTOM_BAR_HEIGHT_PHONE if is_handheld() else (44 if active_menu == "dashboard" else UI_BOTTOM_BAR_HEIGHT_DESKTOP))
+	var dock_style := panel_style(Color(0.035, 0.05, 0.075, 0.78), Color(0.96, 0.78, 0.32, 0.22), 14, 1)
 	if is_handheld():
 		dock_style.content_margin_top = 0
 		dock_style.content_margin_bottom = 0
-	bar.add_theme_stylebox_override("panel", dock_style)
+	bar.add_theme_stylebox_override("panel", invisible_style() if active_menu == "dashboard" else dock_style)
+	if active_menu == "dashboard":
+		bar.add_child(dashboard_skin("res://assets/ui/home/nav_dock_skin_trim_v1.png"))
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 6 if is_handheld() else 8)
+	row.add_theme_constant_override("separation", 3 if active_menu == "dashboard" else (6 if is_handheld() else 8))
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	bar.add_child(padded(row, 1 if is_handheld() else 4))
 	row.add_child(dock_tab("首頁", active_menu == "dashboard", func():
 		clear_return_stack()
 		show_dashboard()
 	, "res://assets/ui/icons/nav_home.png"))
-	row.add_child(dock_tab("編隊", active_menu in ["roster", "tactics", "vault"], func():
+	row.add_child(dock_tab("球隊", active_menu in ["roster", "tactics", "vault"], func():
 		clear_return_stack()
 		show_roster(false)
 	, "res://assets/ui/icons/nav_roster.png"))
-	row.add_child(dock_tab("市場", active_menu in ["market", "collection"], func():
+	row.add_child(dock_tab("比賽", active_menu in ["match", "result"], func():
 		clear_return_stack()
-		show_market()
+		show_match_prep()
+	, "res://assets/art/lobby/match.png"))
+	row.add_child(dock_tab("商店", active_menu == "store", func():
+		clear_return_stack()
+		show_store_hub()
 	, NAV_ICONS.market))
-	row.add_child(dock_tab("活動", active_menu in ["activity", "async"], func():
-		clear_return_stack()
-		show_activity_hub()
-	, "res://assets/ui/icons/nav_activity.svg"))
-	row.add_child(dock_tab(mission_shortcut_title(), active_menu in ["tasks", "challenge"], func():
-		clear_return_stack()
-		show_daily_tasks()
-	, "res://assets/ui/icons/nav_tasks.svg"))
-	row.add_child(dock_tab("更多", active_menu in ["more", "store", "guide", "news", "league"], func():
+	row.add_child(dock_tab("更多", active_menu in ["more", "market", "collection", "activity", "async", "tasks", "challenge", "guide", "news", "league"], func():
 		clear_return_stack()
 		show_more_hub()
 	, "res://assets/ui/icons/nav_more.png"))
@@ -5580,13 +5968,13 @@ func dock_tab(caption: String, selected: bool, action: Callable, icon_path := ""
 	hit.set_meta("button_role", "primary" if selected else "navigation")
 	hit.text = ""
 	hit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hit.custom_minimum_size = Vector2(0, 42) if is_handheld() else Vector2(0, 44)
+	hit.custom_minimum_size = Vector2(0, 42 if active_menu == "dashboard" else 54) if is_handheld() else Vector2(0, 42 if active_menu == "dashboard" else 48)
 	hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	hit.clip_contents = true
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.16, 0.12, 0.05, 0.55) if selected else Color(0.06, 0.08, 0.12, 0.10)
+	style.bg_color = Color(0, 0, 0, 0) if active_menu == "dashboard" else (Color(0.16, 0.12, 0.05, 0.44) if selected else Color(0.06, 0.08, 0.12, 0.10))
 	style.border_color = GOLD
-	style.border_width_bottom = 3 if selected else 0
+	style.border_width_bottom = 0 if active_menu == "dashboard" else (2 if selected else 0)
 	style.set_corner_radius_all(8)
 	style.content_margin_left = 4
 	style.content_margin_right = 4
@@ -5598,24 +5986,37 @@ func dock_tab(caption: String, selected: bool, action: Callable, icon_path := ""
 	hit.add_theme_stylebox_override("normal", style)
 	hit.add_theme_stylebox_override("hover", hover)
 	hit.add_theme_stylebox_override("pressed", style)
-	var col: BoxContainer = HBoxContainer.new() if is_handheld() else VBoxContainer.new()
+	var col: BoxContainer = VBoxContainer.new()
 	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	col.add_theme_constant_override("separation", 4 if is_handheld() else 2)
+	col.add_theme_constant_override("separation", 0 if is_handheld() else 2)
 	hit.add_child(col)
-	var icon_tex := load_png_tex(icon_path)
+	var resolved_icon_path := icon_path
+	if active_menu == "dashboard":
+		resolved_icon_path = {
+			"首頁": "res://assets/ui/icons/dashboard_home.svg",
+			"球隊": "res://assets/ui/icons/dashboard_team.svg",
+			"比賽": "res://assets/ui/icons/dashboard_match.svg",
+			"商店": "res://assets/ui/icons/dashboard_store.svg",
+			"更多": "res://assets/ui/icons/dashboard_more.svg",
+		}.get(caption, icon_path)
+	var icon_tex := load_svg_tex(resolved_icon_path, 96) if resolved_icon_path.ends_with(".svg") else load_png_tex(resolved_icon_path)
 	if icon_tex != null:
 		var glyph := TextureRect.new()
 		glyph.texture = icon_tex
-		glyph.custom_minimum_size = Vector2(20, 20) if is_handheld() else Vector2(24, 24)
+		glyph.custom_minimum_size = Vector2(23 if active_menu == "dashboard" else 32, 23 if active_menu == "dashboard" else 32) if is_handheld() else (Vector2(30, 30) if active_menu == "dashboard" else Vector2(24, 24))
 		glyph.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		glyph.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		glyph.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		glyph.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		col.add_child(glyph)
-	col.add_child(plain_label(caption, 18 if is_handheld() else 12, GOLD if selected else Color(0.78, 0.84, 0.90, 0.88), true))
+	var caption_label := plain_label(caption, 9 if active_menu == "dashboard" else 12, GOLD if selected else Color(0.82, 0.86, 0.91, 0.92), true, HORIZONTAL_ALIGNMENT_CENTER)
+	caption_label.add_theme_color_override("font_shadow_color", Color("000000ee"))
+	caption_label.add_theme_constant_override("shadow_offset_x", 1)
+	caption_label.add_theme_constant_override("shadow_offset_y", 2)
+	col.add_child(caption_label)
 	hit.pressed.connect(func():
 		play_sfx("tap")
 		action.call()
@@ -5803,8 +6204,8 @@ func show_more_hub() -> void:
 	columns.add_theme_constant_override("separation", 12)
 	content.add_child(columns)
 	var groups := [
-		["賽事", CYAN, [["聯盟戰績", show_league_overview], ["額外比賽", show_extra_events], ["休賽季", show_offseason]]],
-		["球隊", GREEN, [["保管箱", show_card_vault], ["數據王", show_stat_kings], ["任務", show_challenge_hub]]],
+		["賽事", CYAN, [["活動", show_activity_hub], ["聯盟戰績", show_league_overview], ["額外比賽", show_extra_events], ["休賽季", show_offseason]]],
+		["球隊", GREEN, [["市場", show_market], ["保管箱", show_card_vault], ["數據王", show_stat_kings], ["任務", show_challenge_hub]]],
 		["資訊", GOLD, [["新聞", show_news_center], ["遊戲指南", show_game_guide], ["官方社群", show_line_community]]],
 		["系統", MUTED, [["商店", show_store_hub], ["設定", show_settings_hub]]]
 	]
@@ -7500,10 +7901,14 @@ func inventory_index_of(player: Dictionary) -> int:
 			return i
 	return -1
 
-func stash_to_vault(player: Dictionary) -> void:
+func stash_to_vault(player: Dictionary) -> bool:
 	if player.is_empty():
-		return
+		return false
+	if card_inventory.size() >= vault_capacity():
+		flash_notice("保管箱已滿（%d／%d），可到商店增加 10 格" % [card_inventory.size(), vault_capacity()])
+		return false
 	card_inventory.append(player.duplicate(true))
+	return true
 
 func duplicate_card_count(player: Dictionary) -> int:
 	var key := player_identity_key(player)
@@ -7592,7 +7997,8 @@ func move_roster_to_vault(index: int) -> void:
 		flash_notice("至少保留 7 人才能開打")
 		return
 	var card: Dictionary = team_players[index]
-	stash_to_vault(card)
+	if not stash_to_vault(card):
+		return
 	team_players.remove_at(index)
 	selected_foundation = clampi(selected_foundation, 0, maxi(0, team_players.size() - 1))
 	apply_combo_label()
@@ -7762,6 +8168,10 @@ func player_in_other_team(raw: Dictionary) -> bool:
 	return false
 
 func cycle_team_profile() -> void:
+	if not second_team_unlocked:
+		select_store_product("便利功能", "second_team")
+		flash_notice("請先解鎖第二隊伍")
+		return
 	if match_rewards_pending or current_stage == 6:
 		flash_notice("請先完成目前比賽，再切換主隊")
 		return
@@ -7985,6 +8395,10 @@ func claim_scout_choice(index: int, expected_player := "", expected_offer := "")
 	if scout_points < cost:
 		flash_notice("球探點不足：%s 年薪 $%d 萬要 %d 點，現在只有 %d。贏球會再補。" % [str(preview.get("name", "球員")), published_salary(preview), cost, scout_points])
 		return
+	var preview_goes_to_vault := team_has_player(preview) or not can_sign_player(preview).is_empty()
+	if preview_goes_to_vault and card_inventory.size() >= vault_capacity():
+		flash_notice("保管箱已滿（%d／%d），未扣球探點" % [card_inventory.size(), vault_capacity()])
+		return
 	var server_authorized := server_spend_authorized
 	if not auth_access.is_empty() and not server_authorized:
 		if not server_spend_inflight:
@@ -8031,6 +8445,7 @@ func claim_scout_choice(index: int, expected_player := "", expected_offer := "")
 func supporter_accent() -> Color:
 	match supporter_theme:
 		"賽博龐克主場": return Color("d94cff")
+		"冠軍金色主場": return GOLD
 		"夜場靛藍": return Color("9465d9")
 		"場邊金": return GOLD
 		_: return TAIWAN_CYAN
@@ -8045,14 +8460,37 @@ func show_supporter_club() -> void:
 	themes.alignment = FlowContainer.ALIGNMENT_CENTER
 	themes.add_theme_constant_override("h_separation", 10)
 	content.add_child(themes)
-	for entry in [["標準球館", TAIWAN_CYAN], ["賽博龐克主場", Color("d94cff")], ["夜場靛藍", Color("9465d9")], ["場邊金", GOLD]]:
-		var theme_name := str(entry[0])
-		var theme_color: Color = entry[1]
-		themes.add_child(market_entry_card(theme_name, "主場主題 · NT$90 · 不影響 OVR 或勝率", theme_color, func(): set_supporter_theme(theme_name)))
+	var theme_entries: Array[Dictionary] = [{"id":"standard", "theme":"標準球館", "title":"標準球館"}]
+	for product in store_products():
+		if product.has("theme"):
+			theme_entries.append(product)
+	for entry in theme_entries:
+		var theme_name := str(entry.get("theme", "標準球館"))
+		var product_id := str(entry.get("id", "standard"))
+		var owned := product_id == "standard" or store_cosmetics_owned.has(product_id)
+		var status := "目前使用中" if supporter_theme == theme_name else ("點擊套用" if owned else "尚未解鎖 · 前往商店")
+		themes.add_child(market_entry_card(str(entry.get("title", theme_name)), "%s · 純外觀，不影響 OVR 或勝率" % status, GOLD if owned else Color("607084"), func(): set_supporter_theme(theme_name)))
 	content.add_child(callout("目前展示", "%s · 配色只改外觀" % supporter_theme, supporter_accent()))
 
+func supporter_theme_product_id(theme_name: String) -> String:
+	if theme_name == "標準球館":
+		return "standard"
+	for product in store_products():
+		if str(product.get("theme", "")) == theme_name:
+			return str(product.id)
+	return ""
+
 func set_supporter_theme(theme_name: String) -> void:
+	var product_id := supporter_theme_product_id(theme_name)
+	if product_id.is_empty():
+		flash_notice("找不到這個球場主題")
+		return
+	if product_id != "standard" and not store_cosmetics_owned.has(product_id):
+		select_store_product("球場", product_id)
+		flash_notice("請先在商店解鎖這座球場")
+		return
 	supporter_theme = theme_name
+	home_environment_mode = "arena"
 	last_progress_event = "支持者外觀已切換為「%s」；這是純視覺設定，沒有任何戰力加成。" % supporter_theme
 	save_game()
 	show_supporter_club()
@@ -8348,7 +8786,7 @@ func show_daily_tasks() -> void:
 	if monthly_pass_active:
 		var pending_pass_days := monthly_pass_claimable_days(today)
 		var pass_claimed := pending_pass_days <= 0
-		content.add_child(callout("主場應援月卡 · 30 天簽到", "每日資金 +100 萬 · 黃金 +20 · 球探點 +5\n已領 %d／30 天；漏領資源可累積。\n專屬球員卡框與看板可到設定切換。" % monthly_pass_claimed_days, GOLD if not pass_claimed else GREEN))
+		content.add_child(callout("主場應援月卡 · 30 天簽到", "每日黃金 +50\n已領 %d／30 天；漏領黃金可累積。\n月影雲海限定球場已永久解鎖，可在球場展示自由切換。" % monthly_pass_claimed_days, GOLD if not pass_claimed else GREEN))
 		var day_grid := GridContainer.new()
 		day_grid.columns = 5
 		day_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -8369,10 +8807,8 @@ func show_daily_tasks() -> void:
 			# for this date so the two economy tracks can never stack.
 			daily_checkin_date = monthly_pass_claimed_date
 			monthly_pass_claimed_days = mini(30, monthly_pass_claimed_days + claim_days)
-			budget_million += 100 * claim_days
-			gold += 20 * claim_days
-			scout_points += 5 * claim_days
-			last_event = "月卡簽到完成 %d 天：資金 +%d 萬、黃金 +%d、球探點 +%d。" % [claim_days, 100 * claim_days, 20 * claim_days, 5 * claim_days]
+			gold += 50 * claim_days
+			last_event = "月卡簽到完成 %d 天：黃金 +%d。" % [claim_days, 50 * claim_days]
 			save_game()
 			show_daily_tasks()
 		, Vector2(0, 48))
@@ -8697,15 +9133,15 @@ func show_national_team() -> void:
 	var event_label := str(event.get("label", "中華隊"))
 	if not extra_can_play("wcq") and not national_unlocked:
 		var locked := begin_screen("中華隊", "先看賽程與名單", 4)
-		locked.add_child(pending_unlock_box("NT$100", "職業前二後才能買通行證出征"))
+		locked.add_child(pending_unlock_box("1,200 黃金", "職業前二後即可解鎖出征"))
 		locked.add_child(national_schedule_panel())
 		if pro_top2:
-			locked.add_child(action_button("NT$100 解鎖本存檔", ORANGE, func(): try_purchase_twd("national"), Vector2(0, 52)))
+			locked.add_child(action_button("前往商店 · 1,200 黃金", ORANGE, func(): select_store_product("賽事", "event_wcq"), Vector2(0, 52)))
 		return
 	if not national_unlocked:
-		var pay := begin_screen("中華隊", "每個存檔 NT$100 解鎖一次", 4)
+		var pay := begin_screen("中華隊", "使用黃金永久解鎖資格賽", 4)
 		pay.add_child(callout("代表隊", "已有前二資格。解鎖後依你擁有的名單打瓊斯盃與亞洲盃，組合 1.5 倍。", RED))
-		pay.add_child(action_button("NT$100 解鎖本存檔", ORANGE, func(): try_purchase_twd("national"), Vector2(0, 52)))
+		pay.add_child(action_button("前往商店 · 1,200 黃金", ORANGE, func(): select_store_product("賽事", "event_wcq"), Vector2(0, 52)))
 		return
 	var content := begin_screen("代表隊", "%s · 擁有幾人算幾人" % event_label, 4)
 	var picker := HBoxContainer.new()
@@ -9051,7 +9487,7 @@ func extra_event_catalog() -> Array:
 			"id": "easl",
 			"title": "東超 2025-26",
 			"sku": "easl",
-			"price": "NT$100",
+			"price": "900 黃金",
 			"prize": "liu",
 			"need": 3,
 			"replace_id": "kings",
@@ -9060,10 +9496,10 @@ func extra_event_catalog() -> Array:
 				{"id": "utsunomiya", "name": "宇都宮Brex", "rating": 86},
 				{"id": "ryukyu", "name": "琉球金鋼", "rating": 84},
 				{"id": "alvark", "name": "東京Alvark", "rating": 84},
-				{"id": "pilots", "name": "桃園璞園領航猿", "rating": 82},
+				{"id": "pilots", "name": "桃園飛行員", "rating": 82},
 				{"id": "sk_knights", "name": "首爾SK騎士", "rating": 82},
-				{"id": "kings", "name": "新北國王", "rating": 81},
-				{"id": "fubon", "name": "台北富邦勇士", "rating": 80},
+				{"id": "kings", "name": "新北皇家", "rating": 81},
+				{"id": "fubon", "name": "台北悍將", "rating": 80},
 				{"id": "changwon", "name": "昌原LG獵隼", "rating": 79},
 				{"id": "manila", "name": "馬尼拉電訊閃電", "rating": 78},
 				{"id": "ulanbaatar", "name": "烏蘭巴托Xac Broncos", "rating": 77},
@@ -9075,15 +9511,15 @@ func extra_event_catalog() -> Array:
 			"id": "bcl",
 			"title": "BCL Asia 2025-26",
 			"sku": "easl",
-			"price": "NT$100",
+			"price": "900 黃金",
 			"prize": "davis",
 			"need": 3,
 			"replace_id": "fubon",
 			"blurb": "BCL Asia 預告：亞洲俱樂部賽尚未開打。用我的球隊取代原本台灣代表名額，通行證 NT$100；冠軍送戴維斯 OVR 86 C 鑽石卡。",
 			"teams": [
-				{"id": "fubon", "name": "台北富邦勇士", "rating": 80},
-				{"id": "kings", "name": "新北國王", "rating": 81},
-				{"id": "dreamers", "name": "福爾摩沙夢想家", "rating": 79},
+				{"id": "fubon", "name": "台北悍將", "rating": 80},
+				{"id": "kings", "name": "新北皇家", "rating": 81},
+				{"id": "dreamers", "name": "寶島追逐者", "rating": 79},
 				{"id": "ryukyu", "name": "琉球金鋼", "rating": 84},
 				{"id": "alvark", "name": "東京Alvark", "rating": 84},
 				{"id": "seoul", "name": "首爾三星雷霆", "rating": 78},
@@ -9095,7 +9531,7 @@ func extra_event_catalog() -> Array:
 			"id": "jones",
 			"title": "2026 瓊斯盃",
 			"sku": "jones",
-			"price": "NT$60",
+			"price": "600 黃金",
 			"prize": "hebo",
 			"need": 3,
 			"replay": true,
@@ -9116,7 +9552,7 @@ func extra_event_catalog() -> Array:
 			"id": "wcq",
 			"title": "世界盃資格賽",
 			"sku": "national",
-			"price": "NT$100",
+			"price": "1,200 黃金",
 			"prize": "chen",
 			"need": 3,
 			"replace_id": "nt_taipei",
@@ -9349,7 +9785,8 @@ func show_extra_event(event_id: String) -> void:
 	if not playable:
 		content.add_child(pending_unlock_box(str(data.get("price", "")), "隊伍與賽程可以先看，解鎖後才能代表出賽"))
 		if pro_top2 or designer_preview():
-			content.add_child(action_button("%s 解鎖" % str(data.get("price", "NT$100")), ORANGE, func(): try_purchase_twd(str(data.get("sku", ""))), Vector2(0, 48)))
+			var store_event_id := "event_jones" if event_id == "jones" else ("event_wcq" if event_id == "wcq" else "event_easl")
+			content.add_child(action_button("%s 解鎖" % str(data.get("price", "黃金")), ORANGE, func(): select_store_product("賽事", store_event_id), Vector2(0, 48)))
 	var champion := bool(extra_champions.get(event_id, false))
 	var status_line := "本輪連勝 %d／%d · 輸球重新挑戰" % [extra_wins, int(data.get("need", 3))]
 	if champion:
@@ -9639,6 +10076,151 @@ func card_reveal_kicker(player: Dictionary) -> String:
 			return "稀有卡"
 		_:
 			return "獲得新卡"
+
+func tier_display_name(key: String) -> String:
+	match key:
+		"cyan": return "灰色"
+		"green": return "綠色"
+		"blue": return "藍色"
+		"red": return "紅色"
+		"purple": return "紫色"
+		"gold": return "金色"
+		"diamond": return "鑽石"
+		_: return "卡框"
+
+func show_tier_up_reveal(player: Dictionary, old_tier: String, old_ovr: int, then := Callable()) -> void:
+	close_share_sheet()
+	if is_instance_valid(card_reveal_modal):
+		card_reveal_then = Callable()
+		close_card_reveal()
+	card_reveal_then = then
+	var new_tier := player_tier_key(player)
+	var accent := tier_color(new_tier)
+	var veil := ColorRect.new()
+	card_reveal_modal = veil
+	veil.name = "TierUpReveal"
+	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	veil.color = Color(0.005, 0.01, 0.025, 0.90)
+	veil.mouse_filter = Control.MOUSE_FILTER_STOP
+	veil.z_index = 72
+	veil.set_meta("armed", false)
+	add_child(veil)
+
+	var flash := ColorRect.new()
+	flash.color = Color(accent, 0.0)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	veil.add_child(flash)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	veil.add_child(center)
+	var stack := VBoxContainer.new()
+	stack.alignment = BoxContainer.ALIGNMENT_CENTER
+	stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stack.add_theme_constant_override("separation", 7)
+	center.add_child(stack)
+	var kicker := label("卡框升階", 22, accent.lightened(0.25), true, HORIZONTAL_ALIGNMENT_CENTER)
+	kicker.modulate.a = 0.0
+	stack.add_child(kicker)
+	var card_w := 118 if compact_phone() else 154
+	var card_h := int(round(float(card_w) / 0.68))
+	var stage := Control.new()
+	stage.name = "TierUpStage"
+	stage.custom_minimum_size = Vector2(card_w, card_h)
+	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage.clip_contents = false
+	stack.add_child(stage)
+
+	var aura := ColorRect.new()
+	aura.color = Color(accent, 0.28)
+	aura.position = Vector2(-22, -22)
+	aura.size = Vector2(card_w + 44, card_h + 44)
+	aura.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	aura.modulate.a = 0.0
+	stage.add_child(aura)
+	var old_player := player.duplicate(true)
+	old_player["ovr"] = old_ovr
+	old_player["color"] = old_tier
+	var old_card := lobby_player_card(old_player, true, -1, false, card_w)
+	old_card.name = "OldTierCard"
+	old_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	old_card.pivot_offset = Vector2(card_w * 0.5, card_h * 0.5)
+	stage.add_child(old_card)
+	var new_card := lobby_player_card(player, true, -1, false, card_w)
+	new_card.name = "NewTierCard"
+	new_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	new_card.pivot_offset = Vector2(card_w * 0.5, card_h * 0.5)
+	new_card.scale = Vector2(0.86, 0.86)
+	new_card.modulate.a = 0.0
+	stage.add_child(new_card)
+	var cracks := TierUpCracks.new()
+	cracks.name = "TierUpCracks"
+	cracks.accent = accent
+	cracks.position = Vector2(-10, -8)
+	cracks.size = Vector2(card_w + 20, card_h + 16)
+	cracks.modulate.a = 0.0
+	stage.add_child(cracks)
+	var promotion := plain_label("%s → %s" % [tier_display_name(old_tier), tier_display_name(new_tier)], 17, accent.lightened(0.28), true, HORIZONTAL_ALIGNMENT_CENTER)
+	promotion.modulate.a = 0.0
+	stack.add_child(promotion)
+	var ovr_text := plain_label("%s　OVR %d → %d" % [player.get("name", "球員"), old_ovr, int(player.get("ovr", old_ovr + 1))], 14, TEXT, true, HORIZONTAL_ALIGNMENT_CENTER)
+	ovr_text.modulate.a = 0.0
+	stack.add_child(ovr_text)
+	var dismiss := plain_label("點畫面繼續", 12, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER)
+	dismiss.modulate.a = 0.0
+	stack.add_child(dismiss)
+
+	var cracks_tw := cracks.create_tween()
+	cracks_tw.tween_property(cracks, "modulate:a", 1.0, 0.34).set_delay(0.12)
+	cracks_tw.tween_property(cracks, "modulate:a", 0.0, 0.18)
+	var old_tw := old_card.create_tween()
+	old_tw.tween_property(old_card, "scale", Vector2(1.035, 1.035), 0.42).set_trans(Tween.TRANS_SINE)
+	old_tw.tween_property(old_card, "modulate:a", 0.0, 0.12)
+	var flash_tw := flash.create_tween()
+	flash_tw.tween_property(flash, "color:a", 0.62, 0.08).set_delay(0.44)
+	flash_tw.tween_property(flash, "color:a", 0.0, 0.20)
+	var veil_ref: WeakRef = weakref(veil)
+	get_tree().create_timer(0.48).timeout.connect(func():
+		var live_veil = veil_ref.get_ref()
+		if live_veil == null:
+			return
+		old_card.visible = false
+		new_card.modulate.a = 1.0
+		play_sfx("tier_up")
+		if is_handheld():
+			Input.vibrate_handheld(45, 0.55 if new_tier in ["green", "blue"] else 0.85)
+		var reveal_tw := new_card.create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+		reveal_tw.tween_property(new_card, "scale", Vector2(1.08, 1.08), 0.22)
+		reveal_tw.tween_property(new_card, "scale", Vector2.ONE, 0.13)
+		var shake_tw := stage.create_tween()
+		shake_tw.tween_property(stage, "position:x", -6.0, 0.035).as_relative()
+		shake_tw.tween_property(stage, "position:x", 11.0, 0.055).as_relative()
+		shake_tw.tween_property(stage, "position:x", -7.0, 0.055).as_relative()
+		shake_tw.tween_property(stage, "position:x", 2.0, 0.04).as_relative()
+	)
+	var info_tw := kicker.create_tween().set_parallel(true)
+	info_tw.tween_property(kicker, "modulate:a", 1.0, 0.22).set_delay(0.52)
+	info_tw.tween_property(promotion, "modulate:a", 1.0, 0.22).set_delay(0.56)
+	info_tw.tween_property(ovr_text, "modulate:a", 1.0, 0.22).set_delay(0.62)
+	info_tw.tween_property(dismiss, "modulate:a", 1.0, 0.18).set_delay(0.82)
+	info_tw.tween_property(aura, "modulate:a", 0.86, 0.28).set_delay(0.48)
+	var aura_tw := aura.create_tween().set_loops()
+	aura_tw.tween_property(aura, "modulate:a", 0.30, 0.58).set_delay(0.78)
+	aura_tw.tween_property(aura, "modulate:a", 0.78, 0.58)
+	get_tree().create_timer(0.82).timeout.connect(func():
+		var live_veil = veil_ref.get_ref()
+		if live_veil != null:
+			live_veil.set_meta("armed", true)
+	)
+	veil.gui_input.connect(func(event: InputEvent):
+		if not bool(veil.get_meta("armed", false)):
+			return
+		if event is InputEventMouseButton and event.pressed:
+			close_card_reveal()
+		elif event is InputEventScreenTouch and event.pressed:
+			close_card_reveal()
+	)
 
 func show_card_reveal(player: Dictionary, then := Callable(), note := "") -> void:
 	close_share_sheet()
@@ -10608,6 +11190,13 @@ func reset_club_state() -> void:
 	scout_pity_progress = 0
 	scout_board_serial = 0
 	supporter_theme = "標準球館"
+	store_cosmetics_owned = ["standard"]
+	store_category = "精選"
+	store_selected_product = "arena_taipei"
+	home_environment_mode = "arena"
+	locker_room_theme = "標準更衣室"
+	vault_capacity_bonus = 0
+	second_team_unlocked = false
 	active_challenge = ""
 	challenge_progress = {"small_market":0, "salary_cap":0, "national_pride":0}
 	challenge_completed = {"small_market":false, "salary_cap":false, "national_pride":false}
@@ -10743,7 +11332,7 @@ func save_slot_card(index: int) -> Control:
 	hit.pressed.connect(func():
 		play_sfx("tap")
 		if locked:
-			try_purchase_twd("extra_save")
+			select_store_product("便利功能", "save_plus_1")
 		else:
 			open_save_slot(index)
 	)
@@ -10756,7 +11345,7 @@ func slot_preview(index: int) -> Dictionary:
 	var row := {"slot": index, "empty": true, "club": "新球季", "line": "點這裡開打", "face": {}, "locked": locked}
 	if locked:
 		row["club"] = "第 %d 格" % (index + 1)
-		row["line"] = "NT$100 解鎖"
+		row["line"] = "1,000 黃金解鎖"
 		return row
 	var path := slot_save_path(index)
 	var parsed := SaveStore.read_save(path)
@@ -11011,53 +11600,548 @@ func show_dashboard() -> void:
 			team_players[i] = refresh_stored_player(team_players[i])
 	ensure_photographed_starters()
 	var opponent: Dictionary = current_match_opponent()
-	if is_handheld():
-		var content := begin_screen(club_display_name(), "%s · %d勝 %d敗 · %s" % [current_league, season_wins, season_losses, season_phase_label()], 3)
-		content.add_child(onboarding_next_step_panel())
-		content.add_child(match_banner(opponent))
-		content.add_child(phone_roster_board())
-		maybe_show_tutorial()
+	build_dashboard_screen(opponent)
+	maybe_show_tutorial()
+
+func dashboard_skin(path: String) -> TextureRect:
+	var skin := TextureRect.new()
+	skin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	skin.texture = load_png_tex(path)
+	skin.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	skin.stretch_mode = TextureRect.STRETCH_SCALE
+	skin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return skin
+
+func home_header_resource(caption: String, value: String, icon_path: String, action: Callable) -> Button:
+	var compact := compact_phone()
+	var raw_number := int(value) if value.is_valid_int() else 0
+	var shown_value := home_resource_number(raw_number) if value.is_valid_int() else value
+	var button := action_button("", Color("00000000"), action, Vector2(60 if compact else 142, 40 if compact else 46))
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.size_flags_stretch_ratio = 1.8 if caption == "薪資空間" else 1.0
+	button.add_theme_stylebox_override("normal", invisible_style())
+	button.add_theme_stylebox_override("hover", panel_style(Color("ffffff0b"), GOLD, 10, 1))
+	button.add_theme_stylebox_override("pressed", panel_style(Color("ffffff14"), GOLD, 10, 1))
+	button.add_child(dashboard_skin("res://assets/ui/home/resource_pill_skin_trim_v1.png"))
+	var icon := TextureRect.new()
+	icon.texture = load_png_tex(icon_path)
+	icon.anchor_left = 0.035
+	icon.anchor_right = 0.13
+	icon.anchor_top = 0.18
+	icon.anchor_bottom = 0.82
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(icon)
+	var balance_text := "%s %s" % [caption, shown_value]
+	var balance_font := 4 if compact else 7
+	var balance := fit_label(balance_text, balance_font, Color("fff2c2"), true, HORIZONTAL_ALIGNMENT_CENTER)
+	balance.anchor_left = 0.16
+	balance.anchor_right = 0.95 if caption in ["資金", "薪資空間"] else 0.83
+	balance.anchor_top = 0.12
+	balance.anchor_bottom = 0.88
+	balance.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	balance.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(balance)
+	var plus := plain_label("＋", 10 if compact else 16, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
+	plus.anchor_left = 0.85
+	plus.anchor_right = 0.96
+	plus.anchor_top = 0.1
+	plus.anchor_bottom = 0.9
+	plus.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	plus.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plus.visible = caption not in ["資金", "薪資空間"]
+	button.add_child(plus)
+	button.tooltip_text = "%s：%s" % [caption, value]
+	return button
+
+func home_resource_number(value: int) -> String:
+	var amount := maxi(value, 0)
+	if amount >= 100000000:
+		return ("%.1f億" % (float(amount) / 100000000.0)).replace(".0億", "億")
+	if amount >= 10000000:
+		return "%d萬" % int(round(float(amount) / 10000.0))
+	if amount >= 10000:
+		return ("%.1f萬" % (float(amount) / 10000.0)).replace(".0萬", "萬")
+	return str(amount)
+
+func dashboard_scene_shortcut(caption: String, action: Callable, left: float, right: float, top: float) -> Button:
+	var button := action_button(caption, Color("0a1019dd"), action, Vector2(64 if compact_phone() else 135, 34 if compact_phone() else 42))
+	button.anchor_left = left
+	button.anchor_right = right
+	button.anchor_top = top
+	button.anchor_bottom = top
+	button.offset_top = 0
+	button.offset_bottom = 34 if compact_phone() else 42
+	button.add_theme_font_size_override("font_size", 9 if compact_phone() else 14)
+	button.add_theme_stylebox_override("normal", panel_style(Color("080d15d8"), GOLD, 7, 1))
+	button.add_theme_stylebox_override("hover", panel_style(Color("211b0de8"), Color("ffe49a"), 7, 2))
+	button.tooltip_text = caption
+	return button
+
+func dashboard_fade_texture(left_color: Color, middle_color: Color, right_color: Color) -> GradientTexture2D:
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([0.0, 0.64, 1.0])
+	gradient.colors = PackedColorArray([left_color, middle_color, right_color])
+	var texture := GradientTexture2D.new()
+	texture.gradient = gradient
+	texture.width = 640
+	texture.height = 96
+	texture.fill_from = Vector2(0.0, 0.5)
+	texture.fill_to = Vector2(1.0, 0.5)
+	return texture
+
+func home_next_match_strip(opponent: Dictionary) -> Control:
+	var compact := compact_phone()
+	var panel := PanelContainer.new()
+	panel.name = "HomeNextMatchStrip"
+	panel.add_theme_stylebox_override("panel", panel_style(Color("d6e0ea1c"), Color("e2cc805f"), 9, 1))
+	var content := VBoxContainer.new()
+	content.alignment = BoxContainer.ALIGNMENT_CENTER
+	content.add_theme_constant_override("separation", -1 if compact else 1)
+	panel.add_child(padded(content, 4 if compact else 7))
+	content.add_child(kicker_label("下一場 · %s" % fixture_label(), 8 if compact else 10, GOLD, HORIZONTAL_ALIGNMENT_CENTER))
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 5 if compact else 9)
+	content.add_child(row)
+	row.add_child(team_logo_rect(ensure_club_logo_id(), 26 if compact else 38, club_display_name()))
+	row.add_child(fit_label(club_display_name(), 9 if compact else 13, TEXT, true, HORIZONTAL_ALIGNMENT_RIGHT))
+	row.add_child(plain_label("VS", 10 if compact else 15, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
+	var rival_id := str(opponent.get("team_id", opponent.get("id", "")))
+	var rival_name := str(opponent.get("name", "待定對手"))
+	row.add_child(team_logo_rect(rival_id, 26 if compact else 38, rival_name))
+	row.add_child(fit_label(rival_name, 9 if compact else 13, TEXT, true))
+	var hit := action_button("", Color("00000000"), func(): show_match_prep(), Vector2.ZERO)
+	hit.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hit.tooltip_text = "查看下一場：%s vs %s" % [club_display_name(), rival_name]
+	hit.add_theme_stylebox_override("normal", invisible_style())
+	hit.add_theme_stylebox_override("hover", panel_style(Color("ffffff0c"), GOLD, 9, 1))
+	panel.add_child(hit)
+	return panel
+
+func dashboard_schedule_entry(relative_index: int, fallback: Dictionary) -> Dictionary:
+	if season_schedule.is_empty():
+		return {"team": fallback, "number": 1, "home": is_home_game}
+	var position := posmod(schedule_index + relative_index, season_schedule.size())
+	var raw = season_schedule[position]
+	if raw is not Dictionary:
+		return {"team": fallback, "number": position + 1, "home": true}
+	var game: Dictionary = raw
+	var team = game.get("team", fallback)
+	return {"team": team if team is Dictionary else fallback, "number": position + 1, "home": bool(game.get("home", true))}
+
+func dashboard_schedule_card(entry: Dictionary, highlighted: bool, tilt_degrees: float) -> PanelContainer:
+	var compact := compact_phone()
+	var team: Dictionary = entry.get("team", {})
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(66 if highlighted and compact else (52 if compact else (150 if highlighted else 124)), 92 if highlighted and compact else (78 if compact else (178 if highlighted else 150)))
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL if highlighted else Control.SIZE_SHRINK_CENTER
+	card.rotation = deg_to_rad(tilt_degrees)
+	card.pivot_offset = card.custom_minimum_size * 0.5
+	var bg_color := Color("e9d28df2") if highlighted else Color("09121ee9")
+	var border := Color("fff0b5") if highlighted else Color("8f794eaa")
+	card.add_theme_stylebox_override("panel", panel_style(bg_color, border, 8, 2 if highlighted else 1))
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 0 if compact else 3)
+	card.add_child(padded(box, 3 if compact else 6))
+	var ink := Color("17130c") if highlighted else TEXT
+	box.add_child(plain_label("第 %d 場" % int(entry.get("number", 1)), 7 if compact else 10, ink, true, HORIZONTAL_ALIGNMENT_CENTER))
+	var team_id := str(team.get("team_id", team.get("id", "")))
+	var team_name := str(team.get("name", "待定對手"))
+	box.add_child(team_logo_rect(team_id, 28 if compact else (64 if highlighted else 54), team_name))
+	var name_label := fit_label(team_name, 8 if compact else 12, ink, true, HORIZONTAL_ALIGNMENT_CENTER)
+	name_label.tooltip_text = team_name
+	box.add_child(name_label)
+	if highlighted:
+		box.add_child(plain_label("主場" if bool(entry.get("home", true)) else "客場", 7 if compact else 9, Color("725012"), true, HORIZONTAL_ALIGNMENT_CENTER))
+	return card
+
+func shift_home_schedule_preview(delta: int) -> void:
+	if season_schedule.is_empty():
 		return
+	home_schedule_preview_offset = posmod(home_schedule_preview_offset + delta, season_schedule.size())
+	show_dashboard()
+
+func dashboard_schedule_hotspot(delta: int, tip: String) -> Control:
+	var hotspot := Control.new()
+	hotspot.mouse_filter = Control.MOUSE_FILTER_STOP
+	hotspot.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	hotspot.tooltip_text = tip
+	hotspot.gui_input.connect(func(event: InputEvent):
+		var activate: bool = false
+		if event is InputEventMouseButton:
+			activate = event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+		elif event is InputEventScreenTouch:
+			activate = event.pressed
+		if activate:
+			hotspot.accept_event()
+			play_sfx("tap")
+			shift_home_schedule_preview(delta)
+	)
+	return hotspot
+
+func dashboard_schedule_card_content(entry: Dictionary, highlighted: bool, left: float, right: float) -> Control:
+	var compact := compact_phone()
+	var team: Dictionary = entry.get("team", {})
+	var holder := Control.new()
+	holder.anchor_left = left
+	holder.anchor_right = right
+	holder.anchor_top = 0.18 if highlighted else 0.22
+	holder.anchor_bottom = 0.72
+	var box := VBoxContainer.new()
+	box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", -2 if compact else 1)
+	holder.add_child(box)
+	var ink := Color("17130c") if highlighted else TEXT
+	box.add_child(plain_label("第 %d 場" % int(entry.get("number", 1)), 6 if compact else 8, ink, true, HORIZONTAL_ALIGNMENT_CENTER))
+	var team_id := str(team.get("team_id", team.get("id", "")))
+	var team_name := str(team.get("name", "待定對手"))
+	box.add_child(team_logo_rect(team_id, 21 if compact else (44 if highlighted else 37), team_name))
+	var name_label := fit_label(team_name, 6 if compact else 8, ink, true, HORIZONTAL_ALIGNMENT_CENTER)
+	name_label.tooltip_text = team_name
+	box.add_child(name_label)
+	if highlighted:
+		box.add_child(plain_label("主場" if bool(entry.get("home", true)) else "客場", 5 if compact else 7, Color("725012"), true, HORIZONTAL_ALIGNMENT_CENTER))
+	return holder
+
+func home_schedule_carousel(opponent: Dictionary) -> Control:
+	var compact := compact_phone()
+	var shell := Control.new()
+	shell.name = "HomeScheduleCarousel"
+	var skin := TextureRect.new()
+	skin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	skin.texture = load_png_tex("res://assets/ui/home/schedule_carousel_skin_v2.png")
+	skin.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	skin.stretch_mode = TextureRect.STRETCH_SCALE
+	skin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shell.add_child(skin)
+	var heading := fit_label("下一場" if home_schedule_preview_offset == 0 else "賽程預覽", 10 if compact else 16, GOLD, true)
+	heading.anchor_left = 0.08
+	heading.anchor_right = 0.38
+	heading.anchor_top = 0.025
+	heading.anchor_bottom = 0.16
+	shell.add_child(heading)
+	var previous := dashboard_schedule_hotspot(-1, "上一場賽程")
+	previous.anchor_left = 0.035
+	previous.anchor_right = 0.12
+	previous.anchor_top = 0.37
+	previous.anchor_bottom = 0.62
+	shell.add_child(previous)
+	var following := dashboard_schedule_hotspot(1, "下一場賽程")
+	following.anchor_left = 0.88
+	following.anchor_right = 0.965
+	following.anchor_top = 0.37
+	following.anchor_bottom = 0.62
+	shell.add_child(following)
+	shell.add_child(dashboard_schedule_card_content(dashboard_schedule_entry(home_schedule_preview_offset - 1, opponent), false, 0.14, 0.385))
+	shell.add_child(dashboard_schedule_card_content(dashboard_schedule_entry(home_schedule_preview_offset, opponent), true, 0.385, 0.64))
+	shell.add_child(dashboard_schedule_card_content(dashboard_schedule_entry(home_schedule_preview_offset + 1, opponent), false, 0.64, 0.875))
+	var center_entry := dashboard_schedule_entry(home_schedule_preview_offset, opponent)
+	var rival: Dictionary = center_entry.get("team", opponent)
+	var matchup_row := HBoxContainer.new()
+	matchup_row.anchor_left = 0.15
+	matchup_row.anchor_right = 0.85
+	matchup_row.anchor_top = 0.785
+	matchup_row.anchor_bottom = 0.935
+	matchup_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	matchup_row.add_theme_constant_override("separation", 2 if compact else 6)
+	matchup_row.add_child(team_logo_rect(ensure_club_logo_id(), 17 if compact else 22, club_display_name()))
+	matchup_row.add_child(fit_label(club_display_name(), 6 if compact else 8, TEXT, true, HORIZONTAL_ALIGNMENT_RIGHT))
+	matchup_row.add_child(plain_label("VS", 8 if compact else 11, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
+	var rival_id := str(rival.get("team_id", rival.get("id", "")))
+	var rival_name := str(rival.get("name", "待定對手"))
+	matchup_row.add_child(team_logo_rect(rival_id, 17 if compact else 22, rival_name))
+	matchup_row.add_child(fit_label(rival_name, 6 if compact else 8, TEXT, true))
+	shell.add_child(matchup_row)
+	return shell
+
+func show_dashboard_more_menu() -> void:
+	var existing := get_node_or_null("DashboardMoreMenu")
+	if existing != null:
+		existing.queue_free()
+		return
+	var panel := PanelContainer.new()
+	panel.name = "DashboardMoreMenu"
+	panel.anchor_left = 0.72
+	panel.anchor_right = 0.985
+	panel.anchor_top = 0.12
+	panel.anchor_bottom = 0.91
+	panel.add_theme_stylebox_override("panel", panel_style(Color("07101bf4"), GOLD, 12, 1))
+	add_child(panel)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 5)
+	panel.add_child(padded(box, 9))
+	var head := HBoxContainer.new()
+	head.add_child(fit_label("更多", 16, GOLD, true))
+	head.add_child(action_button("×", Color("263443"), func(): show_dashboard_more_menu(), Vector2(38, 34)))
+	box.add_child(head)
+	for entry in [
+		["遊戲設定", show_settings_hub],
+		["遊戲指南", show_game_guide],
+		["新聞中心", show_news_center],
+		["存檔管理", show_save_slots],
+		["所有功能", show_more_hub],
+	]:
+		var destination: Callable = entry[1]
+		box.add_child(action_button(str(entry[0]), Color("172536e8"), func():
+			clear_return_stack()
+			open_sub(show_dashboard, destination)
+		, Vector2(0, 34 if compact_phone() else 40)))
+
+func build_dashboard_screen(opponent: Dictionary) -> void:
+	match_play_id += 1
 	clear_screen()
 	current_stage = 3
+	var compact := compact_phone()
+	var bg := TextureRect.new()
+	bg.name = "DashboardClubhouseArt"
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.texture = locker_room_tex() if home_environment_mode == "locker" else load_png_tex("res://assets/art/lobby/home_clubhouse_v2.png")
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(bg)
+
+	var vignette := ColorRect.new()
+	vignette.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	vignette.color = Color("02050a26")
+	vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(vignette)
+
+	var safe := MarginContainer.new()
+	safe.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var pad := screen_safe_pad()
-	var root := add_court_stage(0.4)
-	var margin := MarginContainer.new()
-	root.add_child(margin)
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", pad.x)
-	margin.add_to_group("screen_safe_margins")
-	margin.add_theme_constant_override("margin_right", pad.z)
-	margin.add_theme_constant_override("margin_top", pad.y)
-	margin.add_theme_constant_override("margin_bottom", pad.w)
-	var page := VBoxContainer.new()
-	page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	page.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	page.add_theme_constant_override("separation", 4)
-	margin.add_child(page)
-	var top := PanelContainer.new()
-	top.custom_minimum_size = Vector2(0, 50)
-	top.add_theme_stylebox_override("panel", glass_style(14))
-	page.add_child(top)
-	var top_row := HBoxContainer.new()
-	top_row.add_theme_constant_override("separation", 6)
-	top_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	top.add_child(padded(top_row, 6))
-	var ident_box := VBoxContainer.new()
-	ident_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ident_box.add_theme_constant_override("separation", 0)
-	ident_box.add_child(club_name_edit_button(club_display_name(), 17))
-	ident_box.add_child(kicker_label("%s  ·  %d勝 %d敗  ·  %s" % [current_league, season_wins, season_losses, season_phase_label()], 11, MUTED, HORIZONTAL_ALIGNMENT_LEFT))
-	top_row.add_child(club_logo_button(46, func(): open_sub(show_dashboard, show_club_logo_picker)))
-	top_row.add_child(ident_box)
-	top_row.add_child(hud_economy_row(true))
-	top_row.add_child(hud_shortcut(mission_shortcut_title(), "match", ORANGE, func(): jump_shortcut(show_challenge_hub)))
-	top_row.add_child(hud_shortcut("商店", "save", GOLD, func(): jump_shortcut(show_store_hub)))
-	page.add_child(match_banner(opponent))
-	page.add_child(onboarding_next_step_panel())
-	page.add_child(lobby_roster_board())
-	page.add_child(bottom_navigation())
-	maybe_show_tutorial()
+	safe.add_theme_constant_override("margin_left", pad.x)
+	safe.add_theme_constant_override("margin_right", pad.z)
+	safe.add_theme_constant_override("margin_top", pad.y)
+	safe.add_theme_constant_override("margin_bottom", pad.w)
+	safe.add_to_group("screen_safe_margins")
+	add_child(safe)
+	var stage := Control.new()
+	stage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	safe.add_child(stage)
+
+	var header := PanelContainer.new()
+	header.name = "DashboardClubHeader"
+	header.anchor_left = 0.01
+	header.anchor_right = 0.30
+	header.anchor_top = 0.015
+	header.anchor_bottom = 0.015
+	header.offset_bottom = 38 if compact else 58
+	header.add_theme_stylebox_override("panel", invisible_style())
+	stage.add_child(header)
+	header.add_child(dashboard_skin("res://assets/ui/home/club_header_skin_trim_v1.png"))
+	var header_row := HBoxContainer.new()
+	header_row.add_theme_constant_override("separation", 18 if compact else 38)
+	header.add_child(padded(header_row, 5 if compact else 8))
+	header_row.add_child(club_logo_button(26 if compact else 42, show_club_logo_picker))
+	var club_words := VBoxContainer.new()
+	club_words.custom_minimum_size.x = 96 if compact else 200
+	club_words.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	club_words.add_theme_constant_override("separation", -2)
+	header_row.add_child(club_words)
+	club_words.add_child(fit_label(club_display_name(), 8 if compact else 14, TEXT, true))
+	var level := 1 + int(season_games / 5)
+	club_words.add_child(fit_label("Lv.%d　%s %d勝 %d敗" % [level, current_league, season_wins, season_losses], 7 if compact else 9, GOLD, true))
+	var resource_row := HBoxContainer.new()
+	resource_row.name = "DashboardResources"
+	resource_row.anchor_left = 0.305
+	resource_row.anchor_right = 0.99
+	resource_row.anchor_top = 0.02
+	resource_row.anchor_bottom = 0.02
+	resource_row.offset_bottom = 40 if compact else 48
+	resource_row.alignment = BoxContainer.ALIGNMENT_END
+	resource_row.add_theme_constant_override("separation", 5 if compact else 8)
+	stage.add_child(resource_row)
+	resource_row.add_child(home_header_resource("黃金", str(gold), "res://assets/ui/hud/gold_coin.png", show_store_hub))
+	resource_row.add_child(home_header_resource("球探點", str(scout_points), "res://assets/ui/hud/scout.png", show_gacha_market))
+	resource_row.add_child(home_header_resource("資金", resource_display_number(budget_million, "萬"), "res://assets/ui/hud/budget.png", show_finance_sheet))
+	var salary_space_text := "%s/%s萬" % [resource_display_number(roster_salary()), resource_display_number(salary_cap)]
+	resource_row.add_child(home_header_resource("薪資空間", salary_space_text, "res://assets/ui/hud/budget.png", show_salary_sheet))
+	var menu := action_button("☰", Color("111722ee"), show_dashboard_more_menu, Vector2(40 if compact else 54, 40 if compact else 46))
+	menu.add_theme_font_size_override("font_size", 18 if compact else 25)
+	menu.add_theme_stylebox_override("normal", panel_style(Color("10151ddd"), Color("90794388"), 8, 1))
+	menu.tooltip_text = "更多：設定、指南、新聞與存檔"
+	resource_row.add_child(menu)
+
+	var schedule := home_schedule_carousel(opponent)
+	schedule.anchor_left = 0.66
+	schedule.anchor_right = 0.985
+	schedule.anchor_top = 0.16
+	schedule.anchor_bottom = 0.485
+	stage.add_child(schedule)
+
+	stage.add_child(dashboard_scene_shortcut("我的球館", func(): set_home_environment_mode("arena"), 0.025, 0.145, 0.16))
+	stage.add_child(dashboard_scene_shortcut("更衣室", func(): set_home_environment_mode("locker"), 0.15, 0.27, 0.16))
+
+	var task := home_task_panel()
+	task.anchor_left = 0.73 if not compact else 0.70
+	task.anchor_right = 0.98
+	task.anchor_top = 0.53 if not compact else 0.54
+	task.anchor_bottom = task.anchor_top
+	task.offset_bottom = 112 if not compact else 66
+	stage.add_child(task)
+
+	var dock := bottom_navigation()
+	dock.name = "BottomNavigation"
+	dock.anchor_left = 0.015
+	dock.anchor_right = 0.52
+	dock.anchor_top = 0.865
+	dock.anchor_bottom = 0.975
+	dock.custom_minimum_size = Vector2.ZERO
+	stage.add_child(dock)
+
+	var start := action_button("", Color("00000000"), func(): show_match_prep(), Vector2.ZERO)
+	start.name = "HomeStartMatch"
+	start.anchor_left = 0.75 if not compact else 0.78
+	start.anchor_right = 0.985
+	start.anchor_top = 0.82
+	start.anchor_bottom = 0.975
+	start.add_theme_stylebox_override("normal", invisible_style())
+	start.add_theme_stylebox_override("hover", panel_style(Color("ffffff10"), Color("fff0bd"), 12, 2))
+	start.add_theme_stylebox_override("pressed", panel_style(Color("ffffff18"), GOLD, 12, 2))
+	start.add_child(dashboard_skin("res://assets/ui/home/start_button_skin_trim_v1.png"))
+	var start_ball := TextureRect.new()
+	start_ball.texture = load_png_tex("res://assets/ui/hud/start_basketball_gold_v2.png")
+	start_ball.anchor_left = 0.035
+	start_ball.anchor_right = 0.205
+	start_ball.anchor_top = 0.18
+	start_ball.anchor_bottom = 0.82
+	start_ball.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	start_ball.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	start_ball.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	start.add_child(start_ball)
+	var start_text := plain_label("開始比賽", 17 if compact else 28, Color("fff6d8"), true, HORIZONTAL_ALIGNMENT_CENTER)
+	start_text.anchor_left = 0.27
+	start_text.anchor_right = 0.94
+	start_text.anchor_top = 0.08
+	start_text.anchor_bottom = 0.92
+	start_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	start_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	start.add_child(start_text)
+	stage.add_child(start)
+	modulate.a = 1.0
+
+func home_scene_button(caption: String, icon_path: String, action: Callable, selected := false) -> Button:
+	var button := action_button(caption, Color("101923e8"), action, Vector2(126 if is_handheld() else 142, 44))
+	button.set_meta("button_role", "primary" if selected else "navigation")
+	button.add_theme_font_size_override("font_size", 14 if is_handheld() else 15)
+	button.add_theme_stylebox_override("normal", panel_style(Color("0a111be8"), GOLD if selected else Color("8b7540"), 10, 2 if selected else 1))
+	button.add_theme_stylebox_override("hover", panel_style(Color("182230f2"), GOLD, 10, 2))
+	button.icon = load_png_tex(icon_path)
+	button.add_theme_constant_override("icon_max_width", 22)
+	button.expand_icon = true
+	return button
+
+func home_task_panel() -> Control:
+	var panel := Control.new()
+	panel.name = "HomeDailyTask"
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	panel.custom_minimum_size.y = 62 if compact_phone() else 78
+	panel.add_child(dashboard_skin("res://assets/ui/home/task_panel_skin_trim_v1.png"))
+	var box := VBoxContainer.new()
+	box.anchor_left = 0.06
+	box.anchor_right = 0.72
+	box.anchor_top = 0.10
+	box.anchor_bottom = 0.90
+	box.add_theme_constant_override("separation", 0)
+	panel.add_child(box)
+	box.add_child(kicker_label("今日任務", 10 if compact_phone() else 11, GOLD, HORIZONTAL_ALIGNMENT_LEFT))
+	var task_text := "完成一場比賽"
+	var progress := "1/1" if mission_alert else "0/1"
+	var row := HBoxContainer.new()
+	row.add_child(fit_label(task_text, 10 if compact_phone() else 12, TEXT, true))
+	row.add_child(plain_label(progress, 10 if compact_phone() else 12, GOLD, true, HORIZONTAL_ALIGNMENT_RIGHT))
+	box.add_child(row)
+	var reward := hud_icon("res://assets/ui/hud/gold_coin.png", 21 if compact_phone() else 38)
+	reward.anchor_left = 0.81
+	reward.anchor_right = 0.92
+	reward.anchor_top = 0.20
+	reward.anchor_bottom = 0.60
+	panel.add_child(reward)
+	var reward_count := plain_label("×50", 6 if compact_phone() else 9, Color("fff0b0"), true, HORIZONTAL_ALIGNMENT_CENTER)
+	reward_count.anchor_left = 0.80
+	reward_count.anchor_right = 0.93
+	reward_count.anchor_top = 0.57
+	reward_count.anchor_bottom = 0.72
+	reward_count.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	panel.add_child(reward_count)
+	# The reference lobby presents this as one clean mission card.  Keep the
+	# entire card tappable without adding a bulky nested button.
+	var hit := action_button("", Color("1b304200"), func(): jump_shortcut(show_daily_tasks), Vector2.ZERO)
+	hit.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hit.tooltip_text = "查看今日任務"
+	hit.add_theme_stylebox_override("normal", invisible_style())
+	hit.add_theme_stylebox_override("hover", panel_style(Color("ffffff0c"), GOLD, 13, 1))
+	hit.add_theme_stylebox_override("pressed", panel_style(Color("ffffff16"), GOLD, 13, 1))
+	panel.add_child(hit)
+	return panel
+
+func home_match_panel(opponent: Dictionary) -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.name = "HomeNextMatch"
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_theme_stylebox_override("panel", panel_style(Color("08111dec"), Color("d9b65699"), 14, 1))
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 4)
+	panel.add_child(padded(box, 10))
+	box.add_child(kicker_label("下一場 · %s" % fixture_label(), 11, GOLD, HORIZONTAL_ALIGNMENT_CENTER))
+	var marks := HBoxContainer.new()
+	marks.alignment = BoxContainer.ALIGNMENT_CENTER
+	marks.add_theme_constant_override("separation", 8)
+	marks.add_child(home_banner_mark(34 if is_handheld() else 42))
+	marks.add_child(plain_label("VS", 14, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
+	marks.add_child(team_logo_rect(str(opponent.get("team_id", "")), 38 if is_handheld() else 46, str(opponent.get("name", "對手"))))
+	box.add_child(marks)
+	box.add_child(fit_label(str(opponent.get("name", "對手")), 16, TEXT, true, HORIZONTAL_ALIGNMENT_CENTER))
+	return panel
+
+func set_home_environment_mode(mode: String) -> void:
+	home_environment_mode = mode
+	show_dashboard()
+
+func home_lobby_scene(opponent: Dictionary) -> Control:
+	var scene := PanelContainer.new()
+	scene.name = "HomeEnvironment"
+	scene.custom_minimum_size = Vector2(0, 214 if compact_phone() else 390)
+	scene.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scene.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scene.clip_contents = true
+	scene.add_theme_stylebox_override("panel", invisible_style())
+	var stage := Control.new()
+	stage.custom_minimum_size = scene.custom_minimum_size
+	stage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scene.add_child(stage)
+	var modes := HBoxContainer.new()
+	modes.position = Vector2(12, 12)
+	modes.size = Vector2(290, 44)
+	modes.add_theme_constant_override("separation", 7)
+	stage.add_child(modes)
+	modes.add_child(home_scene_button("我的球館", "res://assets/ui/icons/nav_home.png", func(): set_home_environment_mode("arena"), home_environment_mode == "arena"))
+	modes.add_child(home_scene_button("更衣室", "res://assets/ui/icons/nav_roster.png", func(): set_home_environment_mode("locker"), home_environment_mode == "locker"))
+
+	var right := VBoxContainer.new()
+	right.anchor_left = 0.70
+	right.anchor_top = 0.03 if compact_phone() else 0.30
+	right.anchor_right = 0.99
+	right.anchor_bottom = right.anchor_top
+	right.offset_bottom = 122 if compact_phone() else 150
+	right.add_theme_constant_override("separation", 10)
+	stage.add_child(right)
+	right.add_child(home_task_panel())
+	var start := gold_action_button("開始比賽", func(): show_match_prep(), Vector2(0, 48 if compact_phone() else 60))
+	start.name = "HomeStartMatch"
+	start.add_theme_font_size_override("font_size", 20 if is_handheld() else 26)
+	right.add_child(start)
+	return scene
 
 func maybe_show_tutorial() -> void:
 	if tutorial_seen or season_games > 0:
@@ -11536,6 +12620,8 @@ func lobby_player_card(player: Dictionary, _starter: bool, index := -1, swap_mod
 	var show_team_mark := player_tier_key(player) != "diamond"
 	visual.configure({
 		"portrait": blended_card_portrait(player),
+		"court": card_court_for(player),
+		"court_tint": card_court_tint(player),
 		"frame": card_frame_for(player_tier_key(player)),
 		"frame_tint": card_frame_tint(player_tier_key(player)),
 		"tier": player_tier_key(player),
@@ -12282,8 +13368,9 @@ func show_card_vault() -> void:
 	chips.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	chips.add_theme_constant_override("separation", 6)
 	content.add_child(chips)
-	chips.add_child(roster_count_pill("保管箱", str(card_inventory.size()), GOLD))
+	chips.add_child(roster_count_pill("保管箱", "%d／%d" % [card_inventory.size(), vault_capacity()], GOLD))
 	chips.add_child(roster_count_pill("名單", "%d／%d" % [team_players.size(), roster_limit()], CYAN))
+	chips.add_child(action_button("擴充 +10", GOLD, func(): select_store_product("便利功能", "vault_plus_10"), Vector2(94, 38)))
 	var filters: Control = vault_filter_bar()
 	filters.visible = not is_handheld() or vault_filters_visible
 	content.add_child(filters)
@@ -12456,6 +13543,8 @@ func apply_player_training(index: int, reopen_modal := true) -> void:
 		flash_notice("資金不足：本次養成需 $20 萬，目前 $%d 萬。" % budget_million)
 		return
 	var player: Dictionary = team_players[index]
+	var old_ovr := int(player.get("ovr", 70))
+	var old_tier := player_tier_key(player)
 	var sessions := int(player.get("training_sessions", 0))
 	if sessions >= TRAINING_MAX_SESSIONS:
 		flash_notice("%s 已完成 5 次特訓，專屬技能已解鎖並套用到比賽。" % player.get("name", "球員"))
@@ -12518,7 +13607,10 @@ func apply_player_training(index: int, reopen_modal := true) -> void:
 	last_event = last_training_note
 	last_news = last_event
 	save_game()
-	if reopen_modal:
+	var new_tier := player_tier_key(player)
+	if reopen_modal and new_tier != old_tier:
+		call_deferred("show_tier_up_reveal", player.duplicate(true), old_tier, old_ovr, func(): show_training_modal())
+	elif reopen_modal:
 		call_deferred("show_training_modal")
 
 func close_training_modal() -> void:
@@ -14014,6 +15106,9 @@ func show_trophy() -> void:
 	content.add_child(action_button("回大廳", Color("254e6b"), func(): show_dashboard(), Vector2(0, 48)))
 
 func gold_scout_pull() -> void:
+	if card_inventory.size() >= vault_capacity():
+		flash_notice("保管箱已滿（%d／%d），沒有扣除黃金" % [card_inventory.size(), vault_capacity()])
+		return
 	if gold < 80:
 		flash_notice("黃金不足：卡包要 80。黃金不能拿去墊薪資。")
 		return
@@ -14241,6 +15336,10 @@ func collect_save_data() -> Dictionary:
 		"scout_pity_progress": scout_pity_progress,
 		"scout_board_serial": scout_board_serial,
 		"supporter_theme": supporter_theme,
+		"store_cosmetics_owned": store_cosmetics_owned,
+		"locker_room_theme": locker_room_theme,
+		"vault_capacity_bonus": vault_capacity_bonus,
+		"second_team_unlocked": second_team_unlocked,
 		"active_challenge": active_challenge,
 		"challenge_progress": challenge_progress,
 		"challenge_completed": challenge_completed,
@@ -15331,6 +16430,19 @@ func load_game(then_show := true) -> void:
 	scout_pity_progress = int(data.get("scout_pity_progress", 0))
 	scout_board_serial = int(data.get("scout_board_serial", 0))
 	supporter_theme = str(data.get("supporter_theme", "標準球館"))
+	locker_room_theme = str(data.get("locker_room_theme", "標準更衣室"))
+	vault_capacity_bonus = maxi(0, int(data.get("vault_capacity_bonus", 0)))
+	second_team_unlocked = bool(data.get("second_team_unlocked", false))
+	store_cosmetics_owned.assign(["standard"])
+	if data.get("store_cosmetics_owned") is Array:
+		for cosmetic in data.store_cosmetics_owned:
+			var cosmetic_id := str(cosmetic)
+			if not cosmetic_id.is_empty() and not store_cosmetics_owned.has(cosmetic_id):
+				store_cosmetics_owned.append(cosmetic_id)
+	# Older saves already using a theme keep it unlocked after this store update.
+	var legacy_theme_id: String = str({"夜場靛藍":"arena_night", "冠軍金色主場":"arena_champion", "賽博龐克主場":"arena_neon"}.get(supporter_theme, ""))
+	if not legacy_theme_id.is_empty() and not store_cosmetics_owned.has(legacy_theme_id):
+		store_cosmetics_owned.append(legacy_theme_id)
 	active_challenge = str(data.get("active_challenge", ""))
 	last_progress_event = str(data.get("last_progress_event", last_progress_event))
 	if data.has("challenge_progress") and data.challenge_progress is Dictionary:
@@ -15342,6 +16454,8 @@ func load_game(then_show := true) -> void:
 	daily_checkin_streak = int(data.get("daily_checkin_streak", 0))
 	daily_checkin_days = int(data.get("daily_checkin_days", 0))
 	monthly_pass_active = bool(data.get("monthly_pass_active", false)) or bool(iap_receipts.get("monthly_pass", false))
+	if monthly_pass_active and not store_cosmetics_owned.has("arena_monthly"):
+		store_cosmetics_owned.append("arena_monthly")
 	monthly_pass_claimed_date = str(data.get("monthly_pass_claimed_date", ""))
 	monthly_pass_claimed_days = clampi(int(data.get("monthly_pass_claimed_days", 0)), 0, 30)
 	scout_free_refresh_date = str(data.get("scout_free_refresh_date", ""))
@@ -15399,6 +16513,9 @@ func load_game(then_show := true) -> void:
 		team_profiles.append({"name": club_name, "logo_id": club_logo_id, "players": team_players.duplicate(true)})
 	while team_profiles.size() < MAX_TEAM_PROFILES:
 		team_profiles.append({})
+	# Existing saves that already used team two keep access after the store change.
+	if team_profiles.size() > 1 and not team_profiles[1].is_empty():
+		second_team_unlocked = true
 	gold = int(data.get("gold", STARTING_GOLD))
 	salary_cap_bonus = int(data.get("salary_cap_bonus", 0))
 	win_streak = int(data.get("win_streak", 0))
@@ -15428,6 +16545,9 @@ func load_game(then_show := true) -> void:
 		for item in data.card_inventory:
 			if item is Dictionary:
 				card_inventory.append(refresh_stored_player(item.duplicate(true)))
+	# Never strand cards from older unlimited-vault saves above the new capacity.
+	if card_inventory.size() > vault_capacity():
+		vault_capacity_bonus = ceili(float(card_inventory.size() - 20) / 10.0) * 10
 	if data.has("veteran_cleared") and data.veteran_cleared is Array:
 		veteran_cleared = data.veteran_cleared.duplicate()
 	if data.has("coaches_owned") and data.coaches_owned is Array:
@@ -15790,7 +16910,7 @@ func load_svg_tex(path: String, px := 128) -> Texture2D:
 	if _tex_cache.has(path) and _tex_cache[path] is Texture2D:
 		return _tex_cache[path]
 	var disk := ProjectSettings.globalize_path(path)
-	var baked := load(path)
+	var baked = load(path) if ResourceLoader.exists(path) else null
 	if baked is Texture2D:
 		_tex_cache[path] = baked
 		return baked
@@ -16096,6 +17216,12 @@ func bust_texture(player: Dictionary) -> Texture2D:
 	return bust_from_tex(data.get("tex"), str(data.get("path", "")), salt)
 
 func generated_portrait_for(player: Dictionary) -> Texture2D:
+	# Registration identity is authoritative. Never infer a real player's appearance
+	# from a Chinese name, nationality, team, or roster order. Until a foreign
+	# player's visual profile has been checked against an official source, show the
+	# same faceless/no-skin-tone silhouette instead of guessing Black or White.
+	if is_foreigner(player) or is_foreign_student(player):
+		return load_png_tex("res://assets/art/player_portraits/foreign_unverified_silhouette_v1.png")
 	var pool: Array[String] = []
 	for i in range(1, 21):
 		var path := "res://assets/art/player_portraits/prospect_%02d.png" % i
@@ -16103,17 +17229,46 @@ func generated_portrait_for(player: Dictionary) -> Texture2D:
 			pool.append(path)
 	if pool.is_empty():
 		return null
-	var team_index := {"fubon":0, "dea":1, "kings":2, "pilots":3, "lioneers":4, "dreamers":5, "aquas":6, "ghosthawks":7, "yankey":8, "mars":9}
 	var tid := str(player.get("origin_team_id", ""))
 	if tid.is_empty():
 		tid = team_id_from_display_name(str(player.get("team", "")))
-	var salt := absi(str(player.get("name", player.get("id", ""))).hash())
-	var pick := int(team_index.get(tid, salt % pool.size()))
-	return load_png_tex(pool[pick % pool.size()])
+	# This reviewed subset contains local-player illustrations only. The team crest
+	# is composited separately on the chest; foreign-looking portrait sources are
+	# never assigned to players registered as local.
+	var portrait_variants := {
+		"fubon": [1, 10, 17],
+		"pilots": [4, 12, 20],
+		"ghosthawks": [7, 17, 20],
+		"yankey": [6, 14],
+		"dreamers": [6, 14, 19],
+		"lioneers": [12, 19, 20],
+		"aquas": [6, 14],
+		"dea": [4, 12, 20],
+		"kings": [4, 12, 20],
+		"mars": [7, 17, 20],
+		"leopards": [6, 14, 19],
+		"sbl_pure": [12, 19, 20],
+		"sbl_kites": [6, 14, 19],
+		"sbl_bank": [6, 14, 19],
+		"sbl_beer": [6, 14, 19],
+		"sbl_yulon": [1, 10, 17],
+	}
+	var variants: Array = portrait_variants.get(tid, [1, 4, 6, 7, 10, 12, 14, 17, 19, 20])
+	var identity := str(player.get("id", ""))
+	var suffix := identity.get_slice("_", identity.get_slice_count("_") - 1)
+	var pick := absi(str(player.get("name", identity)).hash())
+	if suffix.is_valid_int():
+		var roster_number := int(suffix)
+		# Offset every completed pass through the palette so separated roster
+		# numbers do not repeatedly land on the same portrait.
+		pick = roster_number + floori(float(roster_number) / float(variants.size()))
+	var portrait_number: int = int(variants[pick % variants.size()])
+	return load_png_tex("res://assets/art/player_portraits/prospect_%02d.png" % portrait_number)
 
 func blended_card_portrait(player: Dictionary) -> Texture2D:
-	# New generated portraits are an optional visual rotation for cards; saved player
-	# data and original assets remain untouched. Jersey palette is selected by team.
+	# New generated portraits rotate through twenty stable faces/poses; saved player
+	# data and original assets remain untouched. The chest logo is composited by
+	# PlayerCardVisual so portrait variety remains independent of the club crest.
 	if bool(player.get("draft_2026", false)) or bool(player.get("rotate_generated_portrait", true)):
 		var generated := generated_portrait_for(player)
 		if generated != null:
@@ -17200,6 +18355,8 @@ func play_sfx(kind: String) -> void:
 			sfx_player.stream = tone_stream(1320.0, 0.22, 0.16)
 		"new_card":
 			sfx_player.stream = tone_stream(1480.0, 0.28, 0.18)
+		"tier_up":
+			sfx_player.stream = tone_stream(1180.0, 0.34, 0.20)
 		_:
 			return
 	sfx_player.play()
@@ -17248,6 +18405,40 @@ func card_frame_for(key: String) -> Texture2D:
 			file = key
 	var raw := load_png_tex("res://assets/cards/card_%s.png" % file)
 	return slim_card_frame(raw, file)
+
+func card_court_for(player: Dictionary) -> Texture2D:
+	var tier := player_tier_key(player)
+	var path := "res://assets/ui/arena_bg.png"
+	match tier:
+		"gold":
+			path = "res://assets/art/arena_playoff.png"
+		"diamond":
+			path = "res://assets/art/arenas/cyberpunk_arena_base.png"
+		_:
+			# Stable per-player rotation gives the collection several court styles
+			# without changing when the card moves between roster and vault.
+			var courts := [
+				"res://assets/ui/arena_bg.png",
+				"res://assets/ui/half_court.png",
+				"res://assets/art/arena_night.png",
+				"res://assets/art/arenas/cyberpunk_arena_base.png",
+			]
+			var identity := player_identity_key(player)
+			if identity.is_empty():
+				identity = str(player.get("name", player.get("id", "player")))
+			path = courts[absi(identity.hash()) % courts.size()]
+	return load_png_tex(path)
+
+func card_court_tint(player: Dictionary) -> Color:
+	match player_tier_key(player):
+		"cyan": return Color("87929ca8")
+		"green": return Color("82cba7b8")
+		"blue": return Color("88afe0c4")
+		"red": return Color("df8b91c8")
+		"purple": return Color("bd91e8d0")
+		"gold": return Color("ffe284dc")
+		"diamond": return Color("d8f5ffe8")
+		_: return Color("ffffffc0")
 
 func slim_card_frame(tex: Texture2D, key: String) -> Texture2D:
 	if tex == null:

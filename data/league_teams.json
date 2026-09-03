@@ -87,17 +87,20 @@
         "skill_name": "雙向側翼"
       },
       {
-        "id": "fubon_6",
-        "name": "馬可",
-        "position": "SF",
+        "id": "fubon_singletary_20260903",
+        "name": "辛特力",
+        "position": "PG/SG",
         "identity": "foreign",
         "ovr": 81,
         "potential": 87,
         "salary_million": 393.7,
         "photo": "",
         "origin_team_id": "fubon",
-        "skill_id": "two_way_wing",
-        "skill_name": "雙向側翼"
+        "skill_id": "floor_general",
+        "roster_source": "https://www.fubonbraves.com/team.html",
+        "roster_checked_at": "2026-09-03",
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "節奏大師"
       },
       {
         "id": "fubon_7",
@@ -221,22 +224,6 @@
       {
         "id": "fubon_r111_335746b641",
         "name": "揚科維奇",
-        "position": "C",
-        "identity": "foreign",
-        "ovr": 82,
-        "potential": 89,
-        "salary_million": 300.0,
-        "photo": "",
-        "origin_team_id": "fubon",
-        "skill_id": "screen_hub",
-        "roster_source": "https://pleagueofficial.com/team/1",
-        "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official",
-        "skill_name": "高位策應"
-      },
-      {
-        "id": "fubon_r111_cf785a4d40",
-        "name": "霍力飛",
         "position": "C",
         "identity": "foreign",
         "ovr": 82,
@@ -424,23 +411,6 @@
         "skill_name": "節奏大師"
       },
       {
-        "id": "pilots_hernandez_20260902",
-        "name": "赫南德茲",
-        "english_name": "Dewan Hernandez",
-        "position": "PF/C",
-        "identity": "foreign",
-        "ovr": 84,
-        "potential": 88,
-        "salary_million": 440.0,
-        "photo": "",
-        "origin_team_id": "pilots",
-        "skill_id": "glass_cleaner",
-        "skill_name": "禁區卡位",
-        "roster_source": "美聯社／球團公告",
-        "roster_checked_at": "2026-09-02",
-        "rating_basis": "game_balance_not_official"
-      },
-      {
         "id": "pilots_陳昱瑞",
         "name": "陳昱瑞",
         "position": "SG",
@@ -582,10 +552,27 @@
         "skill_name": "高位策應"
       },
       {
+        "id": "ghosthawks_aaron_20260903",
+        "name": "艾倫",
+        "english_name": "Aaron Geramipoor",
+        "position": "C",
+        "identity": "foreign",
+        "ovr": 82,
+        "potential": 87,
+        "salary_million": 420.0,
+        "photo": "",
+        "origin_team_id": "ghosthawks",
+        "skill_id": "screen_hub",
+        "roster_source": "https://pleagueofficial.com/news-detail/890",
+        "roster_checked_at": "2026-09-03",
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "高位策應"
+      },
+      {
         "id": "ghosthawks_r111_9a936eecc3",
         "name": "白薩",
         "position": "PG/SG",
-        "identity": "local",
+        "identity": "foreign_student",
         "ovr": 77,
         "potential": 79,
         "salary_million": 300.0,
@@ -758,7 +745,7 @@
         "id": "yankey_10",
         "name": "阿拉薩",
         "position": "PF",
-        "identity": "local",
+        "identity": "foreign_student",
         "ovr": 75,
         "potential": 80,
         "salary_million": 236.2,
@@ -842,54 +829,6 @@
         "skill_name": "節奏大師"
       },
       {
-        "id": "yankey_r111_861253fcc1",
-        "name": "柯麥隆",
-        "position": "SF/PF",
-        "identity": "foreign",
-        "ovr": 82,
-        "potential": 89,
-        "salary_million": 300.0,
-        "photo": "",
-        "origin_team_id": "yankey",
-        "skill_id": "two_way_wing",
-        "roster_source": "https://pleagueofficial.com/team/8/coach_player",
-        "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official",
-        "skill_name": "雙向側翼"
-      },
-      {
-        "id": "yankey_r111_49078cad84",
-        "name": "德古拉",
-        "position": "C",
-        "identity": "foreign",
-        "ovr": 82,
-        "potential": 89,
-        "salary_million": 300.0,
-        "photo": "",
-        "origin_team_id": "yankey",
-        "skill_id": "screen_hub",
-        "roster_source": "https://pleagueofficial.com/team/8/coach_player",
-        "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official",
-        "skill_name": "高位策應"
-      },
-      {
-        "id": "yankey_r111_008a3cc020",
-        "name": "柯瓦隆",
-        "position": "PF",
-        "identity": "foreign",
-        "ovr": 82,
-        "potential": 89,
-        "salary_million": 300.0,
-        "photo": "",
-        "origin_team_id": "yankey",
-        "skill_id": "glass_cleaner",
-        "roster_source": "https://pleagueofficial.com/team/8/coach_player",
-        "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official",
-        "skill_name": "禁區卡位"
-      },
-      {
         "id": "yankey_r111_aa4c09a00f",
         "name": "張伯維",
         "position": "SF/PF",
@@ -904,23 +843,6 @@
         "roster_checked_at": "2026-08-31",
         "rating_basis": "game_balance_not_official",
         "skill_name": "雙向側翼"
-      },
-      {
-        "id": "yankey_morris_20260902",
-        "name": "莫里斯",
-        "english_name": "Morris Udeze",
-        "position": "C",
-        "identity": "foreign",
-        "ovr": 82,
-        "potential": 87,
-        "salary_million": 430.0,
-        "photo": "",
-        "origin_team_id": "yankey",
-        "skill_id": "screen_hub",
-        "skill_name": "高位策應",
-        "roster_source": "ARKNews",
-        "roster_checked_at": "2026-09-02",
-        "rating_basis": "game_balance_not_official"
       }
     ]
   },
@@ -1051,19 +973,6 @@
         "skill_name": "高位策應"
       },
       {
-        "id": "dreamers_9",
-        "name": "湯普金斯",
-        "position": "PF",
-        "identity": "foreign",
-        "ovr": 84,
-        "potential": 93,
-        "salary_million": 423.4,
-        "photo": "res://assets/images/teams/dreamers/players/dreamers_9.jpg",
-        "origin_team_id": "dreamers",
-        "skill_id": "glass_cleaner",
-        "skill_name": "禁區卡位"
-      },
-      {
         "id": "dreamers_10",
         "name": "高柏鎧",
         "position": "C",
@@ -1075,19 +984,6 @@
         "origin_team_id": "dreamers",
         "skill_id": "screen_hub",
         "skill_name": "高位策應"
-      },
-      {
-        "id": "dreamers_11",
-        "name": "霍爾曼",
-        "position": "PF",
-        "identity": "foreign",
-        "ovr": 81,
-        "potential": 87,
-        "salary_million": 393.7,
-        "photo": "res://assets/images/teams/dreamers/players/dreamers_11.jpg",
-        "origin_team_id": "dreamers",
-        "skill_id": "glass_cleaner",
-        "skill_name": "禁區卡位"
       },
       {
         "id": "dreamers_12",
@@ -1318,29 +1214,20 @@
         "skill_name": "雙向側翼"
       },
       {
-        "id": "lioneers_12",
-        "name": "迪亞洛",
-        "position": "PF",
+        "id": "lioneers_maric_20260903",
+        "name": "馬力",
+        "english_name": "Maric Dusan",
+        "position": "C",
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
         "salary_million": 403.4,
         "photo": "",
         "origin_team_id": "lioneers",
-        "skill_id": "glass_cleaner",
-        "skill_name": "禁區卡位"
-      },
-      {
-        "id": "lioneers_13",
-        "name": "辛巴",
-        "position": "C",
-        "identity": "foreign",
-        "ovr": 83,
-        "potential": 91,
-        "salary_million": 413.3,
-        "photo": "",
-        "origin_team_id": "lioneers",
         "skill_id": "screen_hub",
+        "roster_source": "https://lioneers.tpbl.basketball/team",
+        "roster_checked_at": "2026-09-03",
+        "rating_basis": "game_balance_not_official",
         "skill_name": "高位策應"
       },
       {
@@ -1368,22 +1255,6 @@
         "origin_team_id": "lioneers",
         "skill_id": "floor_general",
         "skill_name": "節奏大師"
-      },
-      {
-        "id": "lioneers_r111_2de9e77466",
-        "name": "奧獅頓",
-        "position": "SF/PF",
-        "identity": "foreign",
-        "ovr": 82,
-        "potential": 89,
-        "salary_million": 300.0,
-        "photo": "",
-        "origin_team_id": "lioneers",
-        "skill_id": "two_way_wing",
-        "roster_source": "https://zh.wikipedia.org/wiki/新竹御嵿攻城獅",
-        "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official",
-        "skill_name": "雙向側翼"
       }
     ]
   },
@@ -1514,8 +1385,9 @@
         "skill_name": "定點砲台"
       },
       {
-        "id": "aquas_9",
-        "name": "洛斯柯",
+        "id": "aquas_krajina_20260903",
+        "name": "克力斯",
+        "english_name": "Kristijan Krajina",
         "position": "C",
         "identity": "foreign",
         "ovr": 81,
@@ -1553,8 +1425,9 @@
         "skill_name": "雙向側翼"
       },
       {
-        "id": "aquas_12",
-        "name": "加爾文",
+        "id": "aquas_zagorac_20260903",
+        "name": "賽克維奇",
+        "english_name": "Rade Zagorac",
         "position": "PF",
         "identity": "foreign",
         "ovr": 82,
@@ -1595,9 +1468,10 @@
         "skill_name": "雙向側翼"
       },
       {
-        "id": "aquas_r111_e793dfa9f0",
-        "name": "貝西里",
-        "position": "PF/C",
+        "id": "aquas_odigie_20260903",
+        "name": "艾德",
+        "english_name": "Efe Odigie",
+        "position": "PF",
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
@@ -1605,8 +1479,8 @@
         "photo": "",
         "origin_team_id": "aquas",
         "skill_id": "glass_cleaner",
-        "roster_source": "https://zh.wikipedia.org/wiki/高雄全家海神",
-        "roster_checked_at": "2026-08-31",
+        "roster_source": "https://tpbl.basketball/stats/players",
+        "roster_checked_at": "2026-09-03",
         "rating_basis": "game_balance_not_official",
         "skill_name": "禁區卡位"
       }
@@ -1726,8 +1600,9 @@
         "skill_name": "節奏大師"
       },
       {
-        "id": "dea_8",
-        "name": "強斯",
+        "id": "dea_todorovic_20260903",
+        "name": "馬可",
+        "english_name": "Marko Todorovic",
         "position": "C",
         "identity": "foreign",
         "ovr": 83,
@@ -1739,9 +1614,10 @@
         "skill_name": "高位策應"
       },
       {
-        "id": "dea_9",
-        "name": "法拉帝",
-        "position": "C",
+        "id": "dea_radovic_20260903",
+        "name": "內馬",
+        "english_name": "Nemanja Radovic",
+        "position": "PF/C",
         "identity": "foreign",
         "ovr": 84,
         "potential": 93,
@@ -1778,9 +1654,10 @@
         "skill_name": "節奏大師"
       },
       {
-        "id": "dea_12",
-        "name": "布里茲克",
-        "position": "SG",
+        "id": "dea_gaddefors_20260903",
+        "name": "飛克",
+        "english_name": "Viktor Gaddefors",
+        "position": "SF/PF",
         "identity": "foreign",
         "ovr": 82,
         "potential": 89,
@@ -1791,9 +1668,9 @@
         "skill_name": "定點砲台"
       },
       {
-        "id": "dea_13",
-        "name": "猛士",
-        "position": "SF",
+        "id": "dea_beciri_20260903",
+        "name": "貝奇",
+        "position": "SF/PF",
         "identity": "foreign",
         "ovr": 83,
         "potential": 91,
@@ -1868,32 +1745,6 @@
         "potential": 90,
         "salary_million": 303.4,
         "photo": "res://assets/images/teams/kings/players/kings_0.jpg",
-        "origin_team_id": "kings",
-        "skill_id": "floor_general",
-        "skill_name": "節奏大師"
-      },
-      {
-        "id": "kings_1",
-        "name": "肯刀爾",
-        "position": "SF",
-        "identity": "foreign",
-        "ovr": 81,
-        "potential": 87,
-        "salary_million": 393.7,
-        "photo": "",
-        "origin_team_id": "kings",
-        "skill_id": "two_way_wing",
-        "skill_name": "雙向側翼"
-      },
-      {
-        "id": "kings_2",
-        "name": "克雷格",
-        "position": "PG",
-        "identity": "foreign",
-        "ovr": 82,
-        "potential": 89,
-        "salary_million": 403.4,
-        "photo": "",
         "origin_team_id": "kings",
         "skill_id": "floor_general",
         "skill_name": "節奏大師"
@@ -2016,32 +1867,6 @@
         "skill_name": "雙向側翼"
       },
       {
-        "id": "kings_12",
-        "name": "坦克夫",
-        "position": "C",
-        "identity": "foreign",
-        "ovr": 82,
-        "potential": 89,
-        "salary_million": 403.4,
-        "photo": "",
-        "origin_team_id": "kings",
-        "skill_id": "screen_hub",
-        "skill_name": "高位策應"
-      },
-      {
-        "id": "kings_13",
-        "name": "湯瑪士",
-        "position": "C",
-        "identity": "foreign",
-        "ovr": 83,
-        "potential": 91,
-        "salary_million": 413.3,
-        "photo": "",
-        "origin_team_id": "kings",
-        "skill_id": "screen_hub",
-        "skill_name": "高位策應"
-      },
-      {
         "id": "ghosthawks_2",
         "name": "蘇培凱",
         "position": "PG",
@@ -2089,52 +1914,36 @@
         "skill_name": "雙向側翼"
       },
       {
-        "id": "kings_r111_5b0c0f98f3",
-        "name": "杰倫",
-        "position": "PG/SG",
+        "id": "kings_2",
+        "name": "克雷格",
+        "position": "PG",
         "identity": "foreign",
-        "ovr": 84,
-        "potential": 90,
-        "salary_million": 300.0,
+        "ovr": 82,
+        "potential": 89,
+        "salary_million": 403.4,
         "photo": "",
         "origin_team_id": "kings",
         "skill_id": "floor_general",
-        "roster_source": "https://cardioid-tangerine-h6a3.squarespace.com/roster",
-        "roster_checked_at": "2026-08-31",
+        "roster_source": "user_roster_override",
+        "roster_checked_at": "2026-09-03",
         "rating_basis": "game_balance_not_official",
         "skill_name": "節奏大師"
       },
       {
-        "id": "kings_r111_3055d96261",
-        "name": "傑登",
-        "position": "SF/PF",
+        "id": "kings_13",
+        "name": "湯瑪士",
+        "position": "C",
         "identity": "foreign",
-        "ovr": 80,
-        "potential": 89,
-        "salary_million": 300.0,
+        "ovr": 83,
+        "potential": 91,
+        "salary_million": 413.3,
         "photo": "",
         "origin_team_id": "kings",
-        "skill_id": "two_way_wing",
-        "roster_source": "https://cardioid-tangerine-h6a3.squarespace.com/roster",
-        "roster_checked_at": "2026-08-31",
+        "skill_id": "screen_hub",
+        "roster_source": "user_roster_override",
+        "roster_checked_at": "2026-09-03",
         "rating_basis": "game_balance_not_official",
-        "skill_name": "雙向側翼"
-      },
-      {
-        "id": "kings_r111_68567f4127",
-        "name": "奧帝",
-        "position": "SF/PF",
-        "identity": "foreign",
-        "ovr": 84,
-        "potential": 90,
-        "salary_million": 300.0,
-        "photo": "",
-        "origin_team_id": "kings",
-        "skill_id": "two_way_wing",
-        "roster_source": "https://cardioid-tangerine-h6a3.squarespace.com/roster",
-        "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official",
-        "skill_name": "雙向側翼"
+        "skill_name": "高位策應"
       },
       {
         "id": "kings_r111_6a104554f7",
@@ -2281,9 +2090,9 @@
         "skill_name": "高位策應"
       },
       {
-        "id": "mars_9",
-        "name": "麥基",
-        "position": "PG",
+        "id": "mars_frazier_20260903",
+        "name": "弗利沙",
+        "position": "PG/SG",
         "identity": "foreign",
         "ovr": 80,
         "potential": 93,
@@ -2307,8 +2116,8 @@
         "skill_name": "節奏大師"
       },
       {
-        "id": "mars_11",
-        "name": "馬利",
+        "id": "mars_ndour_20260903",
+        "name": "恩多",
         "position": "C",
         "identity": "foreign",
         "ovr": 81,
@@ -2333,8 +2142,8 @@
         "skill_name": "高位策應"
       },
       {
-        "id": "mars_r111_6aa9283fda",
-        "name": "葛瑞菲",
+        "id": "mars_willis_20260903",
+        "name": "威力斯",
         "position": "PF",
         "identity": "foreign",
         "ovr": 82,
@@ -2379,22 +2188,6 @@
         "roster_checked_at": "2026-08-31",
         "rating_basis": "game_balance_not_official",
         "skill_name": "節奏大師"
-      },
-      {
-        "id": "mars_r111_3f223b967b",
-        "name": "馬雷利亞",
-        "position": "SF/PF",
-        "identity": "foreign",
-        "ovr": 82,
-        "potential": 89,
-        "salary_million": 300.0,
-        "photo": "",
-        "origin_team_id": "mars",
-        "skill_id": "two_way_wing",
-        "roster_source": "https://zh.wikipedia.org/wiki/臺北台新戰神",
-        "roster_checked_at": "2026-08-31",
-        "rating_basis": "game_balance_not_official",
-        "skill_name": "雙向側翼"
       }
     ]
   },
@@ -2473,17 +2266,21 @@
         "skill_name": "禁區卡位"
       },
       {
-        "id": "leopards_5",
-        "name": "莫騰",
-        "position": "SF",
+        "id": "leopards_mccullough_20260903",
+        "name": "麥卡洛",
+        "english_name": "Chris McCullough",
+        "position": "PF",
         "identity": "foreign",
-        "ovr": 80,
-        "potential": 85,
-        "salary_million": 384.0,
+        "ovr": 84,
+        "potential": 89,
+        "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "leopards",
-        "skill_id": "two_way_wing",
-        "skill_name": "雙向側翼"
+        "skill_id": "glass_cleaner",
+        "roster_source": "https://t-leopards.com/stats/players",
+        "roster_checked_at": "2026-09-03",
+        "rating_basis": "game_balance_not_official",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "leopards_6",
@@ -2525,17 +2322,17 @@
         "skill_name": "雙向側翼"
       },
       {
-        "id": "leopards_9",
-        "name": "溫布許",
-        "position": "SF",
+        "id": "leopards_diallo_20260903",
+        "name": "迪亞洛",
+        "position": "PF",
         "identity": "foreign",
         "ovr": 80,
         "potential": 93,
         "salary_million": 423.4,
         "photo": "",
         "origin_team_id": "leopards",
-        "skill_id": "two_way_wing",
-        "skill_name": "雙向側翼"
+        "skill_id": "glass_cleaner",
+        "skill_name": "禁區卡位"
       },
       {
         "id": "leopards_10",
