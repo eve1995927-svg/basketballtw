@@ -11694,14 +11694,16 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	balance.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	balance.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(balance)
-	var plus := plain_label("＋", 9 if compact else 13, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
-	plus.anchor_left = 0.84
-	plus.anchor_right = 0.96
-	plus.anchor_top = 0.1
-	plus.anchor_bottom = 0.9
+	# The ASCII glyph stays optically centered with iOS fonts; the full-width
+	# CJK plus renders above center even when the Label itself is centered.
+	var plus := plain_label("+", 10 if compact else 14, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
+	plus.anchor_left = 0.835
+	plus.anchor_right = 0.985
+	plus.anchor_top = 0.04
+	plus.anchor_bottom = 0.96
 	plus.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	plus.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	plus.visible = caption not in ["資金", "薪資空間"]
+	plus.visible = true
 	button.add_child(plus)
 	button.tooltip_text = "%s：%s" % [caption, value]
 	return button
