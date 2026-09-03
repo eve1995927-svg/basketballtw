@@ -976,6 +976,10 @@ func _notification(what: int) -> void:
 			set_app_suspended(false)
 
 func set_app_suspended(suspended: bool) -> void:
+	# Desktop preview windows can emit a focus notification while the root node is
+	# still entering/leaving the tree. Mobile lifecycle calls must be harmless too.
+	if not is_inside_tree():
+		return
 	if _app_suspended == suspended:
 		return
 	_app_suspended = suspended
@@ -3986,8 +3990,8 @@ func complete_purchase(sku: String) -> void:
 		iap_pending_sku = ""
 		save_account()
 		save_game()
-		flash_notice("主場應援月卡已開通，黃金 +400，限定球場已解鎖")
 		show_daily_tasks()
+		queue_purchase_success("主場應援月卡", "黃金 +400，月影雲海球場已永久解鎖")
 		return
 	if sku.begins_with("gold_"):
 		var amount := int(iap_product(sku).get("gold_amount", 0))
@@ -3997,8 +4001,8 @@ func complete_purchase(sku: String) -> void:
 		gold += amount
 		iap_pending_sku = ""
 		save_game()
-		flash_notice("黃金 +%s 已入帳" % resource_display_number(amount))
 		show_store_hub()
+		queue_purchase_success(str(iap_product(sku).get("title", "黃金")), "黃金 +%s 已入帳" % resource_display_number(amount))
 		return
 	if sku == "extra_save":
 		if extra_slots_left() <= 0:
@@ -4011,8 +4015,8 @@ func complete_purchase(sku: String) -> void:
 		iap_receipts["extra_save_count"] = extra_save_bought
 		iap_pending_sku = ""
 		save_account()
-		flash_notice("已加一格存檔，現在 %d／10" % max_save_slots())
 		show_save_slots()
+		queue_purchase_success("增加存檔格", "目前 %d／10 格" % max_save_slots())
 		return
 	if sku == "easl":
 		easl_pass = true
@@ -4020,9 +4024,9 @@ func complete_purchase(sku: String) -> void:
 		iap_pending_sku = ""
 		save_account()
 		save_game()
-		flash_notice("已解鎖東超／BCL 通行證")
 		pending_enter_league = ""
 		show_extra_event("easl")
+		queue_purchase_success("東超／BCL 通行證", "賽事已永久解鎖")
 		return
 	if sku == "jones":
 		jones_pass = true
@@ -4030,16 +4034,16 @@ func complete_purchase(sku: String) -> void:
 		iap_pending_sku = ""
 		save_account()
 		save_game()
-		flash_notice("已解鎖瓊斯盃 2026")
 		show_extra_event("jones")
+		queue_purchase_success("瓊斯盃 2026", "賽事已永久解鎖")
 		return
 	if sku == "national":
 		national_unlocked = true
 		iap_receipts["national_%d" % active_save_slot] = true
 		iap_pending_sku = ""
 		save_game()
-		flash_notice("本存檔已解鎖世界盃資格賽")
 		show_extra_event("wcq")
+		queue_purchase_success("世界盃資格賽", "本存檔已永久解鎖")
 		return
 
 func store_products() -> Array[Dictionary]:
@@ -4159,8 +4163,8 @@ func activate_store_product(product: Dictionary) -> void:
 		supporter_theme = str(product.theme)
 		home_environment_mode = "arena"
 		save_game()
-		flash_notice("已永久解鎖並套用「%s」" % product.title)
 		show_store_hub()
+		queue_purchase_success(str(product.title), "已永久解鎖並套用到主場")
 		return
 	if product.has("locker"):
 		if store_cosmetic_owned(product):
@@ -4176,16 +4180,16 @@ func activate_store_product(product: Dictionary) -> void:
 		locker_room_theme = str(product.locker)
 		home_environment_mode = "locker"
 		save_game()
-		flash_notice("已永久解鎖並套用「%s」" % product.title)
 		show_store_hub()
+		queue_purchase_success(str(product.title), "已永久解鎖並套用到更衣室")
 		return
 	if product_id == "vault_plus_10":
 		if not spend_store_gold(product):
 			return
 		vault_capacity_bonus += 10
 		save_game()
-		flash_notice("保管箱已增加 10 格，目前 %d 格" % vault_capacity())
 		show_store_hub()
+		queue_purchase_success("保管箱擴充 +10", "目前容量 %d 格" % vault_capacity())
 		return
 	if product_id == "save_plus_1":
 		if extra_slots_left() <= 0:
@@ -4197,8 +4201,8 @@ func activate_store_product(product: Dictionary) -> void:
 		extra_save_unlocked = true
 		save_account()
 		save_game()
-		flash_notice("已增加一格存檔，目前 %d／10" % max_save_slots())
 		show_store_hub()
+		queue_purchase_success("增加存檔格", "目前 %d／10 格" % max_save_slots())
 		return
 	if product_id == "second_team":
 		if second_team_unlocked:
@@ -4208,8 +4212,8 @@ func activate_store_product(product: Dictionary) -> void:
 			return
 		second_team_unlocked = true
 		save_game()
-		flash_notice("第二隊伍已解鎖，現在可以從首頁切換")
 		show_store_hub()
+		queue_purchase_success("第二隊伍", "已永久解鎖，可從首頁切換")
 		return
 	if product.has("event"):
 		var event_id := str(product.event)
@@ -4223,8 +4227,8 @@ func activate_store_product(product: Dictionary) -> void:
 		if event_id in ["wcq", "bundle"]: national_unlocked = true
 		save_account()
 		save_game()
-		flash_notice("已永久解鎖賽事內容")
 		show_store_hub()
+		queue_purchase_success(str(product.title), "賽事內容已永久解鎖")
 
 func spend_store_gold(product: Dictionary) -> bool:
 	var price := int(product.get("gold", 0))
@@ -4771,6 +4775,17 @@ func normalized_catalog_team(raw_team: Dictionary) -> Dictionary:
 	# Limit newly issued base cards only. Never apply this to a player's save or
 	# inventory: trained cards and grandfathered scout offers retain their OVR.
 	var team: Dictionary = raw_team.duplicate(true)
+	var catalog_team_id := str(team.get("id", ""))
+	var catalog_team_name := str(FICTIONAL_TEAM_NAMES.get(catalog_team_id, team.get("name", "")))
+	# Every catalog card must carry its printed club identity. Older roster rows
+	# omitted these fields and consequently rendered without a crest/name.
+	for raw in team.get("players", []):
+		if not (raw is Dictionary):
+			continue
+		if str(raw.get("origin_team_id", "")).is_empty():
+			raw["origin_team_id"] = catalog_team_id
+		if str(raw.get("team", "")).is_empty():
+			raw["team"] = catalog_team_name
 	var purple: Array[Dictionary] = []
 	for raw in team.get("players", []):
 		if raw is Dictionary and int(raw.get("ovr", 0)) >= 86 and not is_locked_prize(raw) and golden_generation_profile(raw).is_empty():
@@ -5069,7 +5084,9 @@ func published_salary(player: Dictionary) -> int:
 func refresh_stored_player(player: Dictionary) -> Dictionary:
 	player.erase("energy")
 	if str(player.get("origin_team_id", "")).is_empty():
-		player["origin_team_id"] = origin_id(player)
+		player["origin_team_id"] = catalog_origin_id_for_player(player)
+	if str(player.get("team", "")).is_empty() and not str(player.get("origin_team_id", "")).is_empty():
+		player["team"] = team_display_name(str(player.get("origin_team_id", "")))
 	var mapped_photo := official_photo_path(player)
 	player["image"] = mapped_photo
 	player["photo"] = mapped_photo
@@ -5089,6 +5106,20 @@ func refresh_stored_player(player: Dictionary) -> Dictionary:
 		player["salary_million"] = published_salary(player)
 	player["color"] = player_tier_key(player)
 	return player
+
+func catalog_origin_id_for_player(player: Dictionary) -> String:
+	var direct := origin_id(player)
+	if not direct.is_empty():
+		return direct
+	var wanted_id := str(player.get("id", ""))
+	var wanted_names := player_name_keys(str(player.get("name", "")))
+	for team in league_teams:
+		for raw in team.get("players", []):
+			if not (raw is Dictionary):
+				continue
+			if (not wanted_id.is_empty() and str(raw.get("id", "")) == wanted_id) or str(raw.get("name", "")) in wanted_names:
+				return str(team.get("id", ""))
+	return ""
 
 func default_starting_team() -> Array[Dictionary]:
 	return balanced_lineup([])
@@ -7721,7 +7752,7 @@ func complete_trade(raw: Dictionary) -> void:
 	save_game()
 	show_roster()
 	show_card_reveal(incoming, func():
-		flash_notice("交易完成。對手比賽仍用原陣容。")
+		show_purchase_success("交易完成 · %s" % str(incoming.get("name", "球員")), "已支付交易費 $%d 萬" % cost)
 	, "對手比賽仍用原陣容")
 
 func trade_fail(message: String) -> void:
@@ -7769,7 +7800,9 @@ func sign_free_agent(raw: Dictionary) -> void:
 	last_news = last_event
 	save_game()
 	show_roster()
-	show_card_reveal(incoming)
+	show_card_reveal(incoming, func():
+		show_purchase_success("簽下 %s" % str(incoming.get("name", "球員")), "簽約費 $%d 萬" % cost)
+	)
 
 func draft_player(raw: Dictionary) -> void:
 	if not draft_eligible() or bool(draft_state.get("completed", false)):
@@ -8421,8 +8454,8 @@ func claim_scout_choice(index: int, expected_player := "", expected_offer := "")
 		last_event = "重複卡：%s 已加入保管箱，可留作收藏或日後替換。" % chosen.get("name", "球員")
 		last_news = last_event
 		save_game()
-		flash_notice(last_event)
 		show_gacha_market()
+		queue_purchase_success(str(chosen.get("name", "球員")), "%d 球探點 · 重複卡已放入保管箱" % cost)
 		return
 	var block := can_sign_player(chosen)
 	if block.is_empty():
@@ -8432,15 +8465,18 @@ func claim_scout_choice(index: int, expected_player := "", expected_offer := "")
 		last_news = last_event
 		save_game()
 		show_roster()
-		show_card_reveal(chosen)
+		show_card_reveal(chosen, func():
+			show_purchase_success(str(chosen.get("name", "球員")), "已使用 %d 球探點並加入名單" % cost)
+		)
 		return
 	stash_to_vault(chosen)
 	last_event = "球探挖掘：%s 已放入保管箱（OVR %d · %d 球探點）。" % [chosen.get("name", "球員"), int(chosen.get("ovr", 70)), cost]
 	last_news = last_event
 	save_game()
-	flash_notice("已放入保管箱")
 	show_card_vault()
-	show_card_reveal(chosen)
+	show_card_reveal(chosen, func():
+		show_purchase_success(str(chosen.get("name", "球員")), "已使用 %d 球探點並放入保管箱" % cost)
+	)
 
 func supporter_accent() -> Color:
 	match supporter_theme:
@@ -11616,7 +11652,7 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	var compact := compact_phone()
 	var raw_number := int(value) if value.is_valid_int() else 0
 	var shown_value := home_resource_number(raw_number) if value.is_valid_int() else value
-	var button := action_button("", Color("00000000"), action, Vector2(60 if compact else 142, 40 if compact else 46))
+	var button := action_button("", Color("00000000"), action, Vector2(60 if compact else 142, 44 if compact else 48))
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.size_flags_stretch_ratio = 1.8 if caption == "薪資空間" else 1.0
 	button.add_theme_stylebox_override("normal", invisible_style())
@@ -11626,25 +11662,33 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	var icon := TextureRect.new()
 	icon.texture = load_png_tex(icon_path)
 	icon.anchor_left = 0.035
-	icon.anchor_right = 0.13
-	icon.anchor_top = 0.18
-	icon.anchor_bottom = 0.82
+	icon.anchor_right = 0.22
+	icon.anchor_top = 0.24
+	icon.anchor_bottom = 0.78
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(icon)
-	var balance_text := "%s %s" % [caption, shown_value]
-	var balance_font := 4 if compact else 7
-	var balance := fit_label(balance_text, balance_font, Color("fff2c2"), true, HORIZONTAL_ALIGNMENT_CENTER)
-	balance.anchor_left = 0.16
+	# Two short rows remain readable on iPhone and leave the full width for long
+	# balances. The previous single-line caption/value shrank to four pixels.
+	var caption_label := fit_label(caption, 6 if compact else 8, Color("c5b98f"), true, HORIZONTAL_ALIGNMENT_LEFT)
+	caption_label.anchor_left = 0.24
+	caption_label.anchor_right = 0.83
+	caption_label.anchor_top = 0.08
+	caption_label.anchor_bottom = 0.43
+	caption_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	caption_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(caption_label)
+	var balance := fit_label(shown_value, 8 if compact else 12, Color("fff2c2"), true, HORIZONTAL_ALIGNMENT_LEFT)
+	balance.anchor_left = 0.24
 	balance.anchor_right = 0.95 if caption in ["資金", "薪資空間"] else 0.83
-	balance.anchor_top = 0.12
-	balance.anchor_bottom = 0.88
+	balance.anchor_top = 0.39
+	balance.anchor_bottom = 0.92
 	balance.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	balance.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(balance)
 	var plus := plain_label("＋", 10 if compact else 16, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
-	plus.anchor_left = 0.85
+	plus.anchor_left = 0.84
 	plus.anchor_right = 0.96
 	plus.anchor_top = 0.1
 	plus.anchor_bottom = 0.9
@@ -11928,7 +11972,7 @@ func build_dashboard_screen(opponent: Dictionary) -> void:
 	var header := PanelContainer.new()
 	header.name = "DashboardClubHeader"
 	header.anchor_left = 0.01
-	header.anchor_right = 0.30
+	header.anchor_right = 0.295
 	header.anchor_top = 0.015
 	header.anchor_bottom = 0.015
 	header.offset_bottom = 38 if compact else 58
@@ -11936,24 +11980,25 @@ func build_dashboard_screen(opponent: Dictionary) -> void:
 	stage.add_child(header)
 	header.add_child(dashboard_skin("res://assets/ui/home/club_header_skin_trim_v1.png"))
 	var header_row := HBoxContainer.new()
-	header_row.add_theme_constant_override("separation", 18 if compact else 38)
+	header_row.add_theme_constant_override("separation", 6 if compact else 12)
 	header.add_child(padded(header_row, 5 if compact else 8))
 	header_row.add_child(club_logo_button(26 if compact else 42, show_club_logo_picker))
 	var club_words := VBoxContainer.new()
-	club_words.custom_minimum_size.x = 96 if compact else 200
-	club_words.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	club_words.custom_minimum_size.x = 0
+	club_words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	club_words.add_theme_constant_override("separation", -2)
 	header_row.add_child(club_words)
-	club_words.add_child(fit_label(club_display_name(), 8 if compact else 14, TEXT, true))
-	var level := 1 + int(season_games / 5)
-	club_words.add_child(fit_label("Lv.%d　%s %d勝 %d敗" % [level, current_league, season_wins, season_losses], 7 if compact else 9, GOLD, true))
+	var club_title := fit_label(club_display_name(), 9 if compact else 15, TEXT, true)
+	club_title.tooltip_text = club_display_name()
+	club_words.add_child(club_title)
+	club_words.add_child(fit_label("%s · %d勝 %d敗" % [current_league, season_wins, season_losses], 7 if compact else 10, GOLD, true))
 	var resource_row := HBoxContainer.new()
 	resource_row.name = "DashboardResources"
-	resource_row.anchor_left = 0.305
+	resource_row.anchor_left = 0.31
 	resource_row.anchor_right = 0.99
 	resource_row.anchor_top = 0.02
 	resource_row.anchor_bottom = 0.02
-	resource_row.offset_bottom = 40 if compact else 48
+	resource_row.offset_bottom = 44 if compact else 50
 	resource_row.alignment = BoxContainer.ALIGNMENT_END
 	resource_row.add_theme_constant_override("separation", 5 if compact else 8)
 	stage.add_child(resource_row)
@@ -12601,6 +12646,8 @@ func lobby_player_card(player: Dictionary, _starter: bool, index := -1, swap_mod
 	var printed_origin := str(player.get("origin_team_id", ""))
 	if printed_origin.is_empty():
 		printed_origin = team_id_from_display_name(str(player.get("team", "")))
+	if printed_origin.is_empty():
+		printed_origin = catalog_origin_id_for_player(player)
 	var printed_logo: Texture2D = null
 	var printed_mark_origin := printed_origin
 	var origin_title := "" if player_tier_key(player) == "diamond" else veteran_prime_team_name(player)
@@ -15137,11 +15184,14 @@ func gold_scout_pull() -> void:
 		call_deferred("show_duplicate_notice")
 		save_game()
 		show_pack_result(pulled, 0)
+		queue_purchase_success("黃金卡包", "已使用 80 黃金；%s 是重複卡，已放入保管箱" % str(pulled.get("name", "球員")))
 		return
 	last_event = "黃金卡包開出 %s（OVR %d）。可放進先發或留在保管箱。" % [pulled.get("name", "球員"), pulled.get("ovr", 70)]
 	save_game()
 	show_pack_result(pulled)
-	show_card_reveal(pulled)
+	show_card_reveal(pulled, func():
+		show_purchase_success("黃金卡包", "已使用 80 黃金並取得 %s" % str(pulled.get("name", "球員")))
+	)
 
 func show_pack_result(pulled: Dictionary, duplicate_gold := 0) -> void:
 	var content := begin_screen("卡包", "花 80 黃金抽一張。卡包只在商店，跟球探點分開。", 4)
@@ -15210,17 +15260,22 @@ func hire_coach(cid: String) -> void:
 	if roster_salary() - int(coach_data(coach_id).get("cost_salary", 0)) + int(data.get("cost_salary", 0)) > salary_cap:
 		flash_notice("聘這位會超過薪資帽")
 		return
-	if not coaches_owned.has(cid):
+	var newly_purchased := not coaches_owned.has(cid)
+	var paid_gold := 0
+	if newly_purchased:
 		var pay_g := int(data.get("cost_gold", 0))
 		if gold < pay_g:
 			flash_notice("黃金不足")
 			return
 		gold -= pay_g
+		paid_gold = pay_g
 		coaches_owned.append(cid)
 	coach_id = cid
 	last_event = "教練換成 %s。%s" % [data.get("name", "教練"), data.get("blurb", "")]
 	save_game()
 	show_coach_market()
+	if newly_purchased:
+		queue_purchase_success(str(data.get("name", "教練")), "已使用 %d 黃金並設為現任教練" % paid_gold)
 
 func show_synthesis() -> void:
 	show_card_vault()
@@ -17269,6 +17324,14 @@ func blended_card_portrait(player: Dictionary) -> Texture2D:
 	# New generated portraits rotate through twenty stable faces/poses; saved player
 	# data and original assets remain untouched. The chest logo is composited by
 	# PlayerCardVisual so portrait variety remains independent of the club crest.
+	# A verified, player-specific roster photo always wins. Previously every
+	# foreign card was forced through the silhouette path even when its matched
+	# official photo was already bundled in the project.
+	var verified_photo := official_photo_path(player)
+	if not verified_photo.is_empty():
+		var verified_tex := load_png_tex(verified_photo)
+		if verified_tex != null:
+			return verified_tex
 	if bool(player.get("draft_2026", false)) or bool(player.get("rotate_generated_portrait", true)):
 		var generated := generated_portrait_for(player)
 		if generated != null:
@@ -18357,9 +18420,47 @@ func play_sfx(kind: String) -> void:
 			sfx_player.stream = tone_stream(1480.0, 0.28, 0.18)
 		"tier_up":
 			sfx_player.stream = tone_stream(1180.0, 0.34, 0.20)
+		"purchase":
+			sfx_player.stream = tone_stream(1560.0, 0.30, 0.20)
 		_:
 			return
 	sfx_player.play()
+
+func show_purchase_success(title: String, detail := "") -> void:
+	close_guide_modal()
+	play_sfx("purchase")
+	var veil := ColorRect.new()
+	veil.name = "DuplicateCardNotice" if detail.contains("重複卡") else "PurchaseSuccessModal"
+	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	veil.color = Color("02060bb8")
+	veil.mouse_filter = Control.MOUSE_FILTER_STOP
+	veil.z_index = 95
+	guide_modal = veil
+	add_child(veil)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	veil.add_child(center)
+	var dialog := PanelContainer.new()
+	dialog.custom_minimum_size = Vector2(300 if compact_phone() else 390, 0)
+	dialog.add_theme_stylebox_override("panel", panel_style(Color("0b1420fa"), GOLD, 18, 2))
+	center.add_child(dialog)
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 8)
+	dialog.add_child(padded(box, 20 if compact_phone() else 26))
+	box.add_child(plain_label("✓", 32 if compact_phone() else 42, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
+	box.add_child(label("購買成功", 21 if compact_phone() else 26, TEXT, true, HORIZONTAL_ALIGNMENT_CENTER))
+	box.add_child(label(title, 16 if compact_phone() else 19, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
+	if not detail.is_empty():
+		box.add_child(wrap_label(detail, 12 if compact_phone() else 14, MUTED, false, HORIZONTAL_ALIGNMENT_CENTER))
+	box.add_child(action_button("確定", ORANGE, func(): close_guide_modal(), Vector2(150, 44 if compact_phone() else 48)))
+	veil.modulate.a = 0.0
+	veil.create_tween().tween_property(veil, "modulate:a", 1.0, 0.16)
+
+func queue_purchase_success(title: String, detail := "") -> void:
+	# Callers rebuild their destination screen before this helper, so the modal
+	# can be attached immediately and is also observable in the same UI frame.
+	show_purchase_success(title, detail)
 
 func bgm_stream() -> AudioStreamWAV:
 	var rate := 22050

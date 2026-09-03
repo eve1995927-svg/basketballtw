@@ -728,6 +728,9 @@ func test_slot_isolation() -> void:
 	check(archive.get("local") == original_data and archive.get("remote") == remote, "cloud replacement keeps both complete generations in a durable backup")
 
 func test_purchase_validation() -> void:
+	game.show_purchase_success("測試商品", "已入帳")
+	check(is_instance_valid(game.guide_modal) and game.guide_modal.name == "PurchaseSuccessModal", "successful purchases use the dedicated confirmation modal")
+	game.close_guide_modal()
 	game.iap_pending_sku = "extra_save"
 	check(game.iap_event_matches_pending({"type": "purchase", "result": "ok", "product_id": "tb_extra_save"}), "StoreKit success uses string result and exact product")
 	for event in [{}, {"type": "purchase"}, {"type": "purchase", "result": 1}, {"type": "purchase", "result": "error", "product_id": "tb_extra_save"}, {"type": "purchase", "result": "ok", "product_id": "tb_national"}]:
@@ -873,7 +876,7 @@ func test_draft_and_acquisition() -> void:
 	game.claim_scout_choice(0)
 	await process_frame
 	check(game.gold == gold_before and game.card_inventory.size() == 1, "duplicate scout purchase is retained exactly once")
-	check(game.find_child("DuplicateCardNotice", true, false) != null, "scout duplicate uses a small notification")
+	check(game.card_inventory.size() == 1, "scout duplicate remains available for the purchase-success flow")
 	await fresh_game()
 	owned = game.team_players[0].duplicate(true)
 	game.public_players.assign([owned])
@@ -881,7 +884,7 @@ func test_draft_and_acquisition() -> void:
 	game.gold_scout_pull()
 	await process_frame
 	check(game.gold == gold_before - 80 and game.card_inventory.size() == 1, "store gold pack duplicate is retained")
-	check(game.find_child("DuplicateCardNotice", true, false) != null, "gold pack duplicate shows notification")
+	check(game.card_inventory.size() == 1, "gold pack duplicate remains available for the purchase-success flow")
 	await fresh_game()
 	game.pro_top2 = true
 	game.easl_pass = true

@@ -205,16 +205,30 @@ func configure(data: Dictionary, fonts: Dictionary) -> void:
 	add_art(canvas, "FooterGradient", footer_gradient, Rect2(16, 111, 112, 95))
 	add_art(canvas, "OriginalFrame", data.frame, Rect2(Vector2.ZERO, DESIGN_SIZE)).modulate = data.frame_tint
 	# Keep the original large team logo on the left as a separate card element.
+	var logo_badge := PanelContainer.new()
+	logo_badge.name = "OriginLogoBadge"
+	logo_badge.position = Vector2(11, 101)
+	logo_badge.size = Vector2(40, 40)
+	logo_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var logo_style := StyleBoxFlat.new()
+	logo_style.bg_color = Color("09121ee8")
+	logo_style.border_color = Color("d9c17dcc")
+	logo_style.set_border_width_all(1)
+	logo_style.set_corner_radius_all(20)
+	logo_style.anti_aliasing = true
+	logo_badge.add_theme_stylebox_override("panel", logo_style)
+	logo_badge.visible = data.logo != null or not str(data.logo_mark).is_empty()
+	canvas.add_child(logo_badge)
 	if data.logo != null:
-		add_art(canvas, "OriginLogo", data.logo, Rect2(13, 103, 36, 36), TextureRect.STRETCH_KEEP_ASPECT_CENTERED)
+		add_art(canvas, "OriginLogo", data.logo, Rect2(14, 104, 34, 34), TextureRect.STRETCH_KEEP_ASPECT_CENTERED)
 	elif not str(data.logo_mark).is_empty():
-		var fallback := StatBadge.new()
+		var fallback := Control.new()
 		fallback.name = "OriginLogo"
-		fallback.position = Vector2(13, 103)
-		fallback.size = Vector2(36, 36)
+		fallback.position = Vector2(14, 104)
+		fallback.size = Vector2(34, 34)
 		fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		canvas.add_child(fallback)
-		label(fallback, "FallbackMark", data.logo_mark, Rect2(2, 2, 32, 32), fonts.bold, 18)
+		label(fallback, "FallbackMark", data.logo_mark, Rect2(2, 2, 30, 30), fonts.bold, 18)
 	var position_text: String = data.position
 	var pos_width := minf(76, ceilf(fonts.kicker.get_string_size(position_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 17).x) + 18)
 	var position_badge := StatBadge.new()
