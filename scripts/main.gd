@@ -802,6 +802,16 @@ func run_iphone_fitshot() -> void:
 	show_dashboard()
 	await get_tree().create_timer(0.55).timeout
 	await dump_fitshot("01_hub_%dx%d" % [fit_size.x, fit_size.y])
+	show_resource_acquisition("gold")
+	await get_tree().create_timer(0.25).timeout
+	await dump_fitshot("01b_resource_guide_%dx%d" % [fit_size.x, fit_size.y])
+	close_guide_modal()
+	# Build every acquisition variant during visual smoke tests so a broken
+	# destination or missing icon fails before a mobile package is exported.
+	for resource_kind in ["scout", "funds", "salary"]:
+		show_resource_acquisition(resource_kind)
+		await get_tree().process_frame
+		close_guide_modal()
 	show_roster()
 	await get_tree().create_timer(0.45).timeout
 	await dump_fitshot("02_roster_%dx%d" % [fit_size.x, fit_size.y])
@@ -9386,6 +9396,90 @@ func show_guide_sheet(title: String, body: String, accent: Color = GOLD, primary
 			show_extra_events()
 		, Vector2(0, 44)))
 
+func resource_acquisition_row(title: String, detail: String, icon_path: String, accent: Color, action: Callable) -> Control:
+	var shell := PanelContainer.new()
+	shell.custom_minimum_size = Vector2(0, 58 if compact_phone() else 68)
+	shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shell.add_theme_stylebox_override("panel", panel_style(Color("101b29f2"), accent.darkened(0.28), 12, 1))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 9)
+	shell.add_child(padded(row, 7))
+	var icon := TextureRect.new()
+	icon.texture = load_png_tex(icon_path)
+	icon.custom_minimum_size = Vector2(34 if compact_phone() else 40, 34 if compact_phone() else 40)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(icon)
+	var words := VBoxContainer.new()
+	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	words.alignment = BoxContainer.ALIGNMENT_CENTER
+	words.add_theme_constant_override("separation", 1)
+	row.add_child(words)
+	words.add_child(fit_label(title, 13 if compact_phone() else 15, accent, true))
+	words.add_child(fit_label(detail, 10 if compact_phone() else 12, TEXT, false))
+	var go := action_button("前往", Color("26384a"), func():
+		close_guide_modal()
+		if action.is_valid():
+			jump_shortcut(action)
+	, Vector2(66 if compact_phone() else 76, 40 if compact_phone() else 44))
+	go.add_theme_font_size_override("font_size", 12 if compact_phone() else 14)
+	row.add_child(go)
+	return shell
+
+func show_gold_acquisition_store() -> void:
+	store_category = "黃金"
+	store_selected_product = ""
+	show_store_hub()
+
+func show_resource_acquisition(resource_kind: String) -> void:
+	var title_text := "取得方式"
+	var summary := "選擇一個方式，系統會帶你到對應功能。"
+	var accent := GOLD
+	var sources: Array = []
+	match resource_kind:
+		"gold":
+			title_text = "黃金取得方式"
+			summary = "黃金可透過儀值、月卡、勝場與挑戰取得。儲值匯率固定為 NT$1＝10 黃金。"
+			sources = [
+				["儲值與主場應援月卡", "黃金商品、30 日月卡與限定球場", "res://assets/ui/hud/gold_coin.png", show_gold_acquisition_store],
+				["每日任務", "打卡、月卡簽到與當日進度", "res://assets/ui/icons/nav_tasks.svg", show_daily_tasks],
+				["比賽與長期挑戰", "贏球可獲得黃金，挑戰另有里程碑", "res://assets/ui/icons/match.png", show_challenge_hub],
+			]
+		"scout":
+			title_text = "球探點取得方式"
+			summary = "球探點只用於挖掘球員，不與黃金或資金混用。"
+			accent = CYAN
+			sources = [
+				["每日與長期任務", "完成目標、累積活躍進度", "res://assets/ui/icons/nav_tasks.svg", show_challenge_hub],
+				["聯盟比賽", "勝場與連勝可獲得球探點", "res://assets/ui/icons/match.png", show_match_prep],
+				["賽事活動", "查看限時任務與活動進度", "res://assets/ui/icons/nav_activity.svg", show_activity_hub],
+			]
+		"funds":
+			title_text = "資金取得方式"
+			summary = "資金用於簽約、交易與特訓，不會扣黃金。"
+			accent = GREEN
+			sources = [
+				["每日打卡", "每日可領取俱樂部資金", "res://assets/ui/icons/nav_tasks.svg", show_daily_tasks],
+				["完成比賽", "勝敗都有比賽收入，勝場較高", "res://assets/ui/icons/match.png", show_match_prep],
+				["額外賽事與季後獎金", "解鎖賽事並爭取高額獎勵", "res://assets/ui/icons/nav_activity.svg", show_extra_events],
+			]
+		"salary":
+			title_text = "釋放薪資空間"
+			summary = "薪資空間不能用黃金購買；需透過名單與交易管理調整。"
+			accent = ORANGE
+			sources = [
+				["薪資明細", "查看每位球員年薪與剩餘空間", "res://assets/ui/hud/budget.png", show_salary_sheet],
+				["編輯名單／釋出球員", "釋出年薪過高或不適合陳容的球員", "res://assets/ui/icons/roster.png", show_roster],
+				["交易市場", "用符合薪資條件的交易重整陳容", "res://assets/ui/icons/market.png", show_trade_market],
+			]
+	show_guide_sheet(title_text, summary, accent)
+	var body := guide_modal.find_child("GuideSheetBody", true, false) if is_instance_valid(guide_modal) else null
+	if body == null:
+		return
+	for source in sources:
+		body.add_child(resource_acquisition_row(str(source[0]), str(source[1]), str(source[2]), accent, source[3]))
+
 func guide_topic_body(topic: String) -> String:
 	match topic:
 		"build":
@@ -12023,11 +12117,11 @@ func build_dashboard_screen(opponent: Dictionary) -> void:
 	resource_row.alignment = BoxContainer.ALIGNMENT_END
 	resource_row.add_theme_constant_override("separation", 5 if compact else 8)
 	stage.add_child(resource_row)
-	resource_row.add_child(home_header_resource("黃金", str(gold), "res://assets/ui/hud/gold_coin.png", show_store_hub))
-	resource_row.add_child(home_header_resource("球探點", str(scout_points), "res://assets/ui/hud/scout.png", show_gacha_market))
-	resource_row.add_child(home_header_resource("資金", resource_display_number(budget_million, "萬"), "res://assets/ui/hud/budget.png", show_finance_sheet))
+	resource_row.add_child(home_header_resource("黃金", str(gold), "res://assets/ui/hud/gold_coin.png", func(): show_resource_acquisition("gold")))
+	resource_row.add_child(home_header_resource("球探點", str(scout_points), "res://assets/ui/hud/scout.png", func(): show_resource_acquisition("scout")))
+	resource_row.add_child(home_header_resource("資金", resource_display_number(budget_million, "萬"), "res://assets/ui/hud/budget.png", func(): show_resource_acquisition("funds")))
 	var salary_space_text := "%s/%s萬" % [resource_display_number(roster_salary()), resource_display_number(salary_cap)]
-	resource_row.add_child(home_header_resource("薪資空間", salary_space_text, "res://assets/ui/hud/budget.png", show_salary_sheet))
+	resource_row.add_child(home_header_resource("薪資空間", salary_space_text, "res://assets/ui/hud/budget.png", func(): show_resource_acquisition("salary")))
 	var menu := action_button("☰", Color("111722ee"), show_dashboard_more_menu, Vector2(40 if compact else 54, 40 if compact else 46))
 	menu.add_theme_font_size_override("font_size", 18 if compact else 25)
 	menu.add_theme_stylebox_override("normal", panel_style(Color("10151ddd"), Color("90794388"), 8, 1))
