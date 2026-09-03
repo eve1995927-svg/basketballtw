@@ -46,6 +46,78 @@ class TierUpCracks extends Control:
 		for point in [Vector2(w * 0.39, h * 0.54), Vector2(w * 0.58, h * 0.54)]:
 			draw_circle(point, 13.0, Color(accent, 0.10))
 			draw_circle(point, 3.0, Color(1, 1, 1, 0.92))
+
+# Recycles a small window of vault card controls while preserving a normal
+# vertical scrollbar. A 100-card vault therefore renders roughly two visible
+# rows instead of constructing all 100 complex card scenes at once.
+class VirtualCardGrid extends Control:
+	var item_ids: Array[int] = []
+	var item_builder: Callable
+	var cell_size := Vector2(112, 220)
+	var outer_scroll: ScrollContainer
+	var rendered_from := -1
+	var rendered_to := -1
+	var rendered_columns := -1
+	var refresh_queued := false
+
+	func configure(ids: Array[int], builder: Callable, wanted_cell_size: Vector2) -> void:
+		item_ids = ids
+		item_builder = builder
+		cell_size = wanted_cell_size
+
+	func _ready() -> void:
+		var node := get_parent()
+		while node != null and not (node is ScrollContainer):
+			node = node.get_parent()
+		outer_scroll = node as ScrollContainer
+		if outer_scroll != null:
+			outer_scroll.get_v_scroll_bar().value_changed.connect(func(_value: float): request_refresh())
+		resized.connect(request_refresh)
+		request_refresh()
+
+	func request_refresh() -> void:
+		if refresh_queued:
+			return
+		refresh_queued = true
+		call_deferred("run_queued_refresh")
+
+	func run_queued_refresh() -> void:
+		refresh_queued = false
+		refresh_window()
+
+	func refresh_window() -> void:
+		if size.x < 20.0 or not item_builder.is_valid():
+			return
+		var available_width := maxf(cell_size.x, size.x - 20.0)
+		var columns := maxi(1, floori(available_width / cell_size.x))
+		var column_stride := available_width / float(columns)
+		var total_rows := ceili(float(item_ids.size()) / float(columns))
+		custom_minimum_size = Vector2(available_width, total_rows * cell_size.y)
+		var hidden_height := 0.0
+		var viewport_height := cell_size.y * 2.0
+		if outer_scroll != null:
+			hidden_height = maxf(0.0, outer_scroll.global_position.y - global_position.y)
+			viewport_height = outer_scroll.size.y
+		var first_row := maxi(0, floori(hidden_height / cell_size.y) - 1)
+		var visible_rows := maxi(2, ceili(maxf(viewport_height, cell_size.y) / cell_size.y) + 2)
+		var first := first_row * columns
+		var last := mini(item_ids.size(), (first_row + visible_rows) * columns)
+		if first == rendered_from and last == rendered_to and columns == rendered_columns:
+			return
+		rendered_from = first
+		rendered_to = last
+		rendered_columns = columns
+		for child in get_children():
+			child.free()
+		for i in range(first, last):
+			var item = item_builder.call(item_ids[i])
+			if not (item is Control):
+				continue
+			var row := i / columns
+			var column := i % columns
+			item.position = Vector2(column * column_stride, row * cell_size.y)
+			item.size = Vector2(column_stride, cell_size.y)
+			add_child(item)
 # Compact phone controls: keep the label size, reduce the surrounding box.
 # 44 is the practical touch floor; going to a literal 40 would reintroduce missed taps.
 const MOBILE_TOUCH_SIZE := 44.0
@@ -467,6 +539,10 @@ var guide_modal: Control
 var _tex_cache: Dictionary = {}
 var _tex_miss: Dictionary = {}
 var _bust_cache: Dictionary = {}
+var _card_display_cache: Dictionary = {}
+var _ui_atlas_texture: Texture2D
+var _ui_atlas_map: Dictionary = {}
+var _ui_atlas_loaded := false
 var _font_display: FontVariation
 var _font_number: FontVariation
 var _font_kicker: FontVariation
@@ -475,6 +551,7 @@ var bgm_player: AudioStreamPlayer
 var sfx_on := true
 var bgm_on := true
 var bgm_volume := 0.28
+var graphics_quality := ""
 var bgm_track := 0
 var _bgm_cache: Dictionary = {}
 var cloud_http: HTTPRequest
@@ -832,6 +909,15 @@ func run_iphone_fitshot() -> void:
 	show_store_hub()
 	await get_tree().create_timer(0.45).timeout
 	await dump_fitshot("04_store_%dx%d" % [fit_size.x, fit_size.y])
+	# Exercise a realistically full vault. Its virtual grid must keep only the
+	# visible rows alive even though this test inventory contains 60 entries.
+	var vault_samples := scout_player_pool()
+	card_inventory.clear()
+	while card_inventory.size() < 60 and not vault_samples.is_empty():
+		card_inventory.append(vault_samples[card_inventory.size() % vault_samples.size()].duplicate(true))
+	show_card_vault()
+	await get_tree().create_timer(0.45).timeout
+	await dump_fitshot("04b_vault_%dx%d" % [fit_size.x, fit_size.y])
 	match_rewards_pending = false
 	last_match_played = true
 	extra_match = false
@@ -5686,6 +5772,9 @@ func trim_card_texture_caches() -> void:
 	var bust_keys := _bust_cache.keys()
 	while bust_keys.size() > 48:
 		_bust_cache.erase(bust_keys.pop_front())
+	var display_keys := _card_display_cache.keys()
+	while display_keys.size() > 48:
+		_card_display_cache.erase(display_keys.pop_front())
 
 func _process(delta: float) -> void:
 	if _app_suspended:
@@ -6037,7 +6126,12 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 	fill_scroll_body(content)
 	if show_dock and stage >= 3 and stage < 6:
 		page.add_child(bottom_navigation())
-	modulate.a = 1.0
+	# A short reveal hides the single-frame construction jump. Heavy collections
+	# populate through their virtual grid after this shell is already visible.
+	modulate.a = 0.86
+	var page_fade := create_tween()
+	page_fade.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	page_fade.tween_property(self, "modulate:a", 1.0, 0.14 if high_graphics_quality() else 0.09)
 	return content
 
 func bind_scroll_child_width(scroll: ScrollContainer, child: Control) -> void:
@@ -6531,6 +6625,23 @@ func settings_block() -> Control:
 		apply_audio_settings()
 	)
 	box.add_child(wrap_label("音樂：Non-Stop Hip-Hop For Streamers（循環）", 11, MUTED))
+	box.add_child(kicker_label("畫質", 11, GOLD, HORIZONTAL_ALIGNMENT_LEFT))
+	var quality_row := HBoxContainer.new()
+	quality_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	quality_row.add_theme_constant_override("separation", 8)
+	box.add_child(quality_row)
+	for quality in ["medium", "high"]:
+		var selected_quality: String = quality
+		var caption := "中畫質" if quality == "medium" else "高畫質"
+		var button := action_button(("✓ " if graphics_quality == quality else "") + caption, GOLD if graphics_quality == quality else Color("254052"), func():
+			graphics_quality = selected_quality
+			_card_display_cache.clear()
+			save_audio_settings()
+			show_settings_hub()
+		)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		quality_row.add_child(button)
+	box.add_child(wrap_label("中畫質會停止卡片持續閃爍；高畫質保留微動。第一次啟動會依裝置自動選擇。", 11, MUTED))
 	return shell
 
 func audio_settings_bar() -> Control:
@@ -12947,7 +13058,7 @@ func lobby_player_card(player: Dictionary, _starter: bool, index := -1, swap_mod
 	visual.size = Vector2(card_w, card_h)
 	var show_team_mark := player_tier_key(player) != "diamond"
 	visual.configure({
-		"portrait": blended_card_portrait(player),
+		"portrait": card_display_portrait(blended_card_portrait(player), player_identity_key(player)),
 		"court": card_court_for(player),
 		"court_tint": card_court_tint(player),
 		"frame": card_frame_for(player_tier_key(player)),
@@ -12962,6 +13073,7 @@ func lobby_player_card(player: Dictionary, _starter: bool, index := -1, swap_mod
 		"player_name": str(player.get("name", "球員")),
 		"salary": "$%d萬" % int(float(player.get("salary_million", published_salary(player)))),
 		"training_sessions": int(player.get("training_sessions", 0)),
+		"animate_premium": high_graphics_quality(),
 	}, {"bold": FONT_BOLD, "kicker": FONT_KICKER_FILE, "number": FONT_NUMBER_FILE})
 	hit.add_child(visual)
 	var footers: Array[String] = []
@@ -13688,6 +13800,34 @@ func vault_filter_bar() -> Control:
 			))
 	return h_chip_scroll(row)
 
+func vault_player_entry(idx: int, card_w: int) -> Control:
+	if idx < 0 or idx >= card_inventory.size() or not (card_inventory[idx] is Dictionary):
+		return Control.new()
+	var player: Dictionary = to_game_player(card_inventory[idx])
+	var entry := VBoxContainer.new()
+	entry.name = "VaultPlayerEntry_%d" % idx
+	entry.custom_minimum_size = Vector2(card_w, 0)
+	entry.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	entry.add_theme_constant_override("separation", 3)
+	entry.add_child(lobby_player_card(player, false, -1, false, card_w, func():
+		show_player_sheet(player, func(): show_card_vault(), func(): place_from_vault(idx), "登錄球隊")
+	))
+	var login := action_button(vault_login_tag(player), CYAN if can_sign_player(player, true).is_empty() else ORANGE, func():
+		place_from_vault(idx)
+	, Vector2(card_w, 38))
+	login.name = "VaultLoginButton"
+	login.tooltip_text = "直接登錄；若名單已滿、超薪資帽或資格受限，會進入換人選擇。"
+	login.add_theme_font_size_override("font_size", 13 if is_handheld() else 11)
+	entry.add_child(login)
+	if can_release_duplicate(player):
+		var release_reward := duplicate_gold_for(player)
+		var release := action_button("釋出 +%d 黃金" % release_reward, GOLD, func(): release_vault_player(idx), Vector2(card_w, 34))
+		release.name = "ReleaseDuplicateButton"
+		release.tooltip_text = "這張是重複卡；釋出後獲得黃金，另一張仍會保留。"
+		release.add_theme_font_size_override("font_size", 12 if is_handheld() else 11)
+		entry.add_child(release)
+	return entry
+
 func show_card_vault() -> void:
 	active_menu = "vault"
 	var content := begin_screen("保管箱", "箱內不算薪資帽。點卡登錄；滿員或超帽時點卡換人。", 4)
@@ -13716,47 +13856,11 @@ func show_card_vault() -> void:
 		empty.add_child(fit_label("球探或市場滿 12 / 超帽會進這裡。", 13, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
 		inner = empty
 	else:
-		var flow := HFlowContainer.new()
-		flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		flow.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		flow.alignment = FlowContainer.ALIGNMENT_CENTER
-		flow.add_theme_constant_override("h_separation", 6)
-		flow.add_theme_constant_override("v_separation", 6)
-		var card_w := lobby_card_width(true)
-		var shown := 0
+		var visible_indices: Array[int] = []
 		for i in sorted_vault_indices():
-			if not (card_inventory[i] is Dictionary):
-				continue
-			var player: Dictionary = to_game_player(card_inventory[i])
-			if not vault_matches_filter(player):
-				continue
-			var idx := i
-			var entry := VBoxContainer.new()
-			entry.name = "VaultPlayerEntry_%d" % idx
-			entry.custom_minimum_size = Vector2(card_w, 0)
-			entry.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-			entry.add_theme_constant_override("separation", 3)
-			entry.add_child(lobby_player_card(player, false, -1, false, card_w, func():
-				show_player_sheet(player, func(): show_card_vault(), func(): place_from_vault(idx), "登錄球隊")
-			))
-			var login := action_button(vault_login_tag(player), CYAN if can_sign_player(player, true).is_empty() else ORANGE, func():
-				place_from_vault(idx)
-			, Vector2(card_w, 38))
-			login.name = "VaultLoginButton"
-			login.tooltip_text = "直接登錄；若名單已滿、超薪資帽或資格受限，會進入換人選擇。"
-			login.add_theme_font_size_override("font_size", 13 if is_handheld() else 11)
-			entry.add_child(login)
-			if can_release_duplicate(player):
-				var release_reward := duplicate_gold_for(player)
-				var release := action_button("釋出 +%d 黃金" % release_reward, GOLD, func(): release_vault_player(idx), Vector2(card_w, 34))
-				release.name = "ReleaseDuplicateButton"
-				release.tooltip_text = "這張是重複卡；釋出後獲得黃金，另一張仍會保留。"
-				release.add_theme_font_size_override("font_size", 12 if is_handheld() else 11)
-				entry.add_child(release)
-			flow.add_child(entry)
-			shown += 1
-		if shown == 0:
-			flow.free()
+			if card_inventory[i] is Dictionary and vault_matches_filter(to_game_player(card_inventory[i])):
+				visible_indices.append(i)
+		if visible_indices.is_empty():
 			var empty := VBoxContainer.new()
 			empty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			empty.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -13764,7 +13868,14 @@ func show_card_vault() -> void:
 			empty.add_child(fit_label("沒有符合篩選的人，改條件或按全部。", 13, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
 			inner = empty
 		else:
-			inner = flow
+			var card_w := lobby_card_width(true)
+			var virtual_grid := VirtualCardGrid.new()
+			virtual_grid.name = "VaultVirtualGrid"
+			virtual_grid.custom_minimum_size = Vector2(0, maxf(180.0, content_view_h() - 36.0))
+			virtual_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			virtual_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			virtual_grid.configure(visible_indices, func(index: int): return vault_player_entry(index, card_w), Vector2(card_w + 6, 210 if is_handheld() else 184))
+			inner = virtual_grid
 	board.add_child(padded(inner, 8))
 	content.add_child(board)
 	if is_handheld():
@@ -17267,11 +17378,38 @@ func load_svg_tex(path: String, px := 128) -> Texture2D:
 	_tex_cache[path] = tex
 	return tex
 
+func ui_atlas_texture_for(path: String) -> Texture2D:
+	if not (path.begins_with("res://assets/ui/icons/") or path.begins_with("res://assets/ui/hud/") or path.begins_with("res://assets/ui/club_logos/") or path.begins_with("res://assets/ui/team_logos/")):
+		return null
+	if not _ui_atlas_loaded:
+		_ui_atlas_loaded = true
+		var map_path := "res://assets/ui/atlas/ui_icons_atlas.json"
+		if FileAccess.file_exists(map_path):
+			var file := FileAccess.open(map_path, FileAccess.READ)
+			var parsed = JSON.parse_string(file.get_as_text()) if file != null else null
+			if parsed is Dictionary:
+				_ui_atlas_map = parsed
+		if ResourceLoader.exists("res://assets/ui/atlas/ui_icons_atlas.png"):
+			_ui_atlas_texture = load("res://assets/ui/atlas/ui_icons_atlas.png")
+	if _ui_atlas_texture == null or not _ui_atlas_map.has(path):
+		return null
+	var raw = _ui_atlas_map[path]
+	if not (raw is Array) or raw.size() < 4:
+		return null
+	var region := AtlasTexture.new()
+	region.atlas = _ui_atlas_texture
+	region.region = Rect2(float(raw[0]), float(raw[1]), float(raw[2]), float(raw[3]))
+	return region
+
 func load_png_tex(path: String) -> Texture2D:
 	if path.is_empty() or _tex_miss.has(path):
 		return null
 	if _tex_cache.has(path) and _tex_cache[path] is Texture2D:
 		return _tex_cache[path]
+	var atlas_region := ui_atlas_texture_for(path)
+	if atlas_region != null:
+		_tex_cache[path] = atlas_region
+		return atlas_region
 	if ResourceLoader.exists(path):
 		var baked = load(path)
 		if baked is Texture2D:
@@ -17295,6 +17433,23 @@ func load_png_tex(path: String) -> Texture2D:
 		return tex
 	_tex_miss[path] = true
 	return tex
+
+func card_display_portrait(texture: Texture2D, identity: String) -> Texture2D:
+	if texture == null:
+		return null
+	var key := "card384#%s" % identity
+	if _card_display_cache.has(key) and _card_display_cache[key] is Texture2D:
+		return _card_display_cache[key]
+	var image := texture.get_image()
+	if image == null or image.get_width() < 2 or image.get_height() < 2:
+		return texture
+	var max_size := Vector2(384, 576)
+	var scale := minf(1.0, minf(max_size.x / float(image.get_width()), max_size.y / float(image.get_height())))
+	if scale < 0.999:
+		image.resize(maxi(2, roundi(image.get_width() * scale)), maxi(2, roundi(image.get_height() * scale)), Image.INTERPOLATE_BILINEAR)
+	var display_texture := ImageTexture.create_from_image(image)
+	_card_display_cache[key] = display_texture
+	return display_texture
 
 func _image_magic(disk: String) -> String:
 	var file := FileAccess.open(disk, FileAccess.READ)
@@ -18567,6 +18722,7 @@ func _on_bgm_finished() -> void:
 		bgm_player.play()
 
 func load_audio_settings() -> void:
+	graphics_quality = automatic_graphics_quality()
 	if not FileAccess.file_exists(AUDIO_SETTINGS_PATH):
 		bgm_on = true
 		sfx_on = true
@@ -18581,12 +18737,28 @@ func load_audio_settings() -> void:
 	sfx_on = bool(data.get("sfx_on", true))
 	bgm_on = bool(data.get("bgm_on", true))
 	bgm_volume = clampf(float(data.get("bgm_volume", 0.28)), 0.0, 1.0)
+	graphics_quality = str(data.get("graphics_quality", automatic_graphics_quality()))
+	if graphics_quality not in ["medium", "high"]:
+		graphics_quality = automatic_graphics_quality()
 
 func save_audio_settings() -> void:
 	var file := FileAccess.open(AUDIO_SETTINGS_PATH, FileAccess.WRITE)
 	if file == null:
 		return
-	file.store_string(JSON.stringify({"sfx_on": sfx_on, "bgm_on": bgm_on, "bgm_volume": bgm_volume}))
+	file.store_string(JSON.stringify({"sfx_on": sfx_on, "bgm_on": bgm_on, "bgm_volume": bgm_volume, "graphics_quality": graphics_quality}))
+
+func automatic_graphics_quality() -> String:
+	if not is_handheld():
+		return "high"
+	var model := OS.get_model_name().to_lower()
+	if model.begins_with("iphone"):
+		var hardware := model.trim_prefix("iphone").get_slice(",", 0)
+		if hardware.is_valid_int() and int(hardware) >= 14:
+			return "high"
+	return "high" if OS.get_processor_count() >= 8 else "medium"
+
+func high_graphics_quality() -> bool:
+	return graphics_quality == "high"
 
 func apply_audio_settings() -> void:
 	if not is_instance_valid(bgm_player):

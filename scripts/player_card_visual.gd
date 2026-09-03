@@ -24,12 +24,13 @@ class RaritySparkles extends Control:
 
 class CourtSparkles extends Control:
 	var diamond := false
+	var animate := true
 	var elapsed := 0.0
 	var redraw_elapsed := 0.0
 
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
-		set_process(true)
+		set_process(animate)
 		queue_redraw()
 
 	func _process(delta: float) -> void:
@@ -177,6 +178,7 @@ func configure(data: Dictionary, fonts: Dictionary) -> void:
 			var court_sparkles := CourtSparkles.new()
 			court_sparkles.name = "PremiumCourtSparkles"
 			court_sparkles.diamond = rarity == "diamond"
+			court_sparkles.animate = bool(data.get("animate_premium", true))
 			court_sparkles.position = portrait_rect.position
 			court_sparkles.size = portrait_rect.size
 			canvas.add_child(court_sparkles)
