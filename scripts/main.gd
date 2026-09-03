@@ -139,9 +139,9 @@ const APP_BUILD := 156
 const ONLINE_ONLY := true
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const MOBILE_AUTH_REDIRECT := "taiwanbasketballgm://auth/callback"
-# Keep the client honest until the Supabase Apple provider has its Service ID,
-# key, and redirect configuration. The live project currently reports Apple=false.
-const APPLE_OAUTH_ENABLED := false
+# Supabase Apple OAuth is enabled after configuring the Service ID, signing key,
+# generated client secret, and redirect URL in the live project.
+const APPLE_OAUTH_ENABLED := true
 const STYLIZED_ART := [
 	"res://assets/art/hero_pg.png",
 	"res://assets/art/hero_sg.png",
