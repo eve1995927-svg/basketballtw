@@ -11759,63 +11759,77 @@ func dashboard_skin(path: String) -> TextureRect:
 	skin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return skin
 
-func home_header_resource(caption: String, value: String, icon_path: String, action: Callable) -> Button:
+func home_header_resource(caption: String, value: String, icon_path: String, action: Callable) -> Control:
 	var compact := compact_phone()
 	var raw_number := int(value) if value.is_valid_int() else 0
 	var shown_value := home_resource_number(raw_number) if value.is_valid_int() else value
-	var button := action_button("", Color("00000000"), action, Vector2(60 if compact else 142, 44 if compact else 48))
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.size_flags_stretch_ratio = 1.75 if caption == "薪資空間" else 1.0
-	button.add_theme_stylebox_override("normal", invisible_style())
-	button.add_theme_stylebox_override("hover", panel_style(Color("ffffff0b"), GOLD, 10, 1))
-	button.add_theme_stylebox_override("pressed", panel_style(Color("ffffff14"), GOLD, 10, 1))
-	button.add_child(dashboard_skin("res://assets/ui/home/resource_pill_skin_trim_v1.png"))
+	var shell := Control.new()
+	var compact_width := 82 if caption == "薪資空間" else (62 if caption == "資金" else 55)
+	var regular_width := 220 if caption == "薪資空間" else (155 if caption == "資金" else 136)
+	shell.custom_minimum_size = Vector2(compact_width if compact else regular_width, 44 if compact else 50)
+	shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shell.size_flags_stretch_ratio = 1.8 if caption == "薪資空間" else (1.25 if caption == "資金" else 1.0)
+	shell.clip_contents = true
+	shell.add_child(dashboard_skin("res://assets/ui/home/resource_pill_skin_trim_v1.png"))
+	var whole_hit := Button.new()
+	whole_hit.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	whole_hit.flat = true
+	whole_hit.tooltip_text = "%s：%s" % [caption, value]
+	whole_hit.add_theme_stylebox_override("normal", invisible_style())
+	whole_hit.add_theme_stylebox_override("hover", panel_style(Color("ffffff0b"), GOLD, 10, 1))
+	whole_hit.add_theme_stylebox_override("pressed", panel_style(Color("ffffff14"), GOLD, 10, 1))
+	whole_hit.pressed.connect(func():
+		play_sfx("tap")
+		action.call()
+	)
+	shell.add_child(whole_hit)
+	var row := HBoxContainer.new()
+	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	row.offset_left = 5 if compact else 7
+	row.offset_right = -4 if compact else -6
+	row.offset_top = 3
+	row.offset_bottom = -3
+	row.add_theme_constant_override("separation", 3 if compact else 6)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shell.add_child(row)
 	var icon := TextureRect.new()
 	icon.texture = load_png_tex(icon_path)
-	icon.anchor_left = 0.035
-	icon.anchor_right = 0.22
-	icon.anchor_top = 0.24
-	icon.anchor_bottom = 0.78
+	icon.custom_minimum_size = Vector2(14 if compact else 22, 20 if compact else 30)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	button.add_child(icon)
-	# Two short rows remain readable on iPhone and leave the full width for long
-	# balances. The previous single-line caption/value shrank to four pixels.
-	var caption_label := fit_label(caption, 5 if compact else 6, Color("c5b98f"), true, HORIZONTAL_ALIGNMENT_LEFT)
-	caption_label.anchor_left = 0.24
-	caption_label.anchor_right = 0.83
-	caption_label.anchor_top = 0.04
-	caption_label.anchor_bottom = 0.36
-	caption_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	caption_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	button.add_child(caption_label)
+	row.add_child(icon)
+	var words := VBoxContainer.new()
+	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	words.alignment = BoxContainer.ALIGNMENT_CENTER
+	words.add_theme_constant_override("separation", -2 if compact else -3)
+	words.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(words)
+	var caption_label := fit_label(caption, 5 if compact else 7, Color("c5b98f"), true)
+	words.add_child(caption_label)
 	var value_font := 7 if compact else 9
 	if shown_value.length() >= 14:
-		value_font = 5 if compact else 7
+		value_font = 5 if compact else 6
 	elif shown_value.length() >= 10:
-		value_font = 6 if compact else 8
-	var balance := fit_label(shown_value, value_font, Color("fff2c2"), true, HORIZONTAL_ALIGNMENT_LEFT)
-	balance.anchor_left = 0.24
-	balance.anchor_right = 0.825
-	balance.anchor_top = 0.46
-	balance.anchor_bottom = 0.96
-	balance.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	balance.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	button.add_child(balance)
-	# The ASCII glyph stays optically centered with iOS fonts; the full-width
-	# CJK plus renders above center even when the Label itself is centered.
-	var plus := plain_label("+", 10 if compact else 14, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
-	plus.anchor_left = 0.835
-	plus.anchor_right = 0.985
-	plus.anchor_top = 0.04
-	plus.anchor_bottom = 0.96
-	plus.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	plus.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	plus.visible = true
-	button.add_child(plus)
-	button.tooltip_text = "%s：%s" % [caption, value]
-	return button
+		value_font = 6 if compact else 7
+	else:
+		value_font = 7 if compact else 9
+	words.add_child(fit_label(shown_value, value_font, Color("fff2c2"), true))
+	# The complete pill is already a generous touch target. Keep the visible plus
+	# compact so mobile's 44 px button minimum cannot steal space from balances.
+	var plus_shell := PanelContainer.new()
+	plus_shell.name = "%sAddButton" % caption
+	plus_shell.custom_minimum_size = Vector2(18 if compact else 28, 28 if compact else 34)
+	plus_shell.size_flags_horizontal = Control.SIZE_SHRINK_END
+	plus_shell.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	plus_shell.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plus_shell.add_theme_stylebox_override("panel", panel_style(Color("101722e8"), Color("b79643aa"), 7, 1))
+	var plus_glyph := plain_label("+", 10 if compact else 15, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
+	plus_glyph.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	plus_glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plus_shell.add_child(plus_glyph)
+	row.add_child(plus_shell)
+	return shell
 
 func home_resource_number(value: int) -> String:
 	var digits := str(maxi(value, 0))
@@ -11946,22 +11960,25 @@ func dashboard_schedule_hotspot(delta: int, tip: String) -> Control:
 func dashboard_schedule_card_content(entry: Dictionary, highlighted: bool, left: float, right: float) -> Control:
 	var compact := compact_phone()
 	var team: Dictionary = entry.get("team", {})
-	var holder := Control.new()
+	var holder := PanelContainer.new()
 	holder.anchor_left = left
 	holder.anchor_right = right
-	holder.anchor_top = 0.18 if highlighted else 0.22
-	holder.anchor_bottom = 0.72
+	holder.anchor_top = 0.18 if highlighted else 0.23
+	holder.anchor_bottom = 0.70
+	holder.clip_contents = true
+	var card_fill := Color("d9b84df4") if highlighted else Color("0b1522ed")
+	var card_edge := Color("fff0a8") if highlighted else Color("9a824a99")
+	holder.add_theme_stylebox_override("panel", panel_style(card_fill, card_edge, 9, 2 if highlighted else 1))
 	var box := VBoxContainer.new()
-	box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.add_theme_constant_override("separation", -2 if compact else 1)
-	holder.add_child(box)
+	box.add_theme_constant_override("separation", -1 if compact else 1)
+	holder.add_child(padded(box, 4 if compact else 6))
 	var ink := Color("17130c") if highlighted else TEXT
-	box.add_child(plain_label("第 %d 場" % int(entry.get("number", 1)), 6 if compact else 8, ink, true, HORIZONTAL_ALIGNMENT_CENTER))
+	box.add_child(plain_label("第 %d 場" % int(entry.get("number", 1)), 6 if compact else (10 if highlighted else 8), ink, true, HORIZONTAL_ALIGNMENT_CENTER))
 	var team_id := str(team.get("team_id", team.get("id", "")))
 	var team_name := str(team.get("name", "待定對手"))
-	box.add_child(team_logo_rect(team_id, 21 if compact else (44 if highlighted else 37), team_name))
-	var name_label := fit_label(team_name, 6 if compact else 8, ink, true, HORIZONTAL_ALIGNMENT_CENTER)
+	box.add_child(team_logo_rect(team_id, 20 if compact else (42 if highlighted else 32), team_name))
+	var name_label := fit_label(team_name, 6 if compact else (10 if highlighted else 7), ink, true, HORIZONTAL_ALIGNMENT_CENTER)
 	name_label.tooltip_text = team_name
 	box.add_child(name_label)
 	if highlighted:
@@ -11972,41 +11989,53 @@ func home_schedule_carousel(opponent: Dictionary) -> Control:
 	var compact := compact_phone()
 	var shell := Control.new()
 	shell.name = "HomeScheduleCarousel"
-	var skin := TextureRect.new()
-	skin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	skin.texture = load_png_tex("res://assets/ui/home/schedule_carousel_skin_v2.png")
-	skin.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	skin.stretch_mode = TextureRect.STRETCH_SCALE
-	skin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	shell.add_child(skin)
+	var frame := PanelContainer.new()
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	frame.add_theme_stylebox_override("panel", panel_style(Color("08111ccc"), Color("c6a64f88"), 12, 1))
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shell.add_child(frame)
 	var heading := fit_label("下一場" if home_schedule_preview_offset == 0 else "賽程預覽", 10 if compact else 16, GOLD, true)
-	heading.anchor_left = 0.08
-	heading.anchor_right = 0.38
-	heading.anchor_top = 0.025
+	heading.anchor_left = 0.06
+	heading.anchor_right = 0.40
+	heading.anchor_top = 0.04
 	heading.anchor_bottom = 0.16
 	shell.add_child(heading)
 	var previous := dashboard_schedule_hotspot(-1, "上一場賽程")
-	previous.anchor_left = 0.035
-	previous.anchor_right = 0.12
-	previous.anchor_top = 0.37
-	previous.anchor_bottom = 0.62
+	previous.anchor_left = 0.01
+	previous.anchor_right = 0.07
+	previous.anchor_top = 0.34
+	previous.anchor_bottom = 0.63
 	shell.add_child(previous)
+	var previous_glyph := plain_label("‹", 18 if compact else 28, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
+	previous_glyph.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	previous_glyph.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	previous_glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	previous.add_child(previous_glyph)
 	var following := dashboard_schedule_hotspot(1, "下一場賽程")
-	following.anchor_left = 0.88
-	following.anchor_right = 0.965
-	following.anchor_top = 0.37
-	following.anchor_bottom = 0.62
+	following.anchor_left = 0.93
+	following.anchor_right = 0.99
+	following.anchor_top = 0.34
+	following.anchor_bottom = 0.63
 	shell.add_child(following)
-	shell.add_child(dashboard_schedule_card_content(dashboard_schedule_entry(home_schedule_preview_offset - 1, opponent), false, 0.14, 0.385))
-	shell.add_child(dashboard_schedule_card_content(dashboard_schedule_entry(home_schedule_preview_offset, opponent), true, 0.385, 0.64))
-	shell.add_child(dashboard_schedule_card_content(dashboard_schedule_entry(home_schedule_preview_offset + 1, opponent), false, 0.64, 0.875))
+	var following_glyph := plain_label("›", 18 if compact else 28, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER)
+	following_glyph.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	following_glyph.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	following_glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	following.add_child(following_glyph)
+	shell.add_child(dashboard_schedule_card_content(dashboard_schedule_entry(home_schedule_preview_offset - 1, opponent), false, 0.08, 0.30))
+	shell.add_child(dashboard_schedule_card_content(dashboard_schedule_entry(home_schedule_preview_offset, opponent), true, 0.34, 0.66))
+	shell.add_child(dashboard_schedule_card_content(dashboard_schedule_entry(home_schedule_preview_offset + 1, opponent), false, 0.70, 0.92))
 	var center_entry := dashboard_schedule_entry(home_schedule_preview_offset, opponent)
 	var rival: Dictionary = center_entry.get("team", opponent)
+	var strip := PanelContainer.new()
+	strip.anchor_left = 0.08
+	strip.anchor_right = 0.92
+	strip.anchor_top = 0.77
+	strip.anchor_bottom = 0.95
+	strip.add_theme_stylebox_override("panel", panel_style(Color("101925f2"), Color("d9b84dcc"), 8, 1))
+	shell.add_child(strip)
 	var matchup_row := Control.new()
-	matchup_row.anchor_left = 0.08
-	matchup_row.anchor_right = 0.92
-	matchup_row.anchor_top = 0.785
-	matchup_row.anchor_bottom = 0.935
+	strip.add_child(matchup_row)
 	var mine_logo := team_logo_rect(ensure_club_logo_id(), 17 if compact else 22, club_name)
 	mine_logo.anchor_right = 0.10
 	mine_logo.anchor_bottom = 1.0
@@ -12038,7 +12067,6 @@ func home_schedule_carousel(opponent: Dictionary) -> Control:
 	rival_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	rival_label.tooltip_text = rival_name
 	matchup_row.add_child(rival_label)
-	shell.add_child(matchup_row)
 	return shell
 
 func show_dashboard_more_menu() -> void:
@@ -12108,54 +12136,43 @@ func build_dashboard_screen(opponent: Dictionary) -> void:
 	stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	safe.add_child(stage)
 
-	# Brand is split into two sibling regions: an independent crest and a text
-	# card. The dashboard deliberately shows only the club name; appending the
-	# current combo/team label made user-created names collide on real iPhones.
-	var header := Control.new()
+	# One integrated card keeps the crest visually attached to the club while a
+	# real HBox guarantees that its fixed logo column can never cover the text.
+	var header := PanelContainer.new()
 	header.name = "DashboardClubHeader"
 	header.anchor_left = 0.01
-	header.anchor_right = 0.32
+	header.anchor_right = 0.315
 	header.anchor_top = 0.015
 	header.anchor_bottom = 0.015
 	header.offset_bottom = 46 if compact else 58
+	header.add_theme_stylebox_override("panel", panel_style(Color("09111be8"), Color("c6a64f99"), 10, 1))
 	stage.add_child(header)
-	var club_mark := club_logo_button(32 if compact else 46, show_club_logo_picker)
-	club_mark.position = Vector2(0, 7 if compact else 6)
-	club_mark.size = Vector2(32 if compact else 46, 32 if compact else 46)
-	header.add_child(club_mark)
-	var info := PanelContainer.new()
-	info.anchor_right = 1.0
-	info.anchor_bottom = 1.0
-	info.offset_left = 42 if compact else 58
-	info.add_theme_stylebox_override("panel", panel_style(Color("09111bdc"), Color("c6a64f99"), 10, 1))
-	header.add_child(info)
-	var header_content := Control.new()
-	header_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	info.add_child(header_content)
+	var brand_row := HBoxContainer.new()
+	brand_row.add_theme_constant_override("separation", 8 if compact else 11)
+	header.add_child(padded(brand_row, 5 if compact else 7))
+	var club_mark := club_logo_button(30 if compact else 42, show_club_logo_picker)
+	club_mark.custom_minimum_size = Vector2(30 if compact else 42, 30 if compact else 42)
+	club_mark.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	brand_row.add_child(club_mark)
+	var header_content := VBoxContainer.new()
+	header_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_content.alignment = BoxContainer.ALIGNMENT_CENTER
+	header_content.add_theme_constant_override("separation", -2 if compact else -1)
+	brand_row.add_child(header_content)
 	var club_title := fit_label(club_name, 7 if compact else 13, TEXT, true)
 	club_title.tooltip_text = club_name
-	club_title.anchor_right = 1.0
-	club_title.offset_left = 10 if compact else 13
-	club_title.offset_right = -8
-	club_title.offset_top = 2 if compact else 3
-	club_title.offset_bottom = 20 if compact else 27
 	header_content.add_child(club_title)
 	var club_record := fit_label("%s · %d勝 %d敗" % [current_league, season_wins, season_losses], 5 if compact else 8, GOLD, true)
-	club_record.anchor_right = 1.0
-	club_record.offset_left = 10 if compact else 13
-	club_record.offset_right = -8
-	club_record.offset_top = 25 if compact else 30
-	club_record.offset_bottom = 43 if compact else 54
 	header_content.add_child(club_record)
 	var resource_row := HBoxContainer.new()
 	resource_row.name = "DashboardResources"
-	resource_row.anchor_left = 0.33
+	resource_row.anchor_left = 0.335
 	resource_row.anchor_right = 0.99
 	resource_row.anchor_top = 0.02
 	resource_row.anchor_bottom = 0.02
 	resource_row.offset_bottom = 44 if compact else 50
 	resource_row.alignment = BoxContainer.ALIGNMENT_END
-	resource_row.add_theme_constant_override("separation", 5 if compact else 8)
+	resource_row.add_theme_constant_override("separation", 5 if compact else 10)
 	stage.add_child(resource_row)
 	resource_row.add_child(home_header_resource("黃金", str(gold), "res://assets/ui/hud/gold_coin.png", func(): show_resource_acquisition("gold")))
 	resource_row.add_child(home_header_resource("球探點", str(scout_points), "res://assets/ui/hud/scout.png", func(): show_resource_acquisition("scout")))
