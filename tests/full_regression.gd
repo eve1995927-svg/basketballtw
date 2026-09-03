@@ -105,6 +105,8 @@ func test_store_cosmetics() -> void:
 	check(game.gold == before_bundle + 300, "NT$30 gold bundle grants 300 gold at 1:10")
 	check(int(game.iap_product("gold_900").gold_amount) == 950, "larger gold bundle includes its advertised 5 percent bonus")
 	check(int(game.iap_product("gold_9900").gold_amount) == 12000, "largest gold bundle includes its advertised bonus")
+	check(str(game.store_product_by_id("gold_300").badge) == "10 折", "base gold bundle states its full-price rate")
+	check(str(game.store_product_by_id("gold_9900").badge) == "最佳回饋 · 8.3 折", "largest gold bundle states its effective discount")
 
 func test_veteran_and_training_rules() -> void:
 	await fresh_game()

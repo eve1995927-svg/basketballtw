@@ -4102,11 +4102,11 @@ func store_products() -> Array[Dictionary]:
 		{"id":"event_wcq", "title":"世界盃資格賽", "category":"賽事", "price":"1,200 黃金", "gold":1200, "art":"res://assets/ui/store/national.png", "description":"選出中華隊名單，走過資格賽。勝利會留下國家隊紀錄與專屬成就。", "note":"永久賽事擴充", "event":"wcq"},
 		{"id":"event_bundle", "title":"國際賽事完整包", "category":"賽事", "price":"2,200 黃金", "gold":2200, "art":"res://assets/art/activity/activity_vs_hero.png", "description":"一次解鎖瓊斯盃、東超／BCL與世界盃資格賽，三條故事線都保留重玩空間。", "note":"組合價 · 永久解鎖", "event":"bundle"},
 		{"id":"monthly_pass", "title":"主場應援月卡", "category":"黃金", "price":"NT$190", "gold":-1, "art":"res://assets/art/arenas/monthly_moon.png", "description":"立即 400 黃金，之後 30 天每日 50 黃金；漏領可累積。另送月影雲海球場，可自由切換。", "note":"總計 1,900 黃金 · 限定球場永久保留", "sku":"monthly_pass"},
-		{"id":"gold_300", "title":"300 黃金", "category":"黃金", "price":"NT$30", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"臨時差一點就選這包，維持基本匯率 NT$1＝10 黃金。", "note":"基本方案", "badge":"", "sku":"gold_300"},
-		{"id":"gold_900", "title":"950 黃金", "category":"黃金", "price":"NT$90", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"比基本匯率多 50 黃金，剛好能解鎖三座台灣城市球場。", "note":"加贈 50", "badge":"加贈 5%", "sku":"gold_900"},
-		{"id":"gold_1900", "title":"2,100 黃金", "category":"黃金", "price":"NT$190", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"適合一次規劃球場、更衣室與便利功能。", "note":"加贈 200", "badge":"熱門 · 加贈 10%", "sku":"gold_1900"},
-		{"id":"gold_4900", "title":"5,700 黃金", "category":"黃金", "price":"NT$490", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"收藏型玩家方案，一次補足多座城市與特殊主場。", "note":"加贈 800", "badge":"加贈 16%", "sku":"gold_4900"},
-		{"id":"gold_9900", "title":"12,000 黃金", "category":"黃金", "price":"NT$990", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"目前最高額方案，額外黃金最多，所有價格仍清楚列出。", "note":"加贈 2,100", "badge":"最佳回饋 · 加贈 21%", "sku":"gold_9900"},
+		{"id":"gold_300", "title":"300 黃金", "category":"黃金", "price":"NT$30", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"臨時差一點就選這包，維持基本匯率 NT$1＝10 黃金。", "note":"基本方案", "badge":"10 折", "sku":"gold_300"},
+		{"id":"gold_900", "title":"950 黃金", "category":"黃金", "price":"NT$90", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"比基本匯率多 50 黃金，剛好能解鎖三座台灣城市球場。", "note":"加贈 50 黃金", "badge":"9.5 折", "sku":"gold_900"},
+		{"id":"gold_1900", "title":"2,100 黃金", "category":"黃金", "price":"NT$190", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"適合一次規劃球場、更衣室與便利功能。", "note":"加贈 200 黃金", "badge":"熱門 · 9 折", "sku":"gold_1900"},
+		{"id":"gold_4900", "title":"5,700 黃金", "category":"黃金", "price":"NT$490", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"收藏型玩家方案，一次補足多座城市與特殊主場。", "note":"加贈 800 黃金", "badge":"8.6 折", "sku":"gold_4900"},
+		{"id":"gold_9900", "title":"12,000 黃金", "category":"黃金", "price":"NT$990", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"目前最高額方案，額外黃金最多，所有價格仍清楚列出。", "note":"加贈 2,100 黃金", "badge":"最佳回饋 · 8.3 折", "sku":"gold_9900"},
 	]
 
 func store_visible_products(category: String) -> Array[Dictionary]:
