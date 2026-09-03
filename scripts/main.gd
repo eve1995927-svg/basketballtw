@@ -782,8 +782,15 @@ func run_iphone_fitshot() -> void:
 	pending_enter_after_auth = false
 	welcome_open = false
 	tutorial_seen = true
+	var fit_size := Vector2i(844, 390)
+	var requested_sizes := OS.get_environment("TB_TEST_SIZES").strip_edges()
+	if not requested_sizes.is_empty():
+		var first_size := requested_sizes.split(",")[0].strip_edges().to_lower()
+		var dimensions := first_size.split("x")
+		if dimensions.size() == 2 and dimensions[0].is_valid_int() and dimensions[1].is_valid_int():
+			fit_size = Vector2i(maxi(320, int(dimensions[0])), maxi(240, int(dimensions[1])))
 	if not OS.has_feature("mobile"):
-		get_window().size = Vector2i(844, 390)
+		get_window().size = fit_size
 	await get_tree().process_frame
 	await get_tree().process_frame
 	if team_players.is_empty():
@@ -794,16 +801,16 @@ func run_iphone_fitshot() -> void:
 			await get_tree().create_timer(0.55).timeout
 	show_dashboard()
 	await get_tree().create_timer(0.55).timeout
-	await dump_fitshot("01_hub")
+	await dump_fitshot("01_hub_%dx%d" % [fit_size.x, fit_size.y])
 	show_roster()
 	await get_tree().create_timer(0.45).timeout
-	await dump_fitshot("02_roster")
+	await dump_fitshot("02_roster_%dx%d" % [fit_size.x, fit_size.y])
 	show_gacha_market()
 	await get_tree().create_timer(0.45).timeout
-	await dump_fitshot("03_scout")
+	await dump_fitshot("03_scout_%dx%d" % [fit_size.x, fit_size.y])
 	show_store_hub()
 	await get_tree().create_timer(0.45).timeout
-	await dump_fitshot("04_store")
+	await dump_fitshot("04_store_%dx%d" % [fit_size.x, fit_size.y])
 	match_rewards_pending = false
 	last_match_played = true
 	extra_match = false
@@ -819,7 +826,7 @@ func run_iphone_fitshot() -> void:
 		last_opponent = {"name": "台灣金控"}
 	show_post_match()
 	await get_tree().create_timer(0.55).timeout
-	await dump_fitshot("05_result")
+	await dump_fitshot("05_result_%dx%d" % [fit_size.x, fit_size.y])
 	get_tree().quit()
 
 func run_mac_play() -> void:
@@ -11654,7 +11661,7 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	var shown_value := home_resource_number(raw_number) if value.is_valid_int() else value
 	var button := action_button("", Color("00000000"), action, Vector2(60 if compact else 142, 44 if compact else 48))
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.size_flags_stretch_ratio = 1.8 if caption == "薪資空間" else 1.0
+	button.size_flags_stretch_ratio = 1.65 if caption == "薪資空間" else 1.0
 	button.add_theme_stylebox_override("normal", invisible_style())
 	button.add_theme_stylebox_override("hover", panel_style(Color("ffffff0b"), GOLD, 10, 1))
 	button.add_theme_stylebox_override("pressed", panel_style(Color("ffffff14"), GOLD, 10, 1))
@@ -11671,7 +11678,7 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	button.add_child(icon)
 	# Two short rows remain readable on iPhone and leave the full width for long
 	# balances. The previous single-line caption/value shrank to four pixels.
-	var caption_label := fit_label(caption, 6 if compact else 8, Color("c5b98f"), true, HORIZONTAL_ALIGNMENT_LEFT)
+	var caption_label := fit_label(caption, 5 if compact else 7, Color("c5b98f"), true, HORIZONTAL_ALIGNMENT_LEFT)
 	caption_label.anchor_left = 0.24
 	caption_label.anchor_right = 0.83
 	caption_label.anchor_top = 0.08
@@ -11679,7 +11686,7 @@ func home_header_resource(caption: String, value: String, icon_path: String, act
 	caption_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	caption_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(caption_label)
-	var balance := fit_label(shown_value, 8 if compact else 12, Color("fff2c2"), true, HORIZONTAL_ALIGNMENT_LEFT)
+	var balance := fit_label(shown_value, 7 if compact else 11, Color("fff2c2"), true, HORIZONTAL_ALIGNMENT_LEFT)
 	balance.anchor_left = 0.24
 	balance.anchor_right = 0.95 if caption in ["資金", "薪資空間"] else 0.83
 	balance.anchor_top = 0.39
@@ -11710,14 +11717,14 @@ func home_resource_number(value: int) -> String:
 	return str(amount)
 
 func dashboard_scene_shortcut(caption: String, action: Callable, left: float, right: float, top: float) -> Button:
-	var button := action_button(caption, Color("0a1019dd"), action, Vector2(64 if compact_phone() else 135, 34 if compact_phone() else 42))
+	var button := action_button(caption, Color("0a1019dd"), action, Vector2(64 if compact_phone() else 135, 38 if compact_phone() else 44))
 	button.anchor_left = left
 	button.anchor_right = right
 	button.anchor_top = top
 	button.anchor_bottom = top
 	button.offset_top = 0
-	button.offset_bottom = 34 if compact_phone() else 42
-	button.add_theme_font_size_override("font_size", 9 if compact_phone() else 14)
+	button.offset_bottom = 38 if compact_phone() else 44
+	button.add_theme_font_size_override("font_size", 11 if compact_phone() else 16)
 	button.add_theme_stylebox_override("normal", panel_style(Color("080d15d8"), GOLD, 7, 1))
 	button.add_theme_stylebox_override("hover", panel_style(Color("211b0de8"), Color("ffe49a"), 7, 2))
 	button.tooltip_text = caption
@@ -11975,23 +11982,35 @@ func build_dashboard_screen(opponent: Dictionary) -> void:
 	header.anchor_right = 0.295
 	header.anchor_top = 0.015
 	header.anchor_bottom = 0.015
-	header.offset_bottom = 38 if compact else 58
+	header.offset_bottom = 46 if compact else 58
 	header.add_theme_stylebox_override("panel", invisible_style())
 	stage.add_child(header)
 	header.add_child(dashboard_skin("res://assets/ui/home/club_header_skin_trim_v1.png"))
-	var header_row := HBoxContainer.new()
-	header_row.add_theme_constant_override("separation", 6 if compact else 12)
-	header.add_child(padded(header_row, 5 if compact else 8))
-	header_row.add_child(club_logo_button(26 if compact else 42, show_club_logo_picker))
-	var club_words := VBoxContainer.new()
-	club_words.custom_minimum_size.x = 0
-	club_words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	club_words.add_theme_constant_override("separation", -2)
-	header_row.add_child(club_words)
-	var club_title := fit_label(club_display_name(), 9 if compact else 15, TEXT, true)
+	# Use explicit, non-overlapping regions inside the decorative header. HBox
+	# minimum sizes previously pushed the crest into the title on narrow devices.
+	var header_content := Control.new()
+	header_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	header.add_child(header_content)
+	var club_mark := club_logo_button(30 if compact else 42, show_club_logo_picker)
+	club_mark.position = Vector2(6 if compact else 8, 7 if compact else 8)
+	club_mark.size = Vector2(30 if compact else 42, 30 if compact else 42)
+	club_mark.mouse_filter = Control.MOUSE_FILTER_STOP
+	header_content.add_child(club_mark)
+	var club_title := fit_label(club_display_name(), 8 if compact else 14, TEXT, true)
 	club_title.tooltip_text = club_display_name()
-	club_words.add_child(club_title)
-	club_words.add_child(fit_label("%s · %d勝 %d敗" % [current_league, season_wins, season_losses], 7 if compact else 10, GOLD, true))
+	club_title.anchor_right = 1.0
+	club_title.offset_left = 42 if compact else 58
+	club_title.offset_right = -10
+	club_title.offset_top = 5 if compact else 7
+	club_title.offset_bottom = 23 if compact else 29
+	header_content.add_child(club_title)
+	var club_record := fit_label("%s · %d勝 %d敗" % [current_league, season_wins, season_losses], 6 if compact else 9, GOLD, true)
+	club_record.anchor_right = 1.0
+	club_record.offset_left = 42 if compact else 58
+	club_record.offset_right = -10
+	club_record.offset_top = 24 if compact else 30
+	club_record.offset_bottom = 40 if compact else 49
+	header_content.add_child(club_record)
 	var resource_row := HBoxContainer.new()
 	resource_row.name = "DashboardResources"
 	resource_row.anchor_left = 0.31
