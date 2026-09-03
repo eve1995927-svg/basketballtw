@@ -103,6 +103,8 @@ func test_store_cosmetics() -> void:
 	game.complete_purchase("gold_300")
 	await process_frame
 	check(game.gold == before_bundle + 300, "NT$30 gold bundle grants 300 gold at 1:10")
+	check(int(game.iap_product("gold_900").gold_amount) == 950, "larger gold bundle includes its advertised 5 percent bonus")
+	check(int(game.iap_product("gold_9900").gold_amount) == 12000, "largest gold bundle includes its advertised bonus")
 
 func test_veteran_and_training_rules() -> void:
 	await fresh_game()

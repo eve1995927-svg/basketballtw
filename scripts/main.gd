@@ -61,8 +61,8 @@ const LEGAL_NOTICE_TITLE := "遊戲聲明與權利說明"
 const LEGAL_NOTICE_TEXT := "本遊戲為獨立開發的體育模擬器，非官方聯盟或球隊產品。\n\n遊戲中部分隊名、球員名稱與賽事名稱參考真實籃球資訊，並非全部虛構。球員能力、卡片稀有度、遊戲薪資、交易、陣容及比賽結果屬於遊戲模擬設定，不代表真實人物的實際表現、合約、行為或官方評價。\n\n本遊戲與任何真實職業籃球聯盟、球隊或球員無官方授權、合作、贊助或背書關係。\n\n遊戲所涉及的名稱、商標、隊徽、照片、肖像及其他素材之相關權利，仍屬各該權利人。本聲明不構成素材使用授權，也不表示相關使用當然合法或免除依法應負的責任。\n\n本說明不要求使用者放棄依法享有的權利。\n\n更新日期：2026 年 8 月 31 日"
 const SUPABASE_URL := "https://oqvvtjmgasdnherqbllh.supabase.co"
 const SUPABASE_ANON := "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
-const APP_VERSION := "0.9.13"
-const APP_BUILD := 150
+const APP_VERSION := "0.9.14"
+const APP_BUILD := 151
 const AUTH_REDIRECT := "http://127.0.0.1:8765/callback"
 const STYLIZED_ART := [
 	"res://assets/art/hero_pg.png",
@@ -2494,7 +2494,9 @@ func hud_economy_row(_compact := true) -> Control:
 	row.add_theme_constant_override("separation", 4 if is_handheld() else 6)
 	resource_hud_labels.clear()
 	resource_hud_snapshot.clear()
-	for spec in [["budget", "資金", GREEN, "res://assets/ui/hud/budget.png", show_finance_sheet], ["gold", "黃金", GOLD, "res://assets/ui/hud/gold_coin.png", show_store_hub], ["salary", "薪資", GREEN, "res://assets/ui/hud/budget.png", show_salary_sheet], ["scout", "球探點", CYAN, "res://assets/ui/hud/scout.png", show_gacha_market]]:
+	# Keep the same reading order as the home screen. This also puts the two
+	# currencies players act on most often first.
+	for spec in [["gold", "黃金", GOLD, "res://assets/ui/hud/gold_coin.png", show_store_hub], ["scout", "球探點", CYAN, "res://assets/ui/hud/scout.png", show_gacha_market], ["budget", "資金", GREEN, "res://assets/ui/hud/budget.png", show_finance_sheet], ["salary", "薪資空間", GREEN, "res://assets/ui/hud/budget.png", show_salary_sheet]]:
 		var key: String = spec[0]
 		var accent: Color = spec[2]
 		var destination: Callable = spec[4]
@@ -2516,16 +2518,18 @@ func hud_economy_row(_compact := true) -> Control:
 		inner.add_theme_constant_override("separation", 1 if is_handheld() else 6)
 		chip.add_child(inner)
 		inner.add_child(hud_icon(spec[3], UI_RESOURCE_ICON_PHONE if is_handheld() else UI_RESOURCE_ICON_DESKTOP))
-		var words: BoxContainer = HBoxContainer.new() if is_handheld() else VBoxContainer.new()
+		# Stacking caption and value prevents five-digit balances from competing
+		# with the caption on landscape phones.
+		var words: BoxContainer = VBoxContainer.new()
 		words.alignment = BoxContainer.ALIGNMENT_CENTER
 		words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		words.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		words.add_theme_constant_override("separation", 1 if is_handheld() else 0)
 		inner.add_child(words)
-		var caption := plain_label(spec[1], 9 if is_handheld() else 11, MUTED)
-		caption.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		var caption := plain_label(spec[1], 8 if is_handheld() else 11, MUTED, false, HORIZONTAL_ALIGNMENT_CENTER)
+		caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		words.add_child(caption)
-		var value := fit_label("", 12 if is_handheld() else 16, accent, true)
+		var value := fit_label("", 11 if is_handheld() else 16, accent, true, HORIZONTAL_ALIGNMENT_CENTER)
 		value.name = "ResourceValue_" + key
 		words.add_child(value)
 		resource_hud_labels[key] = value
@@ -2582,17 +2586,17 @@ func refresh_resource_hud() -> void:
 		return
 	resource_hud_snapshot = values
 	var text_values := {
-		"budget": resource_display_number(budget_million, "萬"),
-		"gold": resource_display_number(gold),
-		"salary": "%s/%s" % [resource_display_number(used), resource_display_number(salary_cap)],
-		"scout": resource_display_number(scout_points),
+		"budget": "%s萬" % home_resource_number(budget_million),
+		"gold": home_resource_number(gold),
+		"salary": "%s/%s萬" % [home_resource_number(used), home_resource_number(salary_cap)],
+		"scout": home_resource_number(scout_points),
 	}
 	for key in resource_hud_labels:
 		var node = resource_hud_labels[key]
 		if not is_instance_valid(node):
 			continue
 		node.text = text_values[key]
-		node.add_theme_font_size_override("font_size", resource_value_font_size(node.text, 12 if is_handheld() else 16))
+		node.add_theme_font_size_override("font_size", resource_value_font_size(node.text, 11 if is_handheld() else 16))
 		if key == "salary":
 			node.add_theme_color_override("font_color", RED if used > salary_cap else GREEN)
 
@@ -3903,14 +3907,14 @@ func iap_product(sku: String) -> Dictionary:
 		return {"title": "主場應援月卡", "price": "NT$190", "store_id": "tb_monthly_pass", "note": "立即獲得黃金 400，之後 30 天每日黃金 50；漏領可累積。附月影雲海限定球場，可永久自由切換。"}
 	var gold_bundles := {
 		"gold_300": ["300 黃金", "NT$30", "tb_gold_300", 300],
-		"gold_900": ["900 黃金", "NT$90", "tb_gold_900", 900],
-		"gold_1900": ["1,900 黃金", "NT$190", "tb_gold_1900", 1900],
-		"gold_4900": ["4,900 黃金", "NT$490", "tb_gold_4900", 4900],
-		"gold_9900": ["9,900 黃金", "NT$990", "tb_gold_9900", 9900],
+		"gold_900": ["950 黃金", "NT$90", "tb_gold_900", 950],
+		"gold_1900": ["2,100 黃金", "NT$190", "tb_gold_1900", 2100],
+		"gold_4900": ["5,700 黃金", "NT$490", "tb_gold_4900", 5700],
+		"gold_9900": ["12,000 黃金", "NT$990", "tb_gold_9900", 12000],
 	}
 	if gold_bundles.has(sku):
 		var bundle: Array = gold_bundles[sku]
-		return {"title": bundle[0], "price": bundle[1], "store_id": bundle[2], "gold_amount": bundle[3], "note": "固定匯率 NT$1＝10 黃金；完成平台付款後立即入帳。"}
+		return {"title": bundle[0], "price": bundle[1], "store_id": bundle[2], "gold_amount": bundle[3], "note": "基本匯率 NT$1＝10 黃金；大包額外加贈，完成平台付款後立即入帳。"}
 	if sku == "extra_save":
 		return {"title": "再加一格存檔", "price": "NT$100", "store_id": "tb_extra_save", "note": "一次買一格，帳號最多 10 格。現在 %d／10。" % max_save_slots()}
 	if sku == "easl":
@@ -4098,11 +4102,11 @@ func store_products() -> Array[Dictionary]:
 		{"id":"event_wcq", "title":"世界盃資格賽", "category":"賽事", "price":"1,200 黃金", "gold":1200, "art":"res://assets/ui/store/national.png", "description":"選出中華隊名單，走過資格賽。勝利會留下國家隊紀錄與專屬成就。", "note":"永久賽事擴充", "event":"wcq"},
 		{"id":"event_bundle", "title":"國際賽事完整包", "category":"賽事", "price":"2,200 黃金", "gold":2200, "art":"res://assets/art/activity/activity_vs_hero.png", "description":"一次解鎖瓊斯盃、東超／BCL與世界盃資格賽，三條故事線都保留重玩空間。", "note":"組合價 · 永久解鎖", "event":"bundle"},
 		{"id":"monthly_pass", "title":"主場應援月卡", "category":"黃金", "price":"NT$190", "gold":-1, "art":"res://assets/art/arenas/monthly_moon.png", "description":"立即 400 黃金，之後 30 天每日 50 黃金；漏領可累積。另送月影雲海球場，可自由切換。", "note":"總計 1,900 黃金 · 限定球場永久保留", "sku":"monthly_pass"},
-		{"id":"gold_300", "title":"300 黃金", "category":"黃金", "price":"NT$30", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"小額補充，匯率固定 NT$1＝10 黃金。", "note":"平台內購", "sku":"gold_300"},
-		{"id":"gold_900", "title":"900 黃金", "category":"黃金", "price":"NT$90", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"需要一座球場，或替更衣室換個氣氛。", "note":"平台內購", "sku":"gold_900"},
-		{"id":"gold_1900", "title":"1,900 黃金", "category":"黃金", "price":"NT$190", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"固定 1：10，不用猜哪一包才划算。", "note":"平台內購", "sku":"gold_1900"},
-		{"id":"gold_4900", "title":"4,900 黃金", "category":"黃金", "price":"NT$490", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"適合一次收藏多座城市球場。", "note":"平台內購", "sku":"gold_4900"},
-		{"id":"gold_9900", "title":"9,900 黃金", "category":"黃金", "price":"NT$990", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"最高額固定匯率方案，不製造假折扣。", "note":"平台內購", "sku":"gold_9900"},
+		{"id":"gold_300", "title":"300 黃金", "category":"黃金", "price":"NT$30", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"臨時差一點就選這包，維持基本匯率 NT$1＝10 黃金。", "note":"基本方案", "badge":"", "sku":"gold_300"},
+		{"id":"gold_900", "title":"950 黃金", "category":"黃金", "price":"NT$90", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"比基本匯率多 50 黃金，剛好能解鎖三座台灣城市球場。", "note":"加贈 50", "badge":"加贈 5%", "sku":"gold_900"},
+		{"id":"gold_1900", "title":"2,100 黃金", "category":"黃金", "price":"NT$190", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"適合一次規劃球場、更衣室與便利功能。", "note":"加贈 200", "badge":"熱門 · 加贈 10%", "sku":"gold_1900"},
+		{"id":"gold_4900", "title":"5,700 黃金", "category":"黃金", "price":"NT$490", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"收藏型玩家方案，一次補足多座城市與特殊主場。", "note":"加贈 800", "badge":"加贈 16%", "sku":"gold_4900"},
+		{"id":"gold_9900", "title":"12,000 黃金", "category":"黃金", "price":"NT$990", "gold":-1, "art":"res://assets/ui/hud/gold_coin.png", "description":"目前最高額方案，額外黃金最多，所有價格仍清楚列出。", "note":"加贈 2,100", "badge":"最佳回饋 · 加贈 21%", "sku":"gold_9900"},
 	]
 
 func store_visible_products(category: String) -> Array[Dictionary]:
@@ -4291,7 +4295,8 @@ func store_category_button(caption: String, selected: bool) -> Button:
 func store_product_card(product: Dictionary, selected: bool) -> Control:
 	var shell := PanelContainer.new()
 	shell.name = "StoreProduct_" + str(product.id)
-	shell.custom_minimum_size = Vector2(142 if is_handheld() else 184, 120 if compact_phone() else 184)
+	var card_height := 132 if compact_phone() else (206 if usable_view().y >= 600.0 else 172)
+	shell.custom_minimum_size = Vector2(142 if is_handheld() else 184, card_height)
 	shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	shell.clip_contents = true
 	shell.add_theme_stylebox_override("panel", panel_style(Color("08121ef2"), GOLD if selected else Color("445466"), 13, 2 if selected else 1))
@@ -4300,13 +4305,16 @@ func store_product_card(product: Dictionary, selected: bool) -> Control:
 	shell.add_child(padded(box, 6))
 	var art := TextureRect.new()
 	art.texture = load_png_tex(str(product.art))
-	art.custom_minimum_size = Vector2(0, 63 if compact_phone() else 112)
+	art.custom_minimum_size = Vector2(0, 68 if compact_phone() else (126 if usable_view().y >= 600.0 else 96))
 	art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	art.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED if str(product.category) == "球場" else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(art)
+	var badge_text := str(product.get("badge", ""))
+	if not badge_text.is_empty():
+		box.add_child(fit_label(badge_text, 10, Color("ffe08a"), true, HORIZONTAL_ALIGNMENT_CENTER))
 	box.add_child(fit_label(str(product.title), 14, TEXT, true, HORIZONTAL_ALIGNMENT_CENTER))
 	box.add_child(fit_label(str(product.price), 13, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
 	var hit := hub_tile_hit(GOLD, selected, func(): select_store_product(store_category, str(product.id)))
@@ -4317,24 +4325,47 @@ func store_product_card(product: Dictionary, selected: bool) -> Control:
 func store_detail_panel(product: Dictionary) -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.name = "StoreProductDetail"
-	panel.custom_minimum_size = Vector2(230 if is_handheld() else 310, 0)
+	panel.custom_minimum_size = Vector2((390 if usable_view().x >= 1000.0 else 250) if is_handheld() else 390, 0)
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_theme_stylebox_override("panel", panel_style(Color("07111df2"), Color("ba974799"), 14, 1))
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 5)
+	box.add_theme_constant_override("separation", 7)
 	panel.add_child(padded(box, 10))
 	var art := TextureRect.new()
 	art.texture = load_png_tex(str(product.art))
-	art.custom_minimum_size = Vector2(0, 70 if compact_phone() else 130)
+	art.custom_minimum_size = Vector2(0, (92 if usable_view().x >= 760.0 else 72) if compact_phone() else (250 if usable_view().y >= 600.0 else 150))
 	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED if str(product.category) == "球場" else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(art)
+	var badge_text := str(product.get("badge", ""))
+	if not badge_text.is_empty():
+		box.add_child(fit_label(badge_text, 12, GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
 	box.add_child(label(str(product.title), 19, TEXT, true, HORIZONTAL_ALIGNMENT_CENTER))
 	box.add_child(wrap_label(str(product.description), 12, MUTED, true, HORIZONTAL_ALIGNMENT_CENTER))
 	box.add_child(fit_label(store_product_status(product), 12, CYAN if store_product_status(product).contains("已") else GOLD, true, HORIZONTAL_ALIGNMENT_CENTER))
 	box.add_child(fit_label(str(product.note), 11, MUTED, false, HORIZONTAL_ALIGNMENT_CENTER))
+	if not compact_phone() or usable_view().x >= 760.0:
+		var features: Array[String] = []
+		if product.has("theme") or product.has("locker"):
+			features = ["永久解鎖", "立即套用", "純外觀"]
+		elif product.has("sku"):
+			features = ["平台內購", "即時入帳", "價格透明"]
+		elif product.has("event"):
+			features = ["永久賽事", "保留進度", "可重玩"]
+		else:
+			features = ["帳號功能", "永久生效", "購買確認"]
+		var feature_row := HBoxContainer.new()
+		feature_row.add_theme_constant_override("separation", 6)
+		for feature in features:
+			var feature_panel := PanelContainer.new()
+			feature_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			feature_panel.custom_minimum_size.y = 28 if compact_phone() else 38
+			feature_panel.add_theme_stylebox_override("panel", panel_style(Color("101a27d9"), Color("7b673a99"), 9, 1))
+			feature_panel.add_child(fit_label(feature, 10, Color("dbc98e"), true, HORIZONTAL_ALIGNMENT_CENTER))
+			feature_row.add_child(feature_panel)
+		box.add_child(feature_row)
 	var action_text := "購買 · %s" % str(product.price)
 	if product.has("theme") and store_cosmetic_owned(product):
 		action_text = "使用中" if supporter_theme == str(product.theme) else "套用"
@@ -4346,6 +4377,9 @@ func store_detail_panel(product: Dictionary) -> PanelContainer:
 		action_text = "前往賽事"
 	elif str(product.id) == "monthly_pass" and monthly_pass_active:
 		action_text = "前往領取"
+	var flex := Control.new()
+	flex.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_child(flex)
 	var buy := gold_action_button(action_text, func(): activate_store_product(product), Vector2(0, 48))
 	buy.name = "StorePurchaseButton"
 	buy.disabled = str(product.id) == "second_team" and second_team_unlocked
@@ -4367,6 +4401,7 @@ func show_store_hub() -> void:
 	layout.name = "StoreLayout"
 	layout.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	layout.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.custom_minimum_size.y = maxf(250.0, usable_view().y - (UI_TOP_BAR_HEIGHT_PHONE if is_handheld() else UI_TOP_BAR_HEIGHT_DESKTOP) - 18.0)
 	layout.add_theme_constant_override("separation", 10)
 	content.add_child(layout)
 	var categories: BoxContainer = VBoxContainer.new() if wide_store else HBoxContainer.new()
@@ -4381,6 +4416,8 @@ func show_store_hub() -> void:
 	products_and_detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	products_and_detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	products_and_detail.add_theme_constant_override("separation", 8)
+	if usable_view().x >= 1000.0:
+		products_and_detail.custom_minimum_size.x = usable_view().x - categories.custom_minimum_size.x - 30.0
 	layout.add_child(products_and_detail)
 	var product_scroll := ScrollContainer.new()
 	product_scroll.name = "StoreProductScroll"
@@ -5821,6 +5858,8 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 	# person and architecture in the backdrop avoids stretching a card portrait.
 	if active_menu == "dashboard":
 		bg.texture = locker_room_tex() if home_environment_mode == "locker" else load_png_tex("res://assets/art/lobby/home_clubhouse_v2.png")
+	elif active_menu == "store":
+		bg.texture = load_png_tex("res://assets/art/store/store_showroom_bg_v1.png")
 	else:
 		bg.texture = screen_arena_tex()
 	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -5830,7 +5869,7 @@ func begin_screen(title: String, subtitle: String, stage: int, show_resources :=
 
 	var shade := ColorRect.new()
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.color = Color(0.02, 0.03, 0.05, 0.18 if active_menu == "dashboard" else 0.38)
+	shade.color = Color(0.02, 0.03, 0.05, 0.18 if active_menu == "dashboard" else (0.22 if active_menu == "store" else 0.38))
 	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(shade)
 
