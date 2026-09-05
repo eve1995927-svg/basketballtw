@@ -609,8 +609,12 @@
         "potential": 91,
         "salary_million": 296.4,
         "photo": "res://assets/images/teams/lioneers/players/lioneers_2.jpg",
-        "origin_team_id": "ghosthawks",
+        "origin_team_id": "lioneers",
         "skill_id": "floor_general",
+        "roster_source": "https://www.cna.com.tw/news/aspt/202609030232.aspx",
+        "roster_checked_at": "2026-09-05",
+        "rating_basis": "game_balance_not_official",
+        "movement_note": "2026-09-03 由攻城獅合約到期後加盟獵鷹；複數年約含旅外條款",
         "skill_name": "節奏大師"
       }
     ]
@@ -842,6 +846,40 @@
         "roster_source": "https://pleagueofficial.com/team/8/coach_player",
         "roster_checked_at": "2026-08-31",
         "rating_basis": "game_balance_not_official",
+        "skill_name": "雙向側翼"
+      },
+      {
+        "id": "yankey_r2026_morris_udeze",
+        "name": "莫里斯",
+        "position": "C",
+        "identity": "foreign",
+        "ovr": 81,
+        "potential": 87,
+        "salary_million": 420.0,
+        "photo": "",
+        "origin_team_id": "yankey",
+        "skill_id": "glass_cleaner",
+        "roster_source": "https://sport.vl.com.tw/newspage01.aspx?sno=80348",
+        "roster_checked_at": "2026-09-05",
+        "rating_basis": "game_balance_not_official",
+        "movement_note": "2026-09-02 新簽外援；OVR 與薪資為遊戲平衡估值",
+        "skill_name": "禁區卡位"
+      },
+      {
+        "id": "yankey_r2026_lin_bingsheng",
+        "name": "林秉聖",
+        "position": "PG/SG",
+        "identity": "local",
+        "ovr": 80,
+        "potential": 86,
+        "salary_million": 280.0,
+        "photo": "",
+        "origin_team_id": "mars",
+        "skill_id": "two_way_wing",
+        "roster_source": "https://www.cna.com.tw/news/aspt/202608050243.aspx",
+        "roster_checked_at": "2026-09-05",
+        "rating_basis": "game_balance_not_official",
+        "movement_note": "2026-08-05 戰神結束合約，洋基工程買斷；OVR 與薪資為遊戲平衡估值",
         "skill_name": "雙向側翼"
       }
     ]
@@ -2356,8 +2394,12 @@
         "potential": 76,
         "salary_million": 205.8,
         "photo": "",
-        "origin_team_id": "leopards",
+        "origin_team_id": "mars",
         "skill_id": "three_and_d",
+        "roster_source": "https://tpbl.basketball/news/439",
+        "roster_checked_at": "2026-09-05",
+        "rating_basis": "game_balance_not_official",
+        "movement_note": "2026-08-11 TPBL 正式交易：戰神至雲豹",
         "skill_name": "定點砲台"
       },
       {
