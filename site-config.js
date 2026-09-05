@@ -6,3 +6,10 @@ window.GAME_LINKS = Object.freeze({
   android: "",
   ios: ""
 });
+
+// This is a public browser key, not a service-role secret. Database policies
+// only permit anonymous clients to read rows explicitly marked as published.
+window.RELEASE_CATALOG = Object.freeze({
+  supabaseUrl: "https://oqvvtjmgasdnherqbllh.supabase.co",
+  publishableKey: "sb_publishable_oDE8MMcMCvM2qnmmsYLG8Q_m605nr3h"
+});
