@@ -33,6 +33,9 @@
     },
     {
       "name": "林志傑",
+      "status": "retired",
+      "retired_at": "2026-04-12",
+      "post_career_role": "臺北富邦勇士副領隊",
       "position": "SF/SG",
       "prime_team_id": "sbl_beer",
       "prime_team_name": "台灣啤酒",
@@ -73,6 +76,9 @@
     },
     {
       "name": "蔡文誠",
+      "status": "retired",
+      "retired_at": "2026-08-14",
+      "post_career_role": "臺北富邦勇士執行教練",
       "position": "SF/PF",
       "prime_team_id": "fubon",
       "prime_team_name": "臺北富邦勇士",
