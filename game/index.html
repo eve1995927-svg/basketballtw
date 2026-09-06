@@ -111,9 +111,14 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":103516020,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":199020528,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
+const GODOT_PCK_PARTS = [
+	"index.pck.part-aa",
+	"index.pck.part-ab",
+	"index.pck.part-ac",
+];
 
 (function () {
 	const statusOverlay = document.getElementById('status');
@@ -162,6 +167,32 @@ const engine = new Engine(GODOT_CONFIG);
 		initializing = false;
 	}
 
+	async function loadSplitMainPack() {
+		const total = GODOT_CONFIG.fileSizes["index.pck"];
+		const pack = new Uint8Array(total);
+		let offset = 0;
+		statusProgress.max = total;
+
+		for (const part of GODOT_PCK_PARTS) {
+			const response = await fetch(part, { credentials: "same-origin" });
+			if (!response.ok) {
+				throw new Error(`遊戲資料下載失敗：${part} (${response.status})`);
+			}
+			const bytes = new Uint8Array(await response.arrayBuffer());
+			if (offset + bytes.length > total) {
+				throw new Error("遊戲資料大小不正確，請重新整理後再試。");
+			}
+			pack.set(bytes, offset);
+			offset += bytes.length;
+			statusProgress.value = offset;
+		}
+
+		if (offset !== total) {
+			throw new Error("遊戲資料不完整，請重新整理後再試。");
+		}
+		return pack;
+	}
+
 	const missing = Engine.getMissingFeatures({
 		threads: GODOT_THREADS_ENABLED,
 	});
@@ -199,17 +230,13 @@ const engine = new Engine(GODOT_CONFIG);
 		}
 	} else {
 		setStatusMode('progress');
-		engine.startGame({
-			'onProgress': function (current, total) {
-				if (current > 0 && total > 0) {
-					statusProgress.value = current;
-					statusProgress.max = total;
-				} else {
-					statusProgress.removeAttribute('value');
-					statusProgress.removeAttribute('max');
-				}
-			},
-		}).then(() => {
+		Promise.all([
+			engine.init(GODOT_CONFIG.executable),
+			loadSplitMainPack(),
+		]).then(([, pack]) => engine.preloadFile(pack.buffer, "index.pck"))
+		.then(() => engine.start({
+			args: ["--main-pack", "index.pck"],
+		})).then(() => {
 			setStatusMode('hidden');
 		}, displayFailureNotice);
 	}
@@ -217,4 +244,3 @@ const engine = new Engine(GODOT_CONFIG);
 		</script>
 	</body>
 </html>
-
