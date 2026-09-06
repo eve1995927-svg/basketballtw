@@ -16702,8 +16702,7 @@ func start_oauth(provider: String) -> void:
 		# Always return to the standalone game page.  Using top.location matters
 		# when the game is opened inside play.html's iframe; otherwise OAuth can
 		# finish in the iframe and appear to send the player back to the homepage.
-		var web_redirect := "https://basketgm.tw/game/index.html"
-		var url := "%s/auth/v1/authorize?provider=google&redirect_to=%s&response_type=token" % [SUPABASE_URL, web_redirect.uri_encode()]
+		var url := web_oauth_url(provider)
 		flash_notice("正在開啟 Google 登入…")
 		JavaScriptBridge.eval("(window.top || window).location.href=" + JSON.stringify(url))
 		return
@@ -16729,6 +16728,27 @@ func start_oauth(provider: String) -> void:
 	flash_notice("瀏覽器會打開，登入後回到遊戲。")
 	OS.shell_open(url)
 
+func web_oauth_url(provider: String) -> String:
+	var web_redirect := "https://basketgm.tw/game/index.html"
+	# Do not send response_type=token here. Supabase owns the provider callback
+	# and must mint the app session; forwarding Google's implicit response gives
+	# us a ya29 provider token, which /auth/v1/user correctly rejects.
+	return "%s/auth/v1/authorize?provider=%s&redirect_to=%s" % [
+		SUPABASE_URL,
+		provider.uri_encode(),
+		web_redirect.uri_encode(),
+	]
+
+func web_auth_session_from_fragment(fragment: String) -> Dictionary:
+	var token := _query_value(fragment, "access_token")
+	var refresh := _query_value(fragment, "refresh_token")
+	# Supabase access tokens are JWTs and its browser session always includes a
+	# refresh token. Reject provider-only OAuth fragments before they can be
+	# mistaken for an expired Supabase login.
+	if token.count(".") != 2 or refresh.is_empty():
+		return {}
+	return {"access": token, "refresh": refresh}
+
 func poll_web_auth_callback() -> void:
 	if not OS.has_feature("web") or web_auth_consumed:
 		return
@@ -16736,14 +16756,18 @@ func poll_web_auth_callback() -> void:
 	if fragment.is_empty() or not fragment.contains("access_token="):
 		return
 	web_auth_consumed = true
-	var token := _query_value(fragment, "access_token")
-	var refresh := _query_value(fragment, "refresh_token")
-	if token.is_empty():
-		web_auth_consumed = false
-		return
-	auth_refresh = refresh
+	var session := web_auth_session_from_fragment(fragment)
 	JavaScriptBridge.eval("window.history.replaceState({}, document.title, window.location.pathname + window.location.search)")
-	apply_access_token(token)
+	if session.is_empty():
+		auth_access = ""
+		auth_refresh = ""
+		pending_enter_after_auth = false
+		persist_auth()
+		show_login()
+		flash_notice("Google 登入未建立遊戲工作階段，請重新登入。")
+		return
+	auth_refresh = str(session.refresh)
+	apply_access_token(str(session.access))
 
 func exchange_auth_code(code: String) -> void:
 	var body := JSON.stringify({

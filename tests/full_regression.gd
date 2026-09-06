@@ -753,6 +753,11 @@ func test_purchase_validation() -> void:
 	check(game.pkce_challenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk") == "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM", "PKCE S256 matches RFC example")
 	var callback: String = game.mobile_auth_url_from_data({"scheme":"taiwanbasketballgm", "host":"auth", "path":"/callback", "query":"code=fixture"})
 	check(callback == "taiwanbasketballgm://auth/callback?code=fixture", "mobile OAuth consumes the iOS deeplink event payload directly")
+	var web_oauth: String = game.web_oauth_url("google")
+	check(web_oauth.contains("/auth/v1/authorize?provider=google") and web_oauth.contains("redirect_to=") and not web_oauth.contains("response_type=token"), "web OAuth lets Supabase mint the app session instead of requesting a Google provider token")
+	var web_session: Dictionary = game.web_auth_session_from_fragment("access_token=header.payload.signature&refresh_token=fixture-refresh")
+	check(web_session.get("access", "") == "header.payload.signature" and web_session.get("refresh", "") == "fixture-refresh", "web OAuth accepts a complete Supabase access and refresh session")
+	check(game.web_auth_session_from_fragment("access_token=ya29.provider-token&token_type=Bearer").is_empty(), "web OAuth rejects a Google provider-only token before user verification")
 	game.clear_pending_oauth()
 	game.oauth_provider = "google"
 	game.oauth_code_verifier = verifier
