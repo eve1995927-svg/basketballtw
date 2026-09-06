@@ -49,7 +49,7 @@
     .then(response => { if (!response.ok) throw new Error('Release catalog unavailable'); return response.json(); })
     .then(rows => {
       const release = rows?.[0];
-      if (!release || !Number.isInteger(release.version_code) || release.version_code < 177 || !/^\d+\.\d+\.\d+$/.test(release.version_name)) return;
+      if (!release || !Number.isInteger(release.version_code) || release.version_code < 183 || !/^\d+\.\d+(?:\.\d+)?$/.test(release.version_name)) return;
       const url = new URL(release.download_url);
       if (url.origin !== 'https://github.com' || !/^\/eve1995927-svg\/basketballtw\/releases\/download\/[^/]+\/[^/]+\.apk$/.test(url.pathname)) return;
       document.querySelector('[data-direct-apk]').href = url.href;
