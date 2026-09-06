@@ -16215,6 +16215,11 @@ func ensure_cloud() -> void:
 		return
 	cloud_http = HTTPRequest.new()
 	cloud_http.name = "CloudHttp"
+	# Browser fetch already returns a decompressed response body while retaining
+	# the Content-Encoding header. Letting HTTPRequest decompress it again floods
+	# stream_peer_gzip errors and makes the authenticated save pipeline retry in
+	# a 42% -> 58% loop.
+	cloud_http.accept_gzip = not OS.has_feature("web")
 	cloud_http.timeout = 25
 	cloud_http.request_completed.connect(_on_cloud_http_for_generation.bind(cloud_generation))
 	add_child(cloud_http)

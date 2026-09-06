@@ -758,6 +758,9 @@ func test_purchase_validation() -> void:
 	var web_session: Dictionary = game.web_auth_session_from_fragment("access_token=header.payload.signature&refresh_token=fixture-refresh")
 	check(web_session.get("access", "") == "header.payload.signature" and web_session.get("refresh", "") == "fixture-refresh", "web OAuth accepts a complete Supabase access and refresh session")
 	check(game.web_auth_session_from_fragment("access_token=ya29.provider-token&token_type=Bearer").is_empty(), "web OAuth rejects a Google provider-only token before user verification")
+	game.ensure_cloud()
+	check(game.cloud_http.accept_gzip == not OS.has_feature("web"), "web cloud requests avoid duplicate gzip decompression")
+	game.cancel_cloud_requests()
 	game.clear_pending_oauth()
 	game.oauth_provider = "google"
 	game.oauth_code_verifier = verifier
