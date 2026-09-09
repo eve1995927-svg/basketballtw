@@ -4,7 +4,7 @@
  */
 window.GAME_LINKS = Object.freeze({
   android: "",
-  ios: ""
+  ios: "https://testflight.apple.com/join/vdDt2uwZ"
 });
 
 // This is a public browser key, not a service-role secret. Database policies
