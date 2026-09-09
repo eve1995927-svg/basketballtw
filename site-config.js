@@ -3,7 +3,7 @@
  * small edit. Keep unavailable test links empty instead of showing dead URLs.
  */
 window.GAME_LINKS = Object.freeze({
-  android: "",
+  android: "https://play.google.com/apps/testing/com.yongye.taiwanbasketballgm",
   ios: "https://testflight.apple.com/join/vdDt2uwZ"
 });
 
