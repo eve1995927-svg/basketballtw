@@ -32,7 +32,7 @@
 </head>
 <body>
   <main id="game" aria-label="台籃模擬器遊戲">
-    <iframe id="game-frame" src="game/index.html?v=204-overlay-20260911" title="台籃模擬器" allow="fullscreen; autoplay" allowfullscreen></iframe>
+    <iframe id="game-frame" src="game/index.html?v=206-ui" title="台籃模擬器" allow="fullscreen; autoplay" allowfullscreen></iframe>
   </main>
   <aside id="tools" aria-label="網頁工具">
     <div id="tools-panel" hidden>
@@ -56,7 +56,7 @@
     (() => {
       const hash = window.location.hash;
       if (hash && (hash.includes('access_token=') || hash.includes('code='))) {
-        window.location.replace('game/index.html?v=204-overlay-20260911' + hash);
+        window.location.replace('game/index.html?v=206-ui' + hash);
       }
     })();
     (() => {
