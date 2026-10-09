@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>卡片圖鑑｜球員、教練與啦啦隊・台籃模擬器</title>
+  <meta name="description" content="瀏覽台籃模擬器的球員、教練與啦啦隊卡面。依球隊、聯盟與姓名尋找收藏，點開查看遊戲實際卡片設計。">
+  <meta name="theme-color" content="#101b25">
+  <link rel="canonical" href="https://basketgm.tw/cards/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_TW">
+  <meta property="og:site_name" content="台籃模擬器">
+  <meta property="og:title" content="卡片圖鑑｜球員、教練與啦啦隊・台籃模擬器">
+  <meta property="og:description" content="從球員到教練與啦啦隊，找到你喜歡的下一張收藏。">
+  <meta property="og:url" content="https://basketgm.tw/cards/">
+  <meta property="og:image" content="https://basketgm.tw/assets/web/social.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/png" href="/assets/web/favicon.png">
+  <link rel="apple-touch-icon" href="/assets/web/apple-touch-icon.png">
+  <link rel="stylesheet" href="/official.css?v=20260905a">
+  <link rel="stylesheet" href="/cards/cards.css?v=20261009a">
+  <script src="/official.js?v=20260905a" defer></script>
+  <script src="/cards/cards.js?v=20261009a" defer></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"台籃模擬器卡片圖鑑","url":"https://basketgm.tw/cards/","inLanguage":"zh-Hant-TW","description":"遊戲實際球員、教練與啦啦隊卡片的設計預覽。","isPartOf":{"@type":"WebSite","name":"台籃模擬器","url":"https://basketgm.tw/"}}</script>
+</head>
+<body class="cards-page">
+  <a class="skip" href="#main">跳到主要內容</a>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="台籃模擬器首頁"><img src="/assets/web/icon.webp" width="44" height="44" alt=""><span>台籃模擬器<small>TAIWAN BASKETBALL MANAGER</small></span></a>
+    <button class="menu-toggle" aria-expanded="false" aria-controls="navigation" type="button">選單 <span aria-hidden="true">＋</span></button>
+    <nav id="navigation" aria-label="主要導覽"><a href="/news/">最新消息</a><a href="/#gameplay">遊戲介紹</a><a href="/cards/" aria-current="page">卡片圖鑑</a><a href="/guide.html">新手指南</a><a href="/support.html">玩家支援</a></nav>
+    <a class="header-cta" href="/#download">開始遊玩 <span aria-hidden="true">↗</span></a>
+  </header>
+  <main id="main" data-catalog="/cards/catalog.e43b45eb00e1.json">
+    <section class="catalog-intro">
+      <div class="wrap intro-layout">
+        <div><a class="back-link" href="/">官網首頁 <span aria-hidden="true">／</span> 卡片圖鑑</a><p class="eyebrow">THE NEXT CARD IN YOUR COLLECTION</p><h1>每一張，<br>都有上場的<span>理由。</span></h1><p class="intro-copy">球員、教練與啦啦隊。<br>看卡面、找球隊，收藏你喜歡的那一張。</p></div>
+        <div class="intro-cards" aria-hidden="true"><img src="/assets/card-preview/thumb/aaf1306f46dfd2e22e09.webp" alt="" width="256" height="384"><img src="/assets/card-preview/thumb/289b0f75bff3d75eb905.webp" alt="" width="256" height="384"><img src="/assets/card-preview/thumb/0ac6ae44bb8809f4fb23.webp" alt="" width="256" height="384"></div>
+      </div>
+    </section>
+    <section class="catalog-section" aria-label="卡片收藏預覽">
+      <div class="wrap">
+        <div class="kind-tabs" role="group" aria-label="卡片類型">
+          <button type="button" data-kind="player" aria-pressed="true">球員 <span>317</span></button>
+          <button type="button" data-kind="coach" aria-pressed="false">教練 <span>71</span></button>
+          <button type="button" data-kind="cheer" aria-pressed="false">啦啦隊 <span>181</span></button>
+        </div>
+        <form class="catalog-filters" role="search" aria-label="搜尋卡片">
+          <label class="search-field"><span>尋找收藏</span><input id="card-search" aria-label="尋找收藏" type="search" name="q" autocomplete="off" placeholder="輸入姓名或球隊" maxlength="100"></label>
+          <label><span>聯盟／系列</span><select id="card-league" aria-label="聯盟／系列" name="league"><option value="">全部聯盟／系列</option></select></label>
+          <label><span>球隊</span><select id="card-team" aria-label="球隊" name="team"><option value="">全部球隊</option></select></label>
+          <button class="reset-filters" type="button">清除篩選</button>
+        </form>
+        <div class="catalog-summary"><p id="card-result" role="status" aria-live="polite">正在載入卡片…</p><span>點選卡面，放大查看</span></div>
+        <div id="card-grid" class="card-grid" aria-busy="true"></div>
+        <div id="catalog-message" class="catalog-message" hidden><p></p><button id="retry-catalog" type="button" hidden>重新載入</button></div>
+        <nav class="catalog-pagination" aria-label="卡片分頁"><button id="previous-page" type="button" disabled>← 上一頁</button><span id="card-page">1 / 1</span><button id="next-page" type="button" disabled>下一頁 →</button></nav>
+        <p class="catalog-note">卡面以未特訓狀態展示。教練與啦啦隊為開發預覽，正式開放內容與取得方式以遊戲公告為準。</p>
+        <noscript><p class="catalog-note">請開啟 JavaScript 使用搜尋與完整卡片圖鑑。</p></noscript>
+      </div>
+    </section>
+  </main>
+  <dialog class="card-detail" aria-labelledby="detail-name">
+    <div class="detail-heading"><span>卡片預覽</span><button class="close-detail" type="button" aria-label="關閉卡片預覽">關閉 <span aria-hidden="true">×</span></button></div>
+    <div class="detail-content"><img id="detail-image" width="512" height="768" alt=""><div class="detail-copy"><p id="detail-type" class="eyebrow"></p><h2 id="detail-name"></h2><p id="detail-team"></p><dl id="detail-facts"></dl><div id="detail-effects"></div><p id="detail-career"></p><p id="detail-note" class="detail-note"></p></div></div>
+    <div class="detail-navigation"><button id="previous-card" type="button">← 上一張</button><span id="detail-index"></span><button id="next-card" type="button">下一張 →</button></div>
+  </dialog>
+  <footer class="site-footer"><div class="wrap footer-top"><a class="brand" href="/"><img src="/assets/web/icon.webp" width="44" height="44" alt=""><span>台籃模擬器<small>TAIWAN BASKETBALL MANAGER</small></span></a><p>每一支球隊，都值得一個好教練。</p><a href="mailto:nutsidea@nutsidea.com">聯絡 Nutsidea ↗</a></div><div class="wrap footer-bottom"><span>© 2026 Nutsidea</span><nav aria-label="頁尾導覽"><a href="/cards/">卡片圖鑑</a><a href="/news/">公告</a><a href="/support.html">客服與帳號</a><a href="/privacy.html">隱私說明</a><a href="/legal.html">遊戲聲明與權利</a></nav><p>獨立開發之非官方體育模擬遊戲，與真實聯盟、球隊及球員無官方授權或背書關係。遊戲數值與賽果為模擬設定。</p></div></footer>
+</body>
+</html>
