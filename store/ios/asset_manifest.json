@@ -1,13 +1,16 @@
 {
-  "locale": "zh-Hant-TW",
-  "icon": "assets/ui/app_icon_1024.png",
+  "build": 259,
+  "locale": "zh-Hant",
+  "screenshots": "actual game scene renders with production UIKit scaling and isolated demo data",
+  "physical_device": false,
+  "authentication_or_deletion_evidence": false,
   "screenshot_sets": [
     {
-      "folder": "6.7",
-      "width": 2796,
-      "height": 1290,
+      "folder": "6.5",
+      "width": 2778,
+      "height": 1284,
       "files": [
-        "01_login.jpg",
+        "01_home.jpg",
         "02_roster.jpg",
         "03_locker.jpg",
         "04_tactics.jpg",
@@ -15,18 +18,28 @@
       ]
     },
     {
-      "folder": "6.5",
-      "width": 2778,
-      "height": 1284,
+      "folder": "6.7",
+      "width": 2736,
+      "height": 1260,
       "files": [
-        "01_login.jpg",
+        "01_home.jpg",
+        "02_roster.jpg",
+        "03_locker.jpg",
+        "04_tactics.jpg",
+        "05_training.jpg"
+      ]
+    },
+    {
+      "folder": "dynamic-medium",
+      "width": 2622,
+      "height": 1206,
+      "files": [
+        "01_home.jpg",
         "02_roster.jpg",
         "03_locker.jpg",
         "04_tactics.jpg",
         "05_training.jpg"
       ]
     }
-  ],
-  "generated_key_art": "marketing/key_art.png",
-  "notes": "截圖採實際遊戲畫面，文字以 SVG 疊加；無透明背景。"
+  ]
 }
