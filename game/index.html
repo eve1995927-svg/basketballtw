@@ -2,6 +2,53 @@
 <html lang="zh-Hant">
 	<head>
         <base href="./releases/265/">
+		<meta name="tb-build" content="265">
+		<script>
+/* Inline in a versioned game loader. Does not touch game state or credentials. */
+(() => {
+  const current = Number(document.querySelector('meta[name="tb-build"]')?.content);
+  if (!Number.isSafeInteger(current) || current < 1) return;
+  let inFlight = null;
+  let redirected = false;
+  const checkForNewerBuild = () => {
+    if (redirected) return Promise.resolve(false);
+    if (inFlight) return inFlight;
+    inFlight = (async () => {
+      try {
+        const response = await fetch('/game/version.json?check=' + Date.now(), {
+          cache: 'no-store', credentials: 'same-origin'
+        });
+        if (!response.ok) return false;
+        const versions = await response.json();
+        const raw = Array.isArray(versions) ? versions[0]?.version_code : null;
+        if (!/^[1-9][0-9]{0,7}$/.test(String(raw))) return false;
+        const latest = Number(raw);
+        if (latest <= current || redirected) return false;
+        redirected = true;
+        // Same-origin and numeric-only; preserve a pending OAuth fragment.
+        window.location.replace('/game/index.html?v=' + latest + '-ui' + window.location.hash);
+        return true;
+      } catch (_) {
+        return false;
+      } finally {
+        inFlight = null;
+      }
+    })();
+    return inFlight;
+  };
+  // A failed part can arrive while the first version check still reports the
+  // old build. Once that request completes, check again for the cutover.
+  const retryAfterPending = () => inFlight
+    ? inFlight.then(found => found || checkForNewerBuild())
+    : checkForNewerBuild();
+  window.tbTryUpdateRecovery = retryAfterPending;
+  window.addEventListener('error', (event) => {
+    if (event.target?.tagName === 'SCRIPT') void retryAfterPending();
+  }, true);
+  void checkForNewerBuild();
+})();
+
+		</script>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>台籃模擬器 1.0.1｜Build 265</title>
@@ -152,6 +199,7 @@ const GODOT_PCK_PARTS = ["index.pck.part-00", "index.pck.part-01", "index.pck.pa
 	}
 
 	function displayFailureNotice(err) {
+		void window.tbTryUpdateRecovery?.();
 		console.error(err);
 		if (err instanceof Error) {
 			setStatusNotice(err.message);
